@@ -24,12 +24,12 @@ function App() {
   }
 
   return (
-    <>
+    <div id='site'>
       <Header />
       {component}
       <Article />
       <Footer />
-    </>
+    </div>
   )
 }
 
