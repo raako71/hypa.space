@@ -1,9 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost&display=swap');
 
+body{
+  margin: 0;
+}
 #site{
   display:flex; 
   flex-direction:column;
-  margin: 0;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   min-height: 100vh;
 }
@@ -12,21 +14,56 @@ h1{
   text-align: center;
   font-family:Jost, Geneva;
 }
-header ul{
-  list-style-type: none;
+
+.navbar{
+  display: flex;
   background-color: rgb(0, 181, 33);
-  padding: 0;
-  overflow: hidden;
+  padding: 0 20px;
+  justify-content: right;
 }
 .navbar a{
   color: rgb(238, 238, 238);
   text-decoration: none;
   padding: 15px 30px;
-  display: block;
+  display: inline-block;
   text-align: center;
+  position: relative; /* Required for absolute positioning of submenu */
 }
 .navbar a:hover{
   background-color: rgba(0, 255, 47, 0.612);
+}
+.has-submenu:hover .submenu {
+  opacity: 1;
+  pointer-events: auto;
+}
+.has-submenu{
+  position: relative;
+}
+/* Hide submenu by default */ 
+.submenu {
+  max-height: 0;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: rgb(0, 181, 33);
+  border: 0; /* Change as needed */
+  padding: 0;
+  z-index: 1;
+  list-style:none;
+  margin: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out; /* Transition height */
+  width: 100%;
+  text-align: center;
+}
+.submenu li a{
+ display: block;
+}
+
+/* Show submenu on hover */
+.has-submenu:hover .submenu {
+  max-height: 200px;
+ 
 }
 
 footer{ 
@@ -40,8 +77,10 @@ footer p{
 .article{ flex:1; }
 article{ flex:1; }
 
-@media (min-width:500px)  {
-.navbar li{
-  float: right;
+.middle{
+  text-align: center;
 }
+.middle input{
+  padding: 5px;
+  margin: 10px;
 }
