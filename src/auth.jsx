@@ -1,12 +1,19 @@
 import { auth } from "./firebase-config"
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail } from "firebase/auth";
 import { useState, useEffect } from "react";
 
 export const Auth = () => {
 
+    const actionCodeSettings = {
+        url: 'http://localhost:5173/',
+        // This must be true.
+        handleCodeInApp: true,
+    };
+    
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
-            if (loginDiv) signIn(); // Call your signIn function here
+            if(passwordReset) resetPassword();
+            else if (loginDiv) signIn(); // Call your signIn function here
             else createAccount();
         }
     };
@@ -44,6 +51,28 @@ export const Auth = () => {
     }
 
 
+
+    const resetPassword = async () => {
+        if (isValidEmail) {
+            sendSignInLinkToEmail(auth, email, actionCodeSettings)
+                .then(() => {
+                    // The link was successfully sent. Inform the user.
+                    // Save the email locally so you don't need to ask the user for it again
+                    // if they open the link on the same device.
+                    window.localStorage.setItem('emailForSignIn', email);
+                    // ...
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    console.error(error.code);
+                    const errorMessage = error.message;
+                    setText(error.message);
+                    // ...
+                });
+        }
+    };
+
+
     const [email, setEmail] = useState("");
     const [password1, setPassword1] = useState("");
     const [password2, setPassword2] = useState('');
@@ -52,6 +81,7 @@ export const Auth = () => {
     const [isValidPassword2, setIsValidPassword2] = useState(true);
     const [errorText, setText] = useState(' ');
     const [loginDiv, setloginDiv] = useState(true);
+    const [passwordReset, setPasswordReset] = useState(false);
 
     useEffect(() => {
         if (!loginDiv) {
@@ -99,24 +129,34 @@ export const Auth = () => {
         setloginDiv(!loginDiv); // Toggles the value of showDiv (true/false)
     };
 
+    const showPasswordReset = () => {
+        setPasswordReset(!passwordReset); // Toggles the value of showDiv (true/false)
+    };
+
     return (
         <div className="middle">
-            <input placeholder="email" value={email} onChange={handleEmailChange} />
+            <input placeholder="email" value={email} onChange={handleEmailChange} onKeyDown={handleKeyPress}/>
             {isValidEmail ? null : <span style={{ color: 'red' }}>*</span>}
             <br />
-            <input placeholder="Password" type="password" name="password1" value={password1} onChange={handlePasswordChange} onKeyDown={handleKeyPress} />
-            {isValidPassword ? null : <span style={{ color: 'red' }}>*</span>}
-            {loginDiv && (
-                <div><button onClick={signIn}>Sign In</button>
-                    <p><a onClick={showCreateAccount} href="#">New Account</a> / <a href="">Forgot Password</a></p>
-                </div>)}
-            {!loginDiv && (
+            {!passwordReset && (
                 <div>
-                    <input placeholder="Password" type="password" name="password2" value={password2} onChange={handlePasswordChange} onKeyDown={handleKeyPress} />
-                    {isValidPassword2 ? null : <span style={{ color: 'red' }}>*</span>}
-                    <br />
-                    <button onClick={createAccount}>Create account</button>
+                    <input placeholder="Password" type="password" name="password1" value={password1} onChange={handlePasswordChange} onKeyDown={handleKeyPress} />
+                    {isValidPassword ? null : <span style={{ color: 'red' }}>*</span>}
+                    {loginDiv && (
+                        <div><button onClick={signIn}>Sign In</button>
+                            <p><a onClick={showCreateAccount} href="#">New Account</a> / <a href="#" onClick={showPasswordReset}>Forgot Password</a></p>
+                        </div>)}
+                    {!loginDiv && (
+                        <div>
+                            <input placeholder="Password" type="password" name="password2" value={password2} onChange={handlePasswordChange} onKeyDown={handleKeyPress} />
+                            {isValidPassword2 ? null : <span style={{ color: 'red' }}>*</span>}
+                            <br />
+                            <button onClick={createAccount}>Create account</button>
+                        </div>)}
                 </div>)}
+            {passwordReset && (
+                <button onClick={resetPassword}>Reset password</button>
+            )}
             <p style={{ color: 'red' }}>{errorText}</p>
         </div>
     );

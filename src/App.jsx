@@ -8,6 +8,8 @@ import {auth} from "./firebase-config"
 import { onAuthStateChanged } from "firebase/auth";
 import React, { useState, useEffect } from "react";
 
+export const domain = 'http://localhost:5173'; // Replace with your domain
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     localStorage.getItem('isLoggedIn') === 'true'
@@ -44,6 +46,11 @@ function App() {
     }
     case "/account": {
       component = <Account />;
+      break
+    }
+    default:{
+      component = <Home />;
+      window.location.pathname = '/';
       break
     }
   }

@@ -74,8 +74,11 @@ footer{
 footer p{
   padding: 15px;
 }
-.article{ flex:1; }
-article{ flex:1; }
+.article{ 
+  flex:1;
+  margin: auto;
+  width: 400px;
+ }
 
 .middle{
   text-align: center;

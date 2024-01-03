@@ -1,4 +1,6 @@
 import {auth} from "./firebase-config"
+import {domain} from "./App"
+
 const handleSignOut = async () => {
     try {
       await auth.signOut(); // Call your authentication library's sign-out method
@@ -17,16 +19,16 @@ function Header({ isLoggedIn }) {
         <header>
             <h1>hypa.space</h1>
             <nav className="navbar">
-                <a href="./">Home</a>
+                <a href={domain}>Home</a>
                 {isLoggedIn ? (
                     <div className="has-submenu">
-                        <a href="./account" >Account</a>
+                        <a href={domain + "/account"} >Account</a>
                         <ul className="submenu">
                             <li><a href="#" onClick={handleSignOut}>Logout</a></li>
                         </ul>
                     </div>
                 ) : (
-                    <a href="./login">Login</a>
+                    <a href={domain + "/login"}>Login</a>
                 )}
             </nav>
 
