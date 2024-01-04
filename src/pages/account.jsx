@@ -32,13 +32,13 @@ export default function Account() {
     try {
       await sendEmailVerification(auth.currentUser, actionCodeSettings);
       showEmailSentFunction();
-      showVerify("");
+      showVerify(false);
     } catch (err) {
       console.error(err);
     }
   }
 
-  let userVerificationText = userVer ? "Yes" : "No";
+  let userVerificationText = userVer ? "Yes." : "No.";
 
   useEffect(() => {
 
@@ -48,9 +48,11 @@ export default function Account() {
         setUserEmail(user.email);
         setUserName(user.displayName);
         setUserVer(user.emailVerified);
-        if (!userVer) {
-          //showVerify(1);
-        } else showVerify("");
+        if (!user.emailVerified) {
+          showVerify(true); // Show verification UI
+        } else {
+          showVerify(false); // Hide verification UI
+        }
       } else {
         // No user signed in
         setUserEmail(null);
