@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { onAuthStateChanged, sendEmailVerification, applyActionCode } from 'firebase/auth';
+import {
+  onAuthStateChanged, sendEmailVerification,
+  applyActionCode, updateProfile
+} from 'firebase/auth';
 import { auth } from "../firebase-config"
+import "../checkbox.css"
 
 const actionCodeSettings = {
   url: 'http://localhost:5173/account',
@@ -23,6 +27,11 @@ export default function Account() {
   const [userVer, setUserVer] = useState(null);
   const [verifyLink, showVerify] = useState(false);
   const [emailSent, showEmailSent] = useState(false);
+  const [usernameDiv, showusernameDiv] = useState(true);
+  const [UpdateUsernameDiv, showUpdateUsernameDiv] = useState(false);
+
+
+
 
   const showEmailSentFunction = () => {
     showEmailSent(true);
@@ -53,6 +62,10 @@ export default function Account() {
         } else {
           showVerify(false); // Hide verification UI
         }
+        if (user.displayName === null) {
+          setUserName("unassigned");
+
+        }
       } else {
         // No user signed in
         setUserEmail(null);
@@ -66,6 +79,27 @@ export default function Account() {
     };
   }, []);
 
+  const updateUsernamelink = async () => {
+    showusernameDiv(false);
+    showUpdateUsernameDiv(true);
+  };
+
+  const updateUsernameFunc = async (e) => {
+    e.preventDefault(); // Prevent the default behavior of the link click
+    const newUsernameInput = document.getElementById('newUsername');
+    const newUsername = newUsernameInput.value;
+    updateProfile(auth.currentUser, {
+      displayName: newUsername
+    }).then(() => {
+      console.log("Username updated successfully!");
+      // ...
+    }).catch((error) => {
+      console.error("Error updating username:", error.message);
+    });
+  };
+
+
+
   return (
     <>
       <div className="article">
@@ -78,8 +112,22 @@ export default function Account() {
             <>email sent</>
           )}
         </p>
-        <p>username: {userName}</p>
+        {usernameDiv && (
+          <p>Username: {userName}. <a href="#" onClick={updateUsernamelink}>Update Username</a></p>
+        )}
+        {UpdateUsernameDiv && (
+          <p>
+            <input placeholder="New Username" id="newUsername" />
+            &nbsp;&nbsp;<a href='#' onClick={updateUsernameFunc}>Save Username</a>
+          </p>
+        )}
         <p>email: {userEmail}</p>
+        <p>seller mode:&nbsp;&nbsp;
+          <label className="switch">
+            <input type="checkbox" />
+            <span className="slider round"></span>
+          </label>
+        </p>
       </div>
     </>
   )
