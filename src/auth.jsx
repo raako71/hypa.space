@@ -15,7 +15,7 @@ export const Auth = () => {
 
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
-            if (showEmailLogin) emailLoginFunction();
+            if (emailLinkDiv) emailLoginFunction();
             else if (loginDiv) signIn(); // Call your signIn function here
             else createAccount();
         }
@@ -65,9 +65,7 @@ export const Auth = () => {
                     emailLinkDivFunc(false);
                 })
                 .catch((error) => {
-                    const errorCode = error.code;
                     console.error(error.code);
-                    const errorMessage = error.message;
                     setText(error.message);
                     // ...
                 });
@@ -82,8 +80,6 @@ export const Auth = () => {
                     resetDivFunc(false);
                 })
                 .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
                     console.error(error);
                 });
         }
@@ -126,7 +122,7 @@ export const Auth = () => {
 
 
     useEffect(() => {
-        if (!loginDiv) {
+        if (Password2Div) {
             if (password2 === password1) {
                 setIsValidPassword2(password2.length > 5);
                 setText()
@@ -135,6 +131,7 @@ export const Auth = () => {
                 setText("Passwords must match")
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [password1, password2]);
 
     const signIn = async () => {
