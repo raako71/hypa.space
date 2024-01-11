@@ -4,6 +4,7 @@ import {  onAuthStateChanged, sendEmailVerification
 import { auth, db } from "../firebase-config"
 import "../checkbox.css"
 import { doc, getDoc } from 'firebase/firestore/lite';
+import { useNavigate } from 'react-router-dom';
 
 const actionCodeSettings = {
   url: 'http://localhost:5173/account',
@@ -28,6 +29,8 @@ export default function Account() {
   const showEmailSentFunction = () => {
     showEmailSent(true);
   };
+
+  const navigate = useNavigate();
 
   const sendEmail = async () => {
     try {
@@ -83,13 +86,14 @@ export default function Account() {
         setUserEmail(null);
         setUserName(null);
         setUserVer(null);
+        navigate('/login');
       }
     });
 
     return () => {
       unsubscribe(); // Cleanup the listener on component unmount
     };
-  }, [userName]);
+  }, [userName,navigate]);
 
   const updateUsernamelink = async () => {
     showusernameDiv(false);

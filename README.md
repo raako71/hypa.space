@@ -5,4 +5,6 @@ Update Username fully working.
 *Create userID document in database.*
 
 11 Jan.
-disallow update username if mismatch between databases, check for username existance in personal db.
+Disallow update username if mismatch between databases, check for username existance in personal db. (harden security based on user write capabilities).
+Move Auth componenet into login.
+Add react router.

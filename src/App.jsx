@@ -2,11 +2,13 @@ import Header from "./Header"
 import Footer from "./Footer"
 import Home from "./pages/home"
 import Login from "./pages/login"
+import Terms from "./pages/terms"
 import Account from "./pages/account"
 import './index.css'
 import {auth} from "./firebase-config"
 import { onAuthStateChanged } from "firebase/auth";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 export const domain = 'http://localhost:5173'; // Replace with your domain
 
@@ -26,41 +28,27 @@ function App() {
       unsubscribe();
     };
   }, []);
-  let component
-
-  switch (window.location.pathname) {
-    case "/": {
-      component = <Home />;
-      break
-    }
-    case "/login": {
-      if(isLoggedIn){
-        window.location.pathname = '/';
-        component = <Home />;
-      break
-      } else{
-        component = <Login />;
-        break
-      }
-      
-    }
-    case "/account": {
-      component = <Account />;
-      break
-    }
-    default:{
-      component = <Home />;
-      window.location.pathname = '/';
-      break
-    }
-  }
 
   return (
+    <Router>
     <div id='site'>
       <Header isLoggedIn={isLoggedIn} />
-      {component}
+      <Routes>
+      <Route path="/" element={<Home />} />
+      <Route
+        path="/login"
+        element={isLoggedIn ? <Navigate to="/" /> : <Login />}
+      />
+      <Route
+          path="/account"
+          element={<Account />}
+        />
+        <Route path="/terms" element={<Terms />} />
+      <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
       <Footer />
     </div>
+  </Router>
   )
 }
 

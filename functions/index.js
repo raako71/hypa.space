@@ -13,8 +13,8 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
         return;
       }
       const idToken = authorization.split("Bearer ")[1];
-      // eslint-disable-next-line no-unused-vars
       const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const email = decodedToken.email;
       const {username, userID} = req.body;
       const usernameL = username.toLowerCase(); // Convert to lowercase
       // Validation: Check if the username matches the allowed pattern
@@ -63,6 +63,7 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
       } else {
         await userDocRef2.set({
           username: usernameL,
+          email: email, // Add email to the document
         });
         console.log("Had to create user document");
       }
@@ -77,45 +78,6 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
       res.status(500).send("Error: " + error.message);
     }
   });
-});
-
-exports.securedFunction = functions.https.onRequest((req, res) => {
-  cors(req, res, async () => {
-    try {
-      const idToken = req.headers.authorization ?
-        req.headers.authorization.split("Bearer ")[1] : undefined;
-
-      if (!idToken) {
-        res.status(403).send("Unauthorized");
-        return;
-      }
-
-      const decodedToken = await admin.auth().verifyIdToken(idToken);
-      const uid = decodedToken.uid;
-      console.log("uid =", uid);
-      res.status(200).send("Authenticated and authorized!");
-    } catch (error) {
-      console.error("Error:", error);
-      res.status(500).send("Internal Server Error");
-    }
-  });
-});
-
-exports.createUserDocument = functions.auth.user().onCreate(async (user) => {
-  const {uid, email} = user;
-
-  try {
-    await admin.firestore().collection("users").doc(uid).set({
-      FirstName: null,
-      LastName: null,
-      Username: null,
-      email: email || null,
-      // Add any additional user data you want to store upon creation
-    });
-    console.log("User document created for UID:", uid);
-  } catch (error) {
-    console.error("Error creating user document:", error);
-  }
 });
 
 exports.deleteUserDocument = functions.auth.user().onDelete(async (user) => {
