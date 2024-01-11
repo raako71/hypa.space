@@ -22,7 +22,6 @@ export default function Account() {
   const [emailSent, showEmailSent] = useState(false);
   const [usernameDiv, showusernameDiv] = useState(true);
   const [UpdateUsernameDiv, showUpdateUsernameDiv] = useState(false);
-  const [idToken, setIdToken] = useState(null);
   const [UpdatingUsernameDiv, UpdatingUsernameDivFunc] = useState(false);
   const [updatingText, updatingTextFunc] = useState(null);
 
@@ -73,14 +72,6 @@ export default function Account() {
       .catch((error) => {
       console.log('Error getting document:', error);
     });
-        // Retrieve ID token
-        user.getIdToken(/* forceRefresh */ true)
-          .then((idToken) => {
-            setIdToken(idToken);
-          })
-          .catch((error) => {
-            console.error('Error getting ID token:', error);
-          });
       } else {
         // No user signed in
         setUserEmail(null);
