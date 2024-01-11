@@ -91,13 +91,13 @@ export default function Login() {
         }
     }, []);
 
-    function handleResetPassword(auth, actionCode, continueUrl, lang) {
+    function handleResetPassword(auth, actionCode) {
         console.log("handleResetPassword func");
 
         verifyPasswordResetCode(auth, actionCode).then((email) => {
             console.log("ready for new password. requesting email is: " + email)
             confirmPasswordReset(auth, actionCode, password2)
-            .then((resp) => {
+            .then(() => {
                 console.log("Password Changed");
                         setDefaultDiv(false);
                         setPasswordSuccessDiv(true);

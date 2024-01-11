@@ -18,7 +18,7 @@ function handleSignInWithEmailLink() {
         }
         // The client SDK will parse the code from the link for you.
         signInWithEmailLink(auth, email, window.location.href)
-            .then((result) => {
+            .then(() => {
                 window.localStorage.removeItem('emailForSignIn');
                 window.location.href = domain; // Change '/' to your home page URL
             })
