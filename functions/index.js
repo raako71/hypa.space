@@ -84,9 +84,16 @@ exports.deleteUserDocument = functions.auth.user().onDelete(async (user) => {
   const {uid} = user;
 
   try {
+    const userDocRef = admin.firestore().collection("users").doc("allusers");
+    const userDocRef2 = admin.firestore().collection("users").doc(uid);
+    const docSnapshot2 = await userDocRef2.get();
+    const existingUsername = docSnapshot2.data().username;
+    await userDocRef.update({
+      [existingUsername]: admin.firestore.FieldValue.delete(),
+    });
     await admin.firestore().collection("users").doc(uid).delete();
-    console.log("User document deleted for UID:", uid);
+    console.log("User data deleted for UID:", uid);
   } catch (error) {
-    console.error("Error deleting user document:", error);
+    console.error("Error deleting user data:", error);
   }
 });
