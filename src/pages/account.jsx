@@ -15,7 +15,7 @@ const actionCodeSettings = {
 export default function Account() {
 
   const [userEmail, setUserEmail] = useState(null);
-  const [userName, setUserName] = useState("empty");
+  const [userName, setUserName] = useState("not set");
   const [userVer, setUserVer] = useState(null);
   const [verifyLink, showVerify] = useState(false);
   const [emailSent, showEmailSent] = useState(false);
@@ -62,7 +62,7 @@ export default function Account() {
         if (docSnapshot.exists()) {
           // Access the username field from the document data
           const username = docSnapshot.data().username;
-          setUserName(username);
+          if(username != null) setUserName(username);
         } else {
           console.log('No such document!');
         }
@@ -133,7 +133,9 @@ export default function Account() {
     UpdatingUsernameDivFunc(false);
     setUserName(newUsername);
       } else {
-          console.error('Failed to call secured function:', response.statusText);
+        data = await response.text();
+          // Process the response data from your secured function
+          console.error('Failed to call secured function:', data);
           showusernameDiv(true);
           UpdatingUsernameDivFunc(true);
           updatingTextFunc("error: " + data);
