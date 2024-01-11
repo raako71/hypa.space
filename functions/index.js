@@ -26,7 +26,7 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
       // Check if the username already exists in Firestore
       const userDocRef = admin.firestore().collection("users").doc("allusers");
       const docSnapshot = await userDocRef.get();
-      if (docSnapshot.exists && docSnapshot.data()[username]) {
+      if (docSnapshot.exists && docSnapshot.data()[usernameL]) {
         res.status(409).send("Username already exists");
         return;
       }
@@ -35,18 +35,25 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
         console.error("No userID Sent");
         return;
       }
-      // Write the validated username to Firestore
-      await userDocRef.update({
-        [usernameL]: userID,
-        // Add other fields if needed
-      });
 
       // Get existing username from user document
       const userDocRef2 = admin.firestore().collection("users").doc(userID);
       const docSnapshot2 = await userDocRef2.get();
       let existingUsername;
       if (docSnapshot2.exists) {
-        existingUsername = docSnapshot2.data().username;
+        if ("username" in docSnapshot2.data()) {
+          existingUsername = docSnapshot2.data().username;
+          if (userID !== docSnapshot.data()[existingUsername]) {
+            console.error("username mismatch in firestore. " +
+           existingUsername + "doesn't match up.");
+            res.status(500).send("Well thats weird.");
+            return;
+          }
+        } else {
+          console.error("username deleted from personal document.");
+          res.status(500).send("Well thats weird.");
+          return;
+        }
         await userDocRef.update({
           [existingUsername]: admin.firestore.FieldValue.delete(),
         });
@@ -57,10 +64,13 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
         await userDocRef2.set({
           username: usernameL,
         });
-        console.error("Had to create user document");
+        console.log("Had to create user document");
       }
-
-
+      // Write the validated username to Firestore
+      await userDocRef.update({
+        [usernameL]: userID,
+      // Add other fields if needed
+      });
       res.status(200).send("Username successfully added to Firestore");
     } catch (error) {
       console.error(error);
