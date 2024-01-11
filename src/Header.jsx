@@ -17,7 +17,7 @@ function Header({ isLoggedIn }) {
 
     return (
         <header>
-            <h1>hypa.space</h1>
+            <h1><a href={domain}>hypa.space</a></h1>
             <nav className="navbar">
                 <a href={domain}>Home</a>
                 {isLoggedIn ? (

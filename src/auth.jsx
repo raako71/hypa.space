@@ -4,6 +4,7 @@ import {
     sendPasswordResetEmail, sendSignInLinkToEmail
 } from "firebase/auth";
 import { useState, useEffect } from "react";
+import {domain} from "./App";
 
 export const Auth = () => {
 
@@ -103,6 +104,11 @@ export const Auth = () => {
     const [resetDiv, resetDivFunc] = useState(false);
     const [emailSentDiv, emailSentDivFunc] = useState(false);
     const [emailLinkDiv, emailLinkDivFunc] = useState(false);
+    const [isChecked, setIsChecked] = useState(false);
+
+    const handleCheckboxChange = () => {
+        setIsChecked(!isChecked);
+      };
 
     const showNewAccount = () => {
         loginDivFunc(false);
@@ -159,7 +165,7 @@ export const Auth = () => {
     
 
     const createAccount = async () => {
-        if (isValidPassword2 && isValidEmail) {
+        if (isValidPassword2 && isValidEmail && isChecked) {
             try {
                 await createUserWithEmailAndPassword(auth, email, password1);
             } catch (err) {
@@ -221,7 +227,13 @@ export const Auth = () => {
             )}
 
             {createAccountDiv && (
+                <>
+                <p>
+                <input type="checkbox" checked={isChecked} onChange={handleCheckboxChange}/>
+                Agree with <a href={`${domain}/terms`} target="_blank" rel="noopener noreferrer">Terms and Conditions.</a>
+                </p>
                 <button onClick={createAccount}>Create account</button>
+                </>
             )}
 
             {resetDiv && (<button onClick={passwordResetFunction}>Send password reset email link</button>)}
