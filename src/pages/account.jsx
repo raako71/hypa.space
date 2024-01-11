@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import {
-  onAuthStateChanged, sendEmailVerification, 
-  updateProfile
+import {  onAuthStateChanged, sendEmailVerification
 } from 'firebase/auth';
-import { auth } from "../firebase-config"
+import { auth, db } from "../firebase-config"
 import "../checkbox.css"
+import { doc, getDoc } from 'firebase/firestore/lite';
 
 const actionCodeSettings = {
   url: 'http://localhost:5173/account',
@@ -15,16 +14,16 @@ const actionCodeSettings = {
 
 export default function Account() {
 
-
-
   const [userEmail, setUserEmail] = useState(null);
-  const [userName, setUserName] = useState(null);
+  const [userName, setUserName] = useState("empty");
   const [userVer, setUserVer] = useState(null);
   const [verifyLink, showVerify] = useState(false);
   const [emailSent, showEmailSent] = useState(false);
   const [usernameDiv, showusernameDiv] = useState(true);
   const [UpdateUsernameDiv, showUpdateUsernameDiv] = useState(false);
   const [idToken, setIdToken] = useState(null);
+  const [UpdatingUsernameDiv, UpdatingUsernameDivFunc] = useState(false);
+  const [updatingText, updatingTextFunc] = useState(null);
 
   const showEmailSentFunction = () => {
     showEmailSent(true);
@@ -43,22 +42,34 @@ export default function Account() {
   let userVerificationText = userVer ? "Yes." : "No.";
 
   useEffect(() => {
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is signed in, get the email
         setUserEmail(user.email);
-        setUserName(user.displayName);
+        //setUserName(user.displayName);
         setUserVer(user.emailVerified);
         if (!user.emailVerified) {
           showVerify(true); // Show verification UI
         } else {
           showVerify(false); // Hide verification UI
         }
-        if (user.displayName === null) {
-          setUserName("unassigned");
-
+        // Get the username from the Firestore /users/{userID} path
+    const userID = user.uid;
+    // Assuming you have a reference to the user's document
+    const userDocRef = doc(db, 'users', userID);
+    getDoc(userDocRef)
+      .then((docSnapshot) => {
+        if (docSnapshot.exists()) {
+          // Access the username field from the document data
+          const username = docSnapshot.data().username;
+          setUserName(username);
+        } else {
+          console.log('No such document!');
         }
+      })
+      .catch((error) => {
+      console.log('Error getting document:', error);
+    });
         // Retrieve ID token
         user.getIdToken(/* forceRefresh */ true)
           .then((idToken) => {
@@ -67,7 +78,6 @@ export default function Account() {
           .catch((error) => {
             console.error('Error getting ID token:', error);
           });
-
       } else {
         // No user signed in
         setUserEmail(null);
@@ -76,13 +86,10 @@ export default function Account() {
       }
     });
 
-
-
-
     return () => {
       unsubscribe(); // Cleanup the listener on component unmount
     };
-  }, []);
+  }, [userName]);
 
   const updateUsernamelink = async () => {
     showusernameDiv(false);
@@ -93,38 +100,53 @@ export default function Account() {
     e.preventDefault(); // Prevent the default behavior of the link click
     const newUsernameInput = document.getElementById('newUsername');
     const newUsername = newUsernameInput.value;
-    updateProfile(auth.currentUser, {
-      displayName: newUsername
-    }).then(() => {
-      console.log("Username updated successfully!");
-      // ...
-    }).catch((error) => {
-      console.error("Error updating username:", error.message);
-    });
-  };
 
-  const testAuth = async () => {
+    showusernameDiv(false);
+    showUpdateUsernameDiv(false);
+
+    UpdatingUsernameDivFunc(true);
+    updatingTextFunc("Updating Username to: " + newUsername);
     try {
-      const cloudFunctionURL = 'https://us-central1-hypa-space.cloudfunctions.net/securedFunction';
-      const response = await fetch(cloudFunctionURL, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${idToken}`
-        }
+      const user = auth.currentUser; // Retrieve the current authenticated user
+      if (!user) {
+          console.error('No user is currently signed in');
+          // Handle the case when no user is signed in
+          return;
+      }
+      const idToken = await user.getIdToken(); // Get the ID token of the current user
+      const response = await fetch('https://us-central1-hypa-space.cloudfunctions.net/writeUsernameToFirestore', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}` // Include the ID token in the Authorization header
+          },
+          body: JSON.stringify({ username: newUsername, userID: user.uid })
       });
-      console.log('Response from securedFunction:', response); // Log the response
-      // Attempt to parse the response as JSON
-      const data = await response.text();
-      console.log('Parsed JSON data:', data); // Log the parsed data
-      // Handle the response data if needed
-      // ...
-    } catch (error) {
-      console.error('Error testing authentication:', error);
-      // Display an error message or take appropriate action
-    }
+      let data;
+      if (response.ok) {
+          data = await response.text();
+          // Process the response data from your secured function
+          console.log('Response from secured function:', data);
+          // Perform other actions based on the response
+          showusernameDiv(true);
+    showUpdateUsernameDiv(false);
+    UpdatingUsernameDivFunc(false);
+    setUserName(newUsername);
+      } else {
+          console.error('Failed to call secured function:', response.statusText);
+          showusernameDiv(true);
+          UpdatingUsernameDivFunc(true);
+          updatingTextFunc("error: " + data);
+          // Handle the case where the request to the secured function fails
+      }
+  } catch (error) {
+    showusernameDiv(true);
+    UpdatingUsernameDivFunc(true);
+    updatingTextFunc(error);
+    console.error('Error:', error);
+      // Handle other potential errors
+  }
   };
-
-
 
 
   return (
@@ -148,6 +170,9 @@ export default function Account() {
             &nbsp;&nbsp;<a href='#' onClick={updateUsernameFunc}>Save Username</a>
           </p>
         )}
+        {UpdatingUsernameDiv && (
+          <p style={{ color: 'red' }}>{updatingText}</p>
+        )}
         <p>email: {userEmail}</p>
         <p>seller mode:&nbsp;&nbsp;
           <label className="switch">
@@ -155,7 +180,6 @@ export default function Account() {
             <span className="slider round"></span>
           </label>
         </p>
-        <p><a href="#" onClick={testAuth}>check auth</a></p>
       </div>
     </>
   )
