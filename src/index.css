@@ -66,6 +66,11 @@ h1{
  
 }
 
+.seller{
+  background-color: rgba(0, 181, 33, 0.5);
+    padding: 1px 15px;
+    margin: 10px 0; 
+}
 footer{ 
   min-height:50px; 
   background: rgba(0, 181, 33, 0.726);
