@@ -71,6 +71,9 @@ h1{
     padding: 1px 15px;
     margin: 10px 0; 
 }
+.seller button{
+  margin-bottom: 15px;
+}
 footer{ 
   min-height:50px; 
   background: rgba(0, 181, 33, 0.726);
