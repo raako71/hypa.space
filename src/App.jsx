@@ -9,6 +9,8 @@ import {auth} from "./firebase-config"
 import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import AutoCompleteAddress from "./pages/map"
+import Search from "./pages/search"
 
 export const domain = 'http://localhost:5173'; // Replace with your domain
 
@@ -35,6 +37,8 @@ function App() {
       <Header isLoggedIn={isLoggedIn} />
       <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/map" element={<AutoCompleteAddress />} />
+      <Route path="/search" element={<Search />} />
       <Route
         path="/login"
         element={isLoggedIn ? <Navigate to="/" /> : <Login />}
