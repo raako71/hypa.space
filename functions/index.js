@@ -45,7 +45,7 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
           existingUsername = docSnapshot2.data().username;
           if (userID !== docSnapshot.data()[existingUsername]) {
             console.error("username mismatch in firestore. " +
-           existingUsername + "doesn't match up.");
+              existingUsername + "doesn't match up.");
             res.status(500).send("Well thats weird.");
             return;
           }
@@ -70,7 +70,7 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
       // Write the validated username to Firestore
       await userDocRef.update({
         [usernameL]: userID,
-      // Add other fields if needed
+        // Add other fields if needed
       });
       res.status(200).send("Username successfully added to Firestore");
     } catch (error) {
@@ -96,4 +96,35 @@ exports.deleteUserDocument = functions.auth.user().onDelete(async (user) => {
   } catch (error) {
     console.error("Error deleting user data:", error);
   }
+});
+
+
+exports.getCategories = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      // Verify user authentication
+      const {authorization} = req.headers;
+      if (!authorization || !authorization.startsWith("Bearer ")) {
+        res.status(403).send("Unauthorized");
+        return;
+      }
+      // Fetch categories from Firestore
+      const categoriesCollectionRef =
+       admin.firestore().collection("categories");
+      const categoriesSnapshot = await categoriesCollectionRef.get();
+
+      const categories = {};
+      categoriesSnapshot.forEach((doc) => {
+        const categoryId = doc.id;
+        const categoryData = doc.data();
+        categories[categoryId] = categoryData;
+      });
+
+      // Send categories in the response
+      res.status(200).json({categories});
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({error: "Internal Server Error"});
+    }
+  });
 });

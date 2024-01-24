@@ -29,12 +29,18 @@ h1{
   text-align: center;
   position: relative; /* Required for absolute positioning of submenu */
 }
-.navbar a:hover{
+.navbar a:hover,
+.navbar a:active,
+.navbar a:focus,
+.navbar a.active{
   background-color: rgba(0, 255, 47, 0.612);
 }
 .has-submenu:hover .submenu {
   opacity: 1;
   pointer-events: auto;
+}
+.error{
+  color: rgb(255, 0, 0);
 }
 .has-submenu{
   position: relative;
