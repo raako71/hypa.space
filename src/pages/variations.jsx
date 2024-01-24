@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 const Variations = ({ variations: propVariations, setVariations }) => {
@@ -89,7 +89,7 @@ const Variations = ({ variations: propVariations, setVariations }) => {
         ))}
       </div>
 
-      <button onClick={handleAddVariation} style={{ width: '200px' }}>Add Variation</button>
+      <button onClick={handleAddVariation} style={{ width: '150px' }}>Add Variation</button>
       {currentVariationError && <p className="error">{currentVariationError}</p>}
 
       {propVariations.map((variation, index) => (
