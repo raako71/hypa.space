@@ -1,6 +1,10 @@
 import CategorySelector from "./categorySelector";
 import Variations from "./variations";
 import { useEffect, useState } from 'react';
+import { auth, db } from "../firebase-config"
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
+import { onAuthStateChanged } from 'firebase/auth';
+
 
 const NewProd = () => {
   const [productName, setProductName] = useState("");
@@ -10,6 +14,7 @@ const NewProd = () => {
   const [variations, setVariations] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [userID, setUserID] = useState(null);
 
   const handleProductDescriptionChange = (event) => {
     const newDescription = event.target.value;
@@ -48,16 +53,79 @@ const NewProd = () => {
     }
   };
 
-  const handlePrintToConsole = () => {
-    console.log("Document:", {
-      productName,
-      productDescription,
-      variations,
-      selectedCategory,
-      selectedSubcategory,
-      // Include other relevant data
+
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userID = user.uid;
+        setUserID(userID);
+      }
     });
+
+    return () => {
+      unsubscribe(); // Cleanup the listener on component unmount
+    };
+  }, [userID]);
+
+
+
+
+
+
+
+  const handleSaveProduct = async () => {
+    try {
+      // Update the user document with the category tree information
+      const userDocRef = doc(db, 'users', userID);
+      await updateDoc(userDocRef, {
+        categoryTree: {
+          [selectedCategory]: {
+            [selectedSubcategory]: true,
+          },
+        },
+      });
+
+      // Save product data
+      const productDocumentName = `${productName}_${userID}`;
+      const userProductRef = doc(db, 'products', productDocumentName);
+      const productData = {
+        productName,
+        productDescription,
+        variations,
+        category: {
+          [selectedCategory]: {
+            [selectedSubcategory]: true,
+          },
+        },
+        userId: userID, // Add userId to the product document
+        // Include other relevant data
+      };
+
+      const docSnapshot = await getDoc(userProductRef);
+
+      if (docSnapshot.exists()) {
+        console.log('Product exists!');
+        // Ask for confirmation before updating
+        const shouldUpdate = window.confirm('A product with this name already exists. Do you want to update it?');
+
+        if (shouldUpdate) {
+          // If the user confirms, update the document
+          await updateDoc(userProductRef, productData);
+          console.log('Product updated successfully!');
+        } else {
+          console.log('Update cancelled by user.');
+        }
+      } else {
+        // If the document doesn't exist, create a new one
+        await setDoc(userProductRef, productData);
+        console.log('Product saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving product:', error);
+    }
   };
+
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
@@ -98,7 +166,7 @@ const NewProd = () => {
         setSelectedSubcategory={setSelectedSubcategory}
       />
 
-      <button onClick={handlePrintToConsole}>Print Product to Console</button>
+      <button onClick={handleSaveProduct} style={{ width: 'fit-content', margin: "8px" }} >Save</button>
     </div>
   );
 };
