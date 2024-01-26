@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 const ImageModification = ({ handleUpload }) => {
   const [previewImages, setPreviewImages] = useState([]);
-  const [processedImages, setProcessedImages] = useState([]);
+  const [processedImages, setProcessedImages] = useState({ scaled: [], unscaled: [] });
 
   const onDrop = (acceptedFiles) => {
     const maxImages = 10;
@@ -19,9 +19,16 @@ const ImageModification = ({ handleUpload }) => {
   const processImage = (index) => {
     const editor = editorsRef.current[index];
     if (editor) {
-      const canvas = editor.getImage();
-      // Save the processed image to state
-      setProcessedImages([...processedImages, canvas.toDataURL()]);
+      const canvasScaled = editor.getImageScaledToCanvas();
+      const canvasUnscaled = editor.getImage();
+      
+      setProcessedImages(prevState => ({
+        scaled: [...prevState.scaled, canvasScaled.toDataURL()],
+        unscaled: [...prevState.unscaled, canvasUnscaled.toDataURL()]
+      }));
+
+      // Remove the processed image from previewImages
+      setPreviewImages(previewImages.filter((_, i) => i !== index));
     }
   };
 
@@ -51,12 +58,12 @@ const ImageModification = ({ handleUpload }) => {
         }}
       >
         {previewImages.map((file, index) => (
-          <div key={index} style={{ margin: "10px", width: "300px", height: "400px", overflow: "hidden", position: "relative" }}>
+          <div key={index} style={{ margin: "10px", width: "400px", height: "350px", overflow: "hidden", position: "relative" }}>
             <AvatarEditor
               ref={(editor) => (editorsRef.current[index] = editor)}
               image={file}
-              width={300}
-              height={300}
+              width={400}
+              height={400}
               border={50}
               color={[255, 255, 255, 0.6]}
               scale={1}
@@ -78,8 +85,13 @@ const ImageModification = ({ handleUpload }) => {
         ))}
       </div>
       <div>
-        {processedImages.map((image, index) => (
-          <img key={index} src={image} alt={`Processed Image ${index}`} style={{ margin: "10px", width: "300px" }} />
+        <h3>Scaled Images</h3>
+        {processedImages.scaled.map((image, index) => (
+          <img key={index} src={image} alt={`Scaled Image ${index}`} style={{ margin: "10px", width: "350px" }} />
+        ))}
+        <h3>Unscaled Images</h3>
+        {processedImages.unscaled.map((image, index) => (
+          <img key={index} src={image} alt={`Unscaled Image ${index}`} style={{ margin: "10px", width: "300px" }} />
         ))}
       </div>
     </div>
