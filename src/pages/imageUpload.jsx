@@ -19,11 +19,11 @@ const ImageModification = ({ handleUpload }) => {
   const processImage = (index) => {
     const editor = editorsRef.current[index];
     if (editor) {
-      const canvasScaled = editor.getImageScaledToCanvas();
+      const canvasScaledSmall = editor.getImageScaledToCanvas();
       const canvasUnscaled = editor.getImage();
       
       setProcessedImages(prevState => ({
-        scaled: [...prevState.scaled, canvasScaled.toDataURL()],
+        scaled: [...prevState.scaled, canvasScaledSmall.toDataURL()],
         unscaled: [...prevState.unscaled, canvasUnscaled.toDataURL()]
       }));
 
