@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 
 const ImageModification = ({ handleUpload }) => {
   const [previewImages, setPreviewImages] = useState([]);
+  const [processedImages, setProcessedImages] = useState([]);
 
   const onDrop = (acceptedFiles) => {
     const maxImages = 10;
@@ -15,7 +16,17 @@ const ImageModification = ({ handleUpload }) => {
     setPreviewImages([...previewImages, ...acceptedFiles]);
   };
 
+  const processImage = (index) => {
+    const editor = editorsRef.current[index];
+    if (editor) {
+      const canvas = editor.getImage();
+      // Save the processed image to state
+      setProcessedImages([...processedImages, canvas.toDataURL()]);
+    }
+  };
+
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
+  const editorsRef = React.useRef([]);
 
   return (
     <div>
@@ -40,8 +51,9 @@ const ImageModification = ({ handleUpload }) => {
         }}
       >
         {previewImages.map((file, index) => (
-          <div key={index} style={{ margin: "10px", width: "300px", height: "300px", overflow: "hidden" }}>
+          <div key={index} style={{ margin: "10px", width: "300px", height: "400px", overflow: "hidden", position: "relative" }}>
             <AvatarEditor
+              ref={(editor) => (editorsRef.current[index] = editor)}
               image={file}
               width={300}
               height={300}
@@ -50,7 +62,24 @@ const ImageModification = ({ handleUpload }) => {
               scale={1}
               rotate={0}
             />
+            <button
+              style={{
+                position: "absolute",
+                bottom: "10px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                zIndex: "999",
+              }}
+              onClick={() => processImage(index)}
+            >
+              Process Image
+            </button>
           </div>
+        ))}
+      </div>
+      <div>
+        {processedImages.map((image, index) => (
+          <img key={index} src={image} alt={`Processed Image ${index}`} style={{ margin: "10px", width: "300px" }} />
         ))}
       </div>
     </div>
