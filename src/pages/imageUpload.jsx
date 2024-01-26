@@ -16,20 +16,37 @@ const ImageModification = ({ handleUpload }) => {
     setPreviewImages([...previewImages, ...acceptedFiles]);
   };
 
-  const processImage = (index) => {
+  const processImage = async (index) => {
     const editor = editorsRef.current[index];
     if (editor) {
       const canvasScaledSmall = editor.getImageScaledToCanvas();
       const canvasUnscaled = editor.getImage();
+      const canvasUnscaledMax1000 = await scaleImage(canvasUnscaled, 1000);
       
       setProcessedImages(prevState => ({
         scaled: [...prevState.scaled, canvasScaledSmall.toDataURL()],
-        unscaled: [...prevState.unscaled, canvasUnscaled.toDataURL()]
+        unscaled: [...prevState.unscaled, canvasUnscaledMax1000.toDataURL()]
       }));
 
       // Remove the processed image from previewImages
       setPreviewImages(previewImages.filter((_, i) => i !== index));
     }
+  };
+
+  const scaleImage = (imageData, maxWidth) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const scaleFactor = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scaleFactor;
+        canvas.height = img.height * scaleFactor;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas);
+      };
+      img.src = imageData.toDataURL();
+    });
   };
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
@@ -91,7 +108,7 @@ const ImageModification = ({ handleUpload }) => {
         ))}
         <h3>Unscaled Images</h3>
         {processedImages.unscaled.map((image, index) => (
-          <img key={index} src={image} alt={`Unscaled Image ${index}`} style={{ margin: "10px", width: "300px" }} />
+          <img key={index} src={image} alt={`Unscaled Image ${index}`} style={{ margin: "10px", maxWidth: "1000px" }} />
         ))}
       </div>
     </div>
