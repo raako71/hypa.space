@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import { useDropzone } from 'react-dropzone';
 import PropTypes from 'prop-types';
@@ -13,11 +13,6 @@ const ImageModification = ({ handleUpload }) => {
       return;
     }
     setPreviewImages([...previewImages, ...acceptedFiles]);
-  };
-
-  const handleUploadClick = () => {
-    // Invoke the handleUpload function and pass the cropped images
-    handleUpload(previewImages);
   };
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
@@ -36,7 +31,7 @@ const ImageModification = ({ handleUpload }) => {
         }}
       >
         <input {...getInputProps()} />
-        <p>Drag 'n' drop some files here, or click to select files (up to 10 images)</p>
+        <p>Drag &apos;n&apos; drop some files here, or click to select files (up to 10 images)</p>
       </div>
       <div
         style={{
@@ -58,7 +53,6 @@ const ImageModification = ({ handleUpload }) => {
           </div>
         ))}
       </div>
-      <button onClick={handleUploadClick}>Upload Images</button>
     </div>
   );
 };
