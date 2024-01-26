@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { auth, db } from "../firebase-config"
 import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
 import { onAuthStateChanged } from 'firebase/auth';
-
+import ImageModification from "./imageUpload";
 
 const NewProd = () => {
   const [productName, setProductName] = useState("");
@@ -15,6 +15,11 @@ const NewProd = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [userID, setUserID] = useState(null);
+  const [uploadedImages, setUploadedImages] = useState([]);
+
+  const handleUpload = (images) => {
+    setUploadedImages(images);
+  };
 
   const handleProductDescriptionChange = (event) => {
     const newDescription = event.target.value;
@@ -53,8 +58,6 @@ const NewProd = () => {
     }
   };
 
-
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -67,12 +70,6 @@ const NewProd = () => {
       unsubscribe(); // Cleanup the listener on component unmount
     };
   }, [userID]);
-
-
-
-
-
-
 
   const handleSaveProduct = async () => {
     try {
@@ -126,7 +123,6 @@ const NewProd = () => {
     }
   };
 
-
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <h1>Add New Product</h1>
@@ -149,6 +145,19 @@ const NewProd = () => {
             value={productDescription}
             onChange={handleProductDescriptionChange}
           />
+        </div>
+        <ImageModification handleUpload={handleUpload} />
+        <h2>Uploaded Images</h2>
+        <div>
+          {uploadedImages.map((image, index) => (
+            <img key={index} src={URL.createObjectURL(image)} alt={`Uploaded Image ${index + 1}`} />
+          ))}
+        </div>
+        <div>
+          {/* Display uploaded images */}
+          {uploadedImages.map((imageUrl, index) => (
+            <img key={index} src={imageUrl} alt={`Uploaded Image ${index + 1}`} style={{ width: '300px', height: '300px', margin: '10px' }} />
+          ))}
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {productDescriptionError && (
