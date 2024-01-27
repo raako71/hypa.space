@@ -1,4 +1,4 @@
-# React + Vite
+# PHIL Web App. Built in React + Vite
 10 Jan.
 Update Username fully working. 
 -Cloud functions to validate unique username and auth for API. 
