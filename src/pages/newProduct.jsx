@@ -23,8 +23,11 @@ const NewProd = () => {
 
   const handleProductDescriptionChange = (event) => {
     const newDescription = event.target.value;
+    // Check for potentially harmful content
+    if (containsHarmfulContent(newDescription)) {
+      throw new Error("Product description contains disallowed content.");
+    }
     setProductDescription(newDescription);
-
     // Validate product description only if it's not empty
     if (newDescription.trim() !== '') {
       if (newDescription.length > 1000) {
@@ -36,6 +39,11 @@ const NewProd = () => {
       // Clear the error message if the field is empty
       setProductDescriptionError("");
     }
+  };
+  
+  const containsHarmfulContent = (description) => {
+    const harmfulPatterns = /<\s*script|<\s*iframe|on\w+\s*=/i;
+    return harmfulPatterns.test(description);
   };
 
   const handleProductNameChange = (event) => {
@@ -73,6 +81,9 @@ const NewProd = () => {
 
   const handleSaveProduct = async () => {
     try {
+      if (productNameError !== "") {
+        throw new Error("Product name is invalid.");
+      }
       // Update the user document with the category tree information
       const userDocRef = doc(db, 'users', userID);
       await updateDoc(userDocRef, {
@@ -148,7 +159,7 @@ const NewProd = () => {
         </div>
         <ImageModification handleProcessedImagesUpload={handleProcessedImagesUpload} />
         <div>
-        <h3>PAssed Images</h3>
+        <h3>Processed Images</h3>
         {passedImages.scaled?.length > 0 && passedImages.scaled.map((image, index) => (
     <img key={index} src={image} alt={`Scaled Image ${index}`} style={{ margin: "10px", width: "350px" }} />
   ))}
