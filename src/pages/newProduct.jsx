@@ -5,6 +5,7 @@ import { auth, db } from "../firebase-config"
 import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
 import { onAuthStateChanged } from 'firebase/auth';
 import ImageModification from "./imageUpload";
+import { getStorage, ref, uploadString } from 'firebase/storage';
 
 const NewProd = () => {
   const [productName, setProductName] = useState("");
@@ -20,22 +21,14 @@ const NewProd = () => {
   const handleProcessedImagesUpload = (images) => {
     const scaledDataURLs = images.scaled.toDataURL();
     const unscaledDataURLs = images.unscaled.toDataURL();
-
-    // Get the current images from passedImages state
     const currentScaledImages = [...passedImages.scaled];
     const currentUnscaledImages = [...passedImages.unscaled];
-
-    // Append new images only if there are less than 10 images in each array
     if (currentScaledImages.length < 10) {
       currentScaledImages.push(scaledDataURLs);
     }
-
     if (currentUnscaledImages.length < 10) {
-      console.log("currentUnscaledImages.length = " + currentUnscaledImages.length)
       currentUnscaledImages.push(unscaledDataURLs);
     }
-
-    // Update passedImages state with the new images
     setPassedImages({
       scaled: currentScaledImages,
       unscaled: currentUnscaledImages
@@ -103,11 +96,42 @@ const NewProd = () => {
     };
   }, [userID]);
 
+  const uploadImagesToStorage = async (images, userID, productDocumentName) => {
+    const storage = getStorage();
+    const storageRef = ref(storage, `users/${userID}/${productDocumentName}`);
+
+    const uploadImage = async (imageData, imageName) => {
+      const imageRef = ref(storageRef, imageName);
+      await uploadString(imageRef, imageData, 'data_url');
+    };
+
+    const uploadImages = async (imageURLs, prefix) => {
+      await Promise.all(
+        imageURLs.map(async (imageURL, index) => {
+          const imageName = `${prefix}${index}`;
+          await uploadImage(imageURL, imageName);
+        })
+      );
+    };
+
+    try {
+      await Promise.all([
+        uploadImages(images.scaled, 'S'),
+        uploadImages(images.unscaled, 'L')
+      ]);
+      console.log('Images uploaded successfully.');
+    } catch (error) {
+      console.error('Error uploading images:', error);
+    }
+  };
+
+
   const handleSaveProduct = async () => {
     try {
       if (productNameError !== "") {
         throw new Error("Product name is invalid.");
       }
+
       // Update the user document with the category tree information
       const userDocRef = doc(db, 'users', userID);
       await updateDoc(userDocRef, {
@@ -118,8 +142,30 @@ const NewProd = () => {
         },
       });
 
-      // Save product data
+      // Create user directory and product subdirectory in Firebase Storage
+      const storage = getStorage();
+      const userDirectoryRef = ref(storage, `users/${userID}`);
+      await uploadString(userDirectoryRef, '');
+
+      // Define productDocumentName
       const productDocumentName = `${productName}_${userID}`;
+
+      const productDirectoryRef = ref(storage, `users/${userID}/${productDocumentName}`);
+      await uploadString(productDirectoryRef, '');
+
+      try {
+        // Upload images to the product directory
+        await uploadImagesToStorage(passedImages, userID, productDocumentName);
+      
+        // Clear passedImages state after successful upload
+        setPassedImages({ scaled: [], unscaled: [] });
+      } catch (error) {
+        console.error('Error uploading images:', error);
+        // Handle error if upload fails
+      }
+      
+
+      // Save product data
       const userProductRef = doc(db, 'products', productDocumentName);
       const productData = {
         productName,
