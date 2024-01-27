@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 const Variations = ({ variations: propVariations, setVariations }) => {
@@ -60,6 +60,9 @@ const Variations = ({ variations: propVariations, setVariations }) => {
           value={variationName}
           onChange={handleVariationNameChange}
         />
+        {variationName && (
+          <p style={{ color: 'red', marginLeft: '8px', flexShrink: 0 }}>Click save to add the variation</p>
+        )}
       </div>
 
       <div style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
