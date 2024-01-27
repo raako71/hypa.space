@@ -15,10 +15,10 @@ const NewProd = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [userID, setUserID] = useState(null);
-  const [uploadedImages, setUploadedImages] = useState([]);
+  const [passedImages, setPassedImages] = useState([]);
 
-  const handleUpload = (images) => {
-    setUploadedImages(images);
+  const handleProcessedImagesUpload = (images) => {
+    setPassedImages(images);
   };
 
   const handleProductDescriptionChange = (event) => {
@@ -146,19 +146,14 @@ const NewProd = () => {
             onChange={handleProductDescriptionChange}
           />
         </div>
-        <ImageModification handleUpload={handleUpload} />
-        <h2>Uploaded Images</h2>
+        <ImageModification handleProcessedImagesUpload={handleProcessedImagesUpload} />
         <div>
-          {uploadedImages.map((image, index) => (
-            <img key={index} src={URL.createObjectURL(image)} alt={`Uploaded Image ${index + 1}`} />
-          ))}
-        </div>
-        <div>
-          {/* Display uploaded images */}
-          {uploadedImages.map((imageUrl, index) => (
-            <img key={index} src={imageUrl} alt={`Uploaded Image ${index + 1}`} style={{ width: '300px', height: '300px', margin: '10px' }} />
-          ))}
-        </div>
+        <h3>PAssed Images</h3>
+        {passedImages.scaled?.length > 0 && passedImages.scaled.map((image, index) => (
+    <img key={index} src={image} alt={`Scaled Image ${index}`} style={{ margin: "10px", width: "350px" }} />
+  ))}
+      </div>
+        
         <div style={{ display: "flex", flexDirection: "column" }}>
           {productDescriptionError && (
             <p className="error" style={{ marginLeft: "8px", display: "block", order: 1 }}>

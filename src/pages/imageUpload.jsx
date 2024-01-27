@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import { useDropzone } from 'react-dropzone';
 import PropTypes from 'prop-types';
 
-const ImageModification = ({ handleUpload }) => {
+const ImageModification = ({ handleProcessedImagesUpload }) => {
   const [previewImages, setPreviewImages] = useState([]);
   const [processedImages, setProcessedImages] = useState({ scaled: [], unscaled: [] });
 
+  const passImages = async () => {
+    handleProcessedImagesUpload(processedImages);
+  };
+  
   const onDrop = (acceptedFiles) => {
     const maxImages = 10;
     if (acceptedFiles.length + previewImages.length > maxImages) {
@@ -32,6 +36,10 @@ const ImageModification = ({ handleUpload }) => {
       setPreviewImages(previewImages.filter((_, i) => i !== index));
     }
   };
+  
+  useEffect(() => {
+    passImages();
+  }, [processedImages]);
 
   const scaleImage = (imageData, maxWidth) => {
     return new Promise((resolve) => {
@@ -124,7 +132,7 @@ const ImageModification = ({ handleUpload }) => {
 };
 
 ImageModification.propTypes = {
-  handleUpload: PropTypes.func.isRequired, // handleUpload prop is a function and is required
+  handleProcessedImagesUpload: PropTypes.func.isRequired,
 };
 
 export default ImageModification;
