@@ -15,3 +15,6 @@ Add phone number to User Account
 
 24 Jan.
 New Product works.
+
+26 Jan.
+Passing images to New Product page, with cropping and scaling. Ready to be linked to product document.
