@@ -51,13 +51,12 @@ const ImageModification = ({ handleUpload }) => {
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    accept: 'image/jpeg, image/png',
+    accept: {
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/png': ['.png'],
+    },
     acceptFunction: (file) => {
       console.log('Received file:', file);
-  
-      // Add null check and other validation logic here...
-  
-      return isValidType;
     },
   });
   
