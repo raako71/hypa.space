@@ -15,11 +15,35 @@ const NewProd = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [userID, setUserID] = useState(null);
-  const [passedImages, setPassedImages] = useState([]);
+  const [passedImages, setPassedImages] = useState({ scaled: [], unscaled: [] });
 
   const handleProcessedImagesUpload = (images) => {
-    setPassedImages(images);
+    const scaledDataURLs = images.scaled.toDataURL();
+    const unscaledDataURLs = images.unscaled.toDataURL();
+
+    // Get the current images from passedImages state
+    const currentScaledImages = [...passedImages.scaled];
+    const currentUnscaledImages = [...passedImages.unscaled];
+
+    // Append new images only if there are less than 10 images in each array
+    if (currentScaledImages.length < 10) {
+      currentScaledImages.push(scaledDataURLs);
+    }
+
+    if (currentUnscaledImages.length < 10) {
+      console.log("currentUnscaledImages.length = " + currentUnscaledImages.length)
+      currentUnscaledImages.push(unscaledDataURLs);
+    }
+
+    // Update passedImages state with the new images
+    setPassedImages({
+      scaled: currentScaledImages,
+      unscaled: currentUnscaledImages
+    });
   };
+
+
+
 
   const handleProductDescriptionChange = (event) => {
     const newDescription = event.target.value;
@@ -40,7 +64,7 @@ const NewProd = () => {
       setProductDescriptionError("");
     }
   };
-  
+
   const containsHarmfulContent = (description) => {
     const harmfulPatterns = /<\s*script|<\s*iframe|on\w+\s*=/i;
     return harmfulPatterns.test(description);
@@ -158,13 +182,20 @@ const NewProd = () => {
           />
         </div>
         <ImageModification handleProcessedImagesUpload={handleProcessedImagesUpload} />
-        <div>
-        <h3>Processed Images</h3>
-        {passedImages.scaled?.length > 0 && passedImages.scaled.map((image, index) => (
-    <img key={index} src={image} alt={`Scaled Image ${index}`} style={{ margin: "10px", width: "350px" }} />
-  ))}
-      </div>
-        
+        {passedImages.scaled.length > 0 && (
+          <div>
+            <h3>Scaled Images</h3>
+            {passedImages.scaled.map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`Scaled Image ${index}`}
+                style={{ margin: "10px", width: "350px" }}
+              />
+            ))}
+          </div>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column" }}>
           {productDescriptionError && (
             <p className="error" style={{ marginLeft: "8px", display: "block", order: 1 }}>

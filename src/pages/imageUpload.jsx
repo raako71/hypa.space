@@ -5,11 +5,6 @@ import PropTypes from 'prop-types';
 
 const ImageModification = ({ handleProcessedImagesUpload }) => {
   const [previewImages, setPreviewImages] = useState([]);
-  const [processedImages, setProcessedImages] = useState({ scaled: [], unscaled: [] });
-
-  const passImages = async () => {
-    handleProcessedImagesUpload(processedImages);
-  };
   
   const onDrop = (acceptedFiles) => {
     const maxImages = 10;
@@ -27,14 +22,9 @@ const ImageModification = ({ handleProcessedImagesUpload }) => {
       const canvasUnscaled = editor.getImage();
       const canvasUnscaledMax1000 = await scaleImage(canvasUnscaled, 1000);
   
-      setProcessedImages(prevState => {
-        const scaledImages = prevState.scaled.length < 10 ? [...prevState.scaled, canvasScaledSmall.toDataURL()] : prevState.scaled;
-        const unscaledImages = prevState.unscaled.length < 10 ? [...prevState.unscaled, canvasUnscaledMax1000.toDataURL()] : prevState.unscaled;
-  
-        return {
-          scaled: scaledImages,
-          unscaled: unscaledImages
-        };
+      handleProcessedImagesUpload({
+        scaled: canvasScaledSmall,
+        unscaled: canvasUnscaledMax1000
       });
   
       // Remove the processed image from previewImages
@@ -42,10 +32,6 @@ const ImageModification = ({ handleProcessedImagesUpload }) => {
     }
   };
   
-  
-  useEffect(() => {
-    passImages();
-  }, [processedImages]);
 
   const scaleImage = (imageData, maxWidth) => {
     return new Promise((resolve) => {
