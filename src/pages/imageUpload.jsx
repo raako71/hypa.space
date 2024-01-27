@@ -26,16 +26,22 @@ const ImageModification = ({ handleProcessedImagesUpload }) => {
       const canvasScaledSmall = editor.getImageScaledToCanvas();
       const canvasUnscaled = editor.getImage();
       const canvasUnscaledMax1000 = await scaleImage(canvasUnscaled, 1000);
-
-      setProcessedImages(prevState => ({
-        scaled: [...prevState.scaled, canvasScaledSmall.toDataURL()],
-        unscaled: [...prevState.unscaled, canvasUnscaledMax1000.toDataURL()]
-      }));
-
+  
+      setProcessedImages(prevState => {
+        const scaledImages = prevState.scaled.length < 10 ? [...prevState.scaled, canvasScaledSmall.toDataURL()] : prevState.scaled;
+        const unscaledImages = prevState.unscaled.length < 10 ? [...prevState.unscaled, canvasUnscaledMax1000.toDataURL()] : prevState.unscaled;
+  
+        return {
+          scaled: scaledImages,
+          unscaled: unscaledImages
+        };
+      });
+  
       // Remove the processed image from previewImages
       setPreviewImages(previewImages.filter((_, i) => i !== index));
     }
   };
+  
   
   useEffect(() => {
     passImages();
@@ -90,8 +96,6 @@ const ImageModification = ({ handleProcessedImagesUpload }) => {
         style={{
           display: "flex",
           flexWrap: "wrap",
-          flexDirection: "column",
-          width: "min-content",
           textAlign:"center"
         }}
       >
@@ -119,12 +123,6 @@ const ImageModification = ({ handleProcessedImagesUpload }) => {
               </button>
             </div>
           </div>
-        ))}
-      </div>
-      <div>
-        <h3>Scaled Images</h3>
-        {processedImages.scaled.map((image, index) => (
-          <img key={index} src={image} alt={`Scaled Image ${index}`} style={{ margin: "10px", width: "350px" }} />
         ))}
       </div>
     </div>
