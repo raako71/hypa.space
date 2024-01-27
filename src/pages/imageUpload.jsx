@@ -22,7 +22,7 @@ const ImageModification = ({ handleUpload }) => {
       const canvasScaledSmall = editor.getImageScaledToCanvas();
       const canvasUnscaled = editor.getImage();
       const canvasUnscaledMax1000 = await scaleImage(canvasUnscaled, 1000);
-      
+
       setProcessedImages(prevState => ({
         scaled: [...prevState.scaled, canvasScaledSmall.toDataURL()],
         unscaled: [...prevState.unscaled, canvasUnscaledMax1000.toDataURL()]
@@ -49,7 +49,19 @@ const ImageModification = ({ handleUpload }) => {
     });
   };
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: 'image/jpeg, image/png',
+    acceptFunction: (file) => {
+      console.log('Received file:', file);
+  
+      // Add null check and other validation logic here...
+  
+      return isValidType;
+    },
+  });
+  
+  
   const editorsRef = React.useRef([]);
 
   return (
@@ -60,44 +72,45 @@ const ImageModification = ({ handleUpload }) => {
           border: "1px dashed black",
           padding: "20px",
           cursor: "pointer",
-          marginBottom: "20px",
-          display: "flex",
-          flexWrap: "wrap",
+          margin: "8px 0",
+          width: "350px",
         }}
       >
         <input {...getInputProps()} />
-        <p>Drag &apos;n&apos; drop some files here, or click to select files (up to 10 images)</p>
+        <p>Drag &apos;n&apos; drop some images here, or click to select files (up to 10 images)</p>
       </div>
       <div
         style={{
           display: "flex",
           flexWrap: "wrap",
+          flexDirection: "column",
+          width: "min-content",
+          textAlign:"center"
         }}
       >
         {previewImages.map((file, index) => (
-          <div key={index} style={{ margin: "10px", width: "400px", height: "350px", overflow: "hidden", position: "relative" }}>
+          <div key={index} style={{ margin: "10px" }}>
             <AvatarEditor
               ref={(editor) => (editorsRef.current[index] = editor)}
               image={file}
-              width={400}
-              height={400}
+              width={350}
+              height={350}
               border={50}
               color={[255, 255, 255, 0.6]}
               scale={1}
               rotate={0}
             />
-            <button
-              style={{
-                position: "absolute",
-                bottom: "10px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                zIndex: "999",
-              }}
-              onClick={() => processImage(index)}
-            >
-              Process Image
-            </button>
+            <div>
+              <button
+                style={{
+                  bottom: "10px",
+                  left: "50%",
+                }}
+                onClick={() => processImage(index)}
+              >
+                Process Image
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -105,10 +118,6 @@ const ImageModification = ({ handleUpload }) => {
         <h3>Scaled Images</h3>
         {processedImages.scaled.map((image, index) => (
           <img key={index} src={image} alt={`Scaled Image ${index}`} style={{ margin: "10px", width: "350px" }} />
-        ))}
-        <h3>Unscaled Images</h3>
-        {processedImages.unscaled.map((image, index) => (
-          <img key={index} src={image} alt={`Unscaled Image ${index}`} style={{ margin: "10px", maxWidth: "1000px" }} />
         ))}
       </div>
     </div>
