@@ -5,9 +5,9 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategoryLocal] = useState(null);
+  const [selectedCategory, setSelectedCategoryLocal] = useState('');
   const [subcategories, setSubcategories] = useState([]);
-  const [selectedSubcategory, setSelectedSubcategoryLocal] = useState(null);
+  const [selectedSubcategory, setSelectedSubcategoryLocal] = useState('');
   const [newCategory, setNewCategory] = useState('');
   const [newSubcategory, setNewSubcategory] = useState('');
   const newCategoryInputRef = useRef(null);
@@ -77,14 +77,26 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
 
   const handleCategorySelect = (category) => {
     setSelectedCategoryLocal(category);
-
+  
+    if (category === '__new_category') {
+      // Do something to handle adding a new category
+      return; // Exit early to prevent further execution of the function
+    }
+  
     if (category) {
-      setSubcategories(Object.keys(categories[category]));
-      setSelectedSubcategoryLocal(null);
+      // Check if categories is truthy before accessing its properties
+      if (categories && categories[category]) {
+        setSubcategories(Object.keys(categories[category]));
+        setSelectedSubcategoryLocal('');
+      } else {
+        console.error(`Category "${category}" does not exist in the categories state.`);
+      }
     } else {
       setSubcategories([]);
     }
   };
+  
+  
 
   const handleSubcategorySelect = (subcategory) => {
     setSelectedSubcategoryLocal(subcategory);
@@ -123,10 +135,10 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
     <div>
       <div style={{ margin: "8px" }}>
         <label>Select Category: </label>
-        <select onChange={(e) => handleCategorySelect(e.target.value)}>
+        <select value={selectedCategory} onChange={(e) => handleCategorySelect(e.target.value)}>
           <option value="">Choose a Category</option>
           {Object.keys(categories).map((category) => (
-            <option key={category} value={category} selected={category === selectedCategory}>
+            <option key={category} value={category}>
               {category}
             </option>
           ))}
@@ -156,10 +168,10 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
       {selectedCategory && (
         <div style={{ margin: "8px" }}>
           <label>Select Subcategory: </label>
-          <select onChange={(e) => handleSubcategorySelect(e.target.value)}>
+          <select value={selectedSubcategory} onChange={(e) => handleSubcategorySelect(e.target.value)}>
             <option value="">Choose a Subcategory</option>
             {subcategories.map((subcategory) => (
-              <option key={subcategory} value={subcategory} selected={subcategory === selectedSubcategory}>
+              <option key={subcategory} value={subcategory}>
                 {subcategory}
               </option>
             ))}
