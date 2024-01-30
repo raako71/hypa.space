@@ -7,10 +7,12 @@ import Account from "./pages/account"
 import NewProd from "./pages/newProduct"
 import Search from "./pages/search"
 import './index.css'
-import {auth} from "./firebase-config"
+import { auth } from "./firebase-config"
 import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import ProdPage from "./pages/productPage"
+import ProdBox from "./pages/productBox"
 
 
 
@@ -35,27 +37,28 @@ function App() {
 
   return (
     <Router>
-    <div id='site'>
-      <Header isLoggedIn={isLoggedIn} />
-      <Routes>
-      <Route path="/" element={<Home />} />
-      
-      <Route path="/search" element={<Search />} />
-      <Route path="/login"
-        element={isLoggedIn ? <Navigate to="/" /> : <Login />}
-      />
-      <Route path="/newProduct"
-        element= {isLoggedIn ? <NewProd /> : <Navigate to="/" />}
-      />
-      <Route path="/account"
-          element={<Account />}
-        />
-        <Route path="/terms" element={<Terms />} />
-      <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-      <Footer />
-    </div>
-  </Router>
+      <div id='site'>
+        <Header isLoggedIn={isLoggedIn} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+
+          <Route path="/search" element={<Search />} />
+          <Route path="/login"
+            element={isLoggedIn ? <Navigate to="/" /> : <Login />}
+          />
+          <Route path="/newProduct"
+            element={isLoggedIn ? <NewProd /> : <Navigate to="/" />}
+          />
+          <Route path="/account"
+            element={<Account />}
+          />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/products" element={<ProdBox productNameUserID="laptop_cPPrTRqhv9Rjnle7rqF3wc3gpSb2" />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+        <Footer />
+      </div>
+    </Router>
   )
 }
 
