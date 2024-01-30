@@ -1,103 +1,144 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost&display=swap');
 
-body{
+body {
   margin: 0;
 }
-#site{
-  display:flex; 
-  flex-direction:column;
+
+.prodBox {
+  width: 350px;
+  background-color: #4dc752;
+  height: 400px;
+  margin: 30px auto;
+  display: block;
+  border-radius: 30px;
+
+}
+
+.prodBox img{
+  width: 70%;
+  margin: 20px auto 0;
+  display: block;
+}
+
+.prodBox h2{
+  margin: 0;
+  text-align: center;
+}
+
+.prodBox .text{
+  margin: 10px;
+}
+
+#site {
+  display: flex;
+  flex-direction: column;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   min-height: 100vh;
 }
 
-h1{
+h1 {
   text-align: center;
-  font-family:Jost, Geneva;
+  font-family: Jost, Geneva;
 }
 
-.navbar{
+.navbar {
   display: flex;
   background-color: rgb(0, 181, 33);
   padding: 0 20px;
   justify-content: right;
 }
-.navbar a{
+
+.navbar a {
   color: rgb(238, 238, 238);
   text-decoration: none;
   padding: 15px 30px;
   display: inline-block;
   text-align: center;
-  position: relative; /* Required for absolute positioning of submenu */
+  position: relative;
+  /* Required for absolute positioning of submenu */
 }
+
 .navbar a:hover,
 .navbar a:active,
 .navbar a:focus,
-.navbar a.active{
+.navbar a.active {
   background-color: rgba(0, 255, 47, 0.612);
 }
+
 .has-submenu:hover .submenu {
   opacity: 1;
   pointer-events: auto;
 }
-.error{
+
+.error {
   color: rgb(255, 0, 0);
 }
-.has-submenu{
+
+.has-submenu {
   position: relative;
 }
-/* Hide submenu by default */ 
+
+/* Hide submenu by default */
 .submenu {
   max-height: 0;
   position: absolute;
   top: 100%;
   left: 0;
   background-color: rgb(0, 181, 33);
-  border: 0; /* Change as needed */
+  border: 0;
+  /* Change as needed */
   padding: 0;
   z-index: 1;
-  list-style:none;
+  list-style: none;
   margin: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-in-out; /* Transition height */
+  transition: max-height 0.3s ease-in-out;
+  /* Transition height */
   width: 100%;
   text-align: center;
 }
-.submenu li a{
- display: block;
+
+.submenu li a {
+  display: block;
 }
 
 /* Show submenu on hover */
 .has-submenu:hover .submenu {
   max-height: 200px;
- 
+
 }
 
-.seller{
+.seller {
   background-color: rgba(0, 181, 33, 0.5);
-    padding: 1px 15px;
-    margin: 10px 0; 
+  padding: 1px 15px;
+  margin: 10px 0;
 }
-.seller button{
+
+.seller button {
   margin-bottom: 15px;
 }
-footer{ 
-  min-height:50px; 
+
+footer {
+  min-height: 50px;
   background: rgba(0, 181, 33, 0.726);
   text-align: center;
 }
-footer p{
+
+footer p {
   padding: 15px;
 }
-.article{ 
-  flex:1;
+
+.article {
+  flex: 1;
   margin: auto;
   width: 400px;
- }
+}
 
-.middle{
+.middle {
   text-align: center;
 }
-.middle input{
+
+.middle input {
   padding: 5px;
   margin: 10px;
 }

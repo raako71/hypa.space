@@ -21,3 +21,13 @@ Passing images to New Product page, with cropping and scaling. Ready to be linke
 
 27 Jan.
 Pass individual images to New Product Component. Upload Images to firebase
+
+REMAINING:
+Custom user categories, sub categories.
+Add new products to category tree in user document.
+Products page with sorting by category.
+Individual Product Page.
+Edit Product Page.
+Delete Photos, add more photos to product.
+Select default image for Products.
+...
