@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { auth } from '../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -8,6 +8,10 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
   const [selectedCategory, setSelectedCategoryLocal] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedSubcategory, setSelectedSubcategoryLocal] = useState(null);
+  const [newCategory, setNewCategory] = useState('');
+  const [newSubcategory, setNewSubcategory] = useState('');
+  const newCategoryInputRef = useRef(null);
+  const newSubcategoryInputRef = useRef(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -86,6 +90,35 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
     setSelectedSubcategoryLocal(subcategory);
   };
 
+  const handleNewCategorySave = () => {
+    if (newCategory.trim() !== '') {
+      const updatedCategories = {
+        ...categories,
+        [newCategory]: {}
+      };
+      setCategories(updatedCategories);
+      setSelectedCategoryLocal(newCategory); // Update selected category to the new one
+      setSubcategories(Object.keys(updatedCategories[newCategory]));
+      setNewCategory('');
+    }
+  };
+
+  const handleNewSubcategorySave = () => {
+    if (newSubcategory.trim() !== '') {
+      const updatedCategories = {
+        ...categories,
+        [selectedCategory]: {
+          ...categories[selectedCategory],
+          [newSubcategory]: {}
+        }
+      };
+      setCategories(updatedCategories);
+      setSelectedSubcategoryLocal(newSubcategory); // Update selected subcategory to the new one
+      setSubcategories(Object.keys(updatedCategories[selectedCategory]));
+      setNewSubcategory('');
+    }
+  };
+
   return (
     <div>
       <div style={{ margin: "8px" }}>
@@ -93,24 +126,65 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
         <select onChange={(e) => handleCategorySelect(e.target.value)}>
           <option value="">Choose a Category</option>
           {Object.keys(categories).map((category) => (
-            <option key={category} value={category}>
+            <option key={category} value={category} selected={category === selectedCategory}>
               {category}
             </option>
           ))}
+          <option value="__new_category">Add New Category</option>
         </select>
+        {selectedCategory === '__new_category' && (
+          <div style={{ marginTop: "5px" }}>
+            <input
+              type="text"
+              placeholder="Enter new category"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              style={{ marginRight: "5px" }}
+              ref={newCategoryInputRef}
+              autoFocus
+            />
+            <button onClick={() => {
+              handleNewCategorySave();
+              if (newCategoryInputRef.current) {
+                newCategoryInputRef.current.focus();
+              }
+            }}>Save</button>
+          </div>
+        )}
       </div>
-      
+
       {selectedCategory && (
         <div style={{ margin: "8px" }}>
           <label>Select Subcategory: </label>
           <select onChange={(e) => handleSubcategorySelect(e.target.value)}>
             <option value="">Choose a Subcategory</option>
             {subcategories.map((subcategory) => (
-              <option key={subcategory} value={subcategory}>
+              <option key={subcategory} value={subcategory} selected={subcategory === selectedSubcategory}>
                 {subcategory}
               </option>
             ))}
+            <option value="__new_subcategory">Add New Subcategory</option>
           </select>
+
+          {selectedSubcategory === '__new_subcategory' && (
+            <div style={{ marginTop: "5px" }}>
+              <input
+                type="text"
+                placeholder="Enter new subcategory"
+                value={newSubcategory}
+                onChange={(e) => setNewSubcategory(e.target.value)}
+                style={{ marginRight: "5px" }}
+                ref={newSubcategoryInputRef}
+                autoFocus
+              />
+              <button onClick={() => {
+                handleNewSubcategorySave();
+                if (newSubcategoryInputRef.current) {
+                  newSubcategoryInputRef.current.focus();
+                }
+              }}>Save</button>
+            </div>
+          )}
         </div>
       )}
     </div>
