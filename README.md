@@ -22,13 +22,16 @@ Passing images to New Product page, with cropping and scaling. Ready to be linke
 27 Jan.
 Pass individual images to New Product Component. Upload Images to firebase
 
-30 Jan
+30 Jan.
 Organise new product component
 Update category selector
 
+31 Jan.
+Load Global categories, inc sub-subcategories
+Save categories to user doc and product
+
 REMAINING:
-Load user and global categories.
-Custom sub categories.
+Load user categories in category selector.
 
 Add new products to category tree in user document.
 Products page with sorting by category.
