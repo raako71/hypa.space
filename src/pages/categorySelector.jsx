@@ -4,13 +4,16 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { getDocs, collection } from 'firebase/firestore/lite';
 import { auth, db } from '../firebase-config';
 
-const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
+const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSelectedSubSubcategory }) => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategoryLocal] = useState('');
   const [subcategories, setSubcategories] = useState([]);
   const [selectedSubcategory, setSelectedSubcategoryLocal] = useState('');
+  const [subSubcategories, setSubSubcategories] = useState([]);
+  const [selectedSubSubcategory, setSelectedSubSubcategoryLocal] = useState('');
   const [newCategory, setNewCategory] = useState('');
   const [newSubcategory, setNewSubcategory] = useState('');
+  const [newSubSubcategory, setNewSubSubcategory] = useState('');
   const newCategoryInputRef = useRef(null);
   const newSubcategoryInputRef = useRef(null);
 
@@ -19,15 +22,11 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
       try {
         const categoriesCollectionRef = collection(db, 'categories');
         const querySnapshot = await getDocs(categoriesCollectionRef);
-    
         const categoriesData = {};
         querySnapshot.forEach((doc) => {
           const categoryName = doc.id;
-          console.log('Category:', categoryName);
-    
           const categoryData = doc.data();
           const subcategories = Object.keys(categoryData);
-    
           const categoryObject = {};
           subcategories.forEach((subcategory) => {
             if (categoryData[subcategory] === true) {
@@ -37,23 +36,14 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
               categoryObject[subcategory] = { ...categoryData[subcategory] };
             }
           });
-    
-          console.log('Category Object:', categoryObject);
-    
           categoriesData[categoryName] = categoryObject;
         });
-    
-        console.log('Categories Data:', categoriesData);
-    
         setCategories(categoriesData);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
     };
-    
 
-
-    // Fetch categories when the component mounts
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         fetchCategories();
@@ -62,49 +52,73 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
       }
     });
 
-    // Cleanup function to unsubscribe when the component unmounts
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    // Call the setSelectedCategory callback if provided
     if (setSelectedCategory) {
       setSelectedCategory(selectedCategory);
     }
   }, [selectedCategory, setSelectedCategory]);
 
   useEffect(() => {
-    // Call the setSelectedSubcategory callback if provided
     if (setSelectedSubcategory) {
       setSelectedSubcategory(selectedSubcategory);
     }
   }, [selectedSubcategory, setSelectedSubcategory]);
 
+  useEffect(() => {
+    if (setSelectedSubSubcategory) {
+      setSelectedSubSubcategory(selectedSubSubcategory);
+    }
+  }, [selectedSubSubcategory, setSelectedSubSubcategory]);
+
   const handleCategorySelect = (category) => {
     setSelectedCategoryLocal(category);
-
-    if (category === '__new_category') {
-      // Do something to handle adding a new category
-      return; // Exit early to prevent further execution of the function
+    if (category === "__new_category") {
+      // Clear subcategory and sub-subcategory selections
+      setSelectedSubcategoryLocal("");
+      setSelectedSubSubcategoryLocal("");
+      return; // Exit early
     }
-
     if (category) {
-      // Check if categories is truthy before accessing its properties
       if (categories && categories[category]) {
         setSubcategories(Object.keys(categories[category]));
         setSelectedSubcategoryLocal('');
+        setSelectedSubSubcategoryLocal('');
       } else {
         console.error(`Category "${category}" does not exist in the categories state.`);
       }
     } else {
       setSubcategories([]);
+      setSelectedSubcategoryLocal('');
+      setSelectedSubSubcategoryLocal('');
     }
   };
 
 
-
   const handleSubcategorySelect = (subcategory) => {
     setSelectedSubcategoryLocal(subcategory);
+    setSelectedSubSubcategoryLocal('');
+    
+    if (subcategory === "__new_subcategory") {
+      return; // Exit early if "__new_subcategory" is selected
+    }
+  
+    if (subcategory) {
+      if (categories[selectedCategory] && categories[selectedCategory][subcategory]) {
+        setSubSubcategories(Object.keys(categories[selectedCategory][subcategory]));
+      } else {
+        console.error(`Subcategory "${subcategory}" does not exist in the categories state.`);
+      }
+    } else {
+      setSubSubcategories([]);
+    }
+  };
+  
+
+  const handleSubSubcategorySelect = (subSubcategory) => {
+    setSelectedSubSubcategoryLocal(subSubcategory);
   };
 
   const handleNewCategorySave = () => {
@@ -136,26 +150,40 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
     }
   };
 
+  const handleNewSubSubcategorySave = () => {
+    if (newSubSubcategory.trim() !== '') {
+      const updatedCategories = {
+        ...categories,
+        [selectedCategory]: {
+          ...categories[selectedCategory],
+          [selectedSubcategory]: {
+            ...categories[selectedCategory][selectedSubcategory],
+            [newSubSubcategory]: {}
+          }
+        }
+      };
+      setCategories(updatedCategories);
+      setSelectedSubSubcategoryLocal(newSubSubcategory); // Update selected sub-subcategory to the new one
+      setSubSubcategories(Object.keys(updatedCategories[selectedCategory][selectedSubcategory]));
+      setNewSubSubcategory('');
+    }
+  };
+  
   return (
     <div>
       <div style={{ margin: "8px" }}>
         <label>Select Category: </label>
-        {categories.length === 0 ? (
-          <select disabled>
-            <option value="">Loading...</option>
-          </select>
-        ) : (
-          <select value={selectedCategory} onChange={(e) => handleCategorySelect(e.target.value)}>
-            <option value="">Choose a Category</option>
-            {Object.keys(categories).map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-            <option value="__new_category">Add New Category</option>
-          </select>
-        )}
-        {selectedCategory === '__new_category' && (
+        <select value={selectedCategory} onChange={(e) => handleCategorySelect(e.target.value)}>
+          <option value="">Choose a Category</option>
+          {Object.keys(categories).map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+          <option value="__new_category">Add New Category</option>
+        </select>
+        {/* Add New Category input field */}
+        {selectedCategory === "__new_category" && (
           <div style={{ marginTop: "5px" }}>
             <input
               type="text"
@@ -176,6 +204,7 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
         )}
       </div>
 
+
       {selectedCategory && (
         <div style={{ margin: "8px" }}>
           <label>Select Subcategory: </label>
@@ -188,8 +217,7 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
             ))}
             <option value="__new_subcategory">Add New Subcategory</option>
           </select>
-
-          {selectedSubcategory === '__new_subcategory' && (
+          {selectedSubcategory === "__new_subcategory" && (
             <div style={{ marginTop: "5px" }}>
               <input
                 type="text"
@@ -210,6 +238,22 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
           )}
         </div>
       )}
+
+      {selectedSubcategory && (
+        <div style={{ margin: "8px" }}>
+          <label>Select Sub-subcategory: </label>
+          <select value={selectedSubSubcategory} onChange={(e) => handleSubSubcategorySelect(e.target.value)}>
+            <option value="">Choose a Sub-subcategory</option>
+            {subSubcategories.map((subSubcategory) => (
+              <option key={subSubcategory} value={subSubcategory}>
+                {subSubcategory}
+              </option>
+            ))}
+            <option value="__new_subsubcategory">Add New Sub-subcategory</option>
+          </select>
+          {/* Add New Sub-subcategory input field */}
+        </div>
+      )}
     </div>
   );
 };
@@ -217,6 +261,7 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
 CategorySelector.propTypes = {
   setSelectedCategory: PropTypes.func,
   setSelectedSubcategory: PropTypes.func,
+  setSelectedSubSubcategory: PropTypes.func,
 };
 
 export default CategorySelector;
