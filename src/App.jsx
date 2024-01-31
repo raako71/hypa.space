@@ -11,7 +11,6 @@ import { auth } from "./firebase-config"
 import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import ProdPage from "./pages/productPage"
 import ProdBox from "./pages/productBox"
 
 

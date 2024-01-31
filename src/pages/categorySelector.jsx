@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { auth } from '../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
+import { getDocs, collection } from 'firebase/firestore/lite';
+import { auth, db } from '../firebase-config';
 
 const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
   const [categories, setCategories] = useState([]);
@@ -16,33 +17,24 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const user = auth.currentUser;
+        const categoriesCollectionRef = collection(db, 'categories');
+        const querySnapshot = await getDocs(categoriesCollectionRef);
 
-        if (!user) {
-          console.error('No user is currently signed in');
-          return;
-        }
-
-        const idToken = await user.getIdToken();
-
-        const response = await fetch('https://us-central1-hypa-space.cloudfunctions.net/getCategories', {
-          headers: {
-            'Authorization': `Bearer ${idToken}`
-          }
+        const categoriesData = {};
+        querySnapshot.forEach((doc) => {
+          const categoryName = doc.id;
+          console.log('Category:', categoryName);
+          const subcategories = Object.keys(doc.data());
+          console.log('Subcategories:', subcategories);
+          categoriesData[categoryName] = {};
+          subcategories.forEach((subcategory) => {
+            categoriesData[categoryName][subcategory] = {}; // Initialize each subcategory with an empty object
+          });
         });
 
-        if (!response.ok) {
-          console.error('Failed to fetch categories');
-          return;
-        }
+        console.log('Categories Data:', categoriesData);
 
-        const data = await response.json();
-
-        if (typeof data === 'object' && data.categories) {
-          setCategories(data.categories);
-        } else {
-          console.error('Categories data is not in the expected format:', data);
-        }
+        setCategories(categoriesData);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
