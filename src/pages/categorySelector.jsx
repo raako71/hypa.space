@@ -16,6 +16,7 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSele
   const [newSubSubcategory, setNewSubSubcategory] = useState('');
   const newCategoryInputRef = useRef(null);
   const newSubcategoryInputRef = useRef(null);
+  const newSubSubcategoryInputRef = useRef(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -251,7 +252,24 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSele
             ))}
             <option value="__new_subsubcategory">Add New Sub-subcategory</option>
           </select>
-          {/* Add New Sub-subcategory input field */}
+          {selectedSubSubcategory === "__new_subsubcategory" && (
+            <div style={{ marginTop: "5px" }}>
+              <input
+                type="text"
+                placeholder="Enter new sub-subcategory"
+                value={newSubSubcategory}
+                onChange={(e) => setNewSubSubcategory(e.target.value)}
+                style={{ marginRight: "5px" }}
+                ref={newSubSubcategoryInputRef}
+              />
+              <button onClick={() => {
+                handleNewSubSubcategorySave();
+                if (newSubSubcategoryInputRef.current) {
+                  newSubSubcategoryInputRef.current.focus();
+                }
+              }}>Save</button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -17,6 +17,8 @@ const NewProd = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [userID, setUserID] = useState(null);
   const [passedImages, setPassedImages] = useState({ scaled: [], unscaled: [] });
+  const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(null); // New state variable
+
 
   const handleProcessedImagesUpload = (images) => {
     const scaledDataURLs = images.scaled.toDataURL();
@@ -137,10 +139,13 @@ const NewProd = () => {
       await updateDoc(userDocRef, {
         categoryTree: {
           [selectedCategory]: {
-            [selectedSubcategory]: true,
-          },
+            [selectedSubcategory]: {
+              [selectedSubSubcategory]: true // Include selected sub-subcategory
+            }
+          }
         },
       });
+
 
       // Create user directory and product subdirectory in Firebase Storage
       const storage = getStorage();
@@ -156,14 +161,14 @@ const NewProd = () => {
       try {
         // Upload images to the product directory
         await uploadImagesToStorage(passedImages, userID, productDocumentName);
-      
+
         // Clear passedImages state after successful upload
         setPassedImages({ scaled: [], unscaled: [] });
       } catch (error) {
         console.error('Error uploading images:', error);
         // Handle error if upload fails
       }
-      
+
 
       // Save product data
       const userProductRef = doc(db, 'products', productDocumentName);
@@ -173,8 +178,10 @@ const NewProd = () => {
         variations,
         category: {
           [selectedCategory]: {
-            [selectedSubcategory]: true,
-          },
+            [selectedSubcategory]: {
+              [selectedSubSubcategory]: true // Include selected sub-subcategory
+            }
+          }
         },
         userId: userID, // Add userId to the product document
         // Include other relevant data
@@ -256,6 +263,7 @@ const NewProd = () => {
       <CategorySelector
         setSelectedCategory={setSelectedCategory}
         setSelectedSubcategory={setSelectedSubcategory}
+        setSelectedSubSubcategory={setSelectedSubSubcategory} // Pass down setSelectedSubSubcategory
       />
 
       <button onClick={handleSaveProduct} style={{ width: 'fit-content', margin: "8px" }} >Save</button>
