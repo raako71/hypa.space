@@ -19,26 +19,39 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
       try {
         const categoriesCollectionRef = collection(db, 'categories');
         const querySnapshot = await getDocs(categoriesCollectionRef);
-
+    
         const categoriesData = {};
         querySnapshot.forEach((doc) => {
           const categoryName = doc.id;
           console.log('Category:', categoryName);
-          const subcategories = Object.keys(doc.data());
-          console.log('Subcategories:', subcategories);
-          categoriesData[categoryName] = {};
+    
+          const categoryData = doc.data();
+          const subcategories = Object.keys(categoryData);
+    
+          const categoryObject = {};
           subcategories.forEach((subcategory) => {
-            categoriesData[categoryName][subcategory] = {}; // Initialize each subcategory with an empty object
+            if (categoryData[subcategory] === true) {
+              categoryObject[subcategory] = true; // No nested categories, set to true
+            } else {
+              // Nested categories exist, copy the nested object
+              categoryObject[subcategory] = { ...categoryData[subcategory] };
+            }
           });
+    
+          console.log('Category Object:', categoryObject);
+    
+          categoriesData[categoryName] = categoryObject;
         });
-
+    
         console.log('Categories Data:', categoriesData);
-
+    
         setCategories(categoriesData);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
     };
+    
+
 
     // Fetch categories when the component mounts
     const unsubscribe = onAuthStateChanged(auth, (user) => {
