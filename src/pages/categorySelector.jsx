@@ -77,12 +77,12 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
 
   const handleCategorySelect = (category) => {
     setSelectedCategoryLocal(category);
-  
+
     if (category === '__new_category') {
       // Do something to handle adding a new category
       return; // Exit early to prevent further execution of the function
     }
-  
+
     if (category) {
       // Check if categories is truthy before accessing its properties
       if (categories && categories[category]) {
@@ -95,8 +95,8 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
       setSubcategories([]);
     }
   };
-  
-  
+
+
 
   const handleSubcategorySelect = (subcategory) => {
     setSelectedSubcategoryLocal(subcategory);
@@ -135,15 +135,21 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory }) => {
     <div>
       <div style={{ margin: "8px" }}>
         <label>Select Category: </label>
-        <select value={selectedCategory} onChange={(e) => handleCategorySelect(e.target.value)}>
-          <option value="">Choose a Category</option>
-          {Object.keys(categories).map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-          <option value="__new_category">Add New Category</option>
-        </select>
+        {categories.length === 0 ? (
+          <select disabled>
+            <option value="">Loading...</option>
+          </select>
+        ) : (
+          <select value={selectedCategory} onChange={(e) => handleCategorySelect(e.target.value)}>
+            <option value="">Choose a Category</option>
+            {Object.keys(categories).map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+            <option value="__new_category">Add New Category</option>
+          </select>
+        )}
         {selectedCategory === '__new_category' && (
           <div style={{ marginTop: "5px" }}>
             <input
