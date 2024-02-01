@@ -30,10 +30,10 @@ Update category selector
 Load Global categories, inc sub-subcategories
 Save categories to user doc and product
 
-REMAINING:
+1 Feb.
 Load user categories in category selector.
 
-Add new products to category tree in user document.
+REMAINING:
 Products page with sorting by category.
 Individual Product Page.
 Edit Product Page.

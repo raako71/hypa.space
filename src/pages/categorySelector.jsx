@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getDocs, collection } from 'firebase/firestore/lite';
+import { getDocs, collection, doc, getDoc } from 'firebase/firestore/lite';
 import { auth, db } from '../firebase-config';
 
 const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSelectedSubSubcategory }) => {
@@ -17,6 +17,7 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSele
   const newCategoryInputRef = useRef(null);
   const newSubcategoryInputRef = useRef(null);
   const newSubSubcategoryInputRef = useRef(null);
+
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -45,9 +46,30 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSele
       }
     };
 
+    const fetchUserCategories = async () => {
+      try {
+        const userID = auth.currentUser.uid;
+        const userDocRef = doc(db, 'users', userID);
+        const docSnapshot = await getDoc(userDocRef);
+        if (docSnapshot.exists) {
+          const userData = docSnapshot.data();
+          const categoryTree = userData.categoryTree;
+          console.log(categoryTree);
+          // Merge categoryTree with categoriesData
+        const mergedCategoriesData = { ...categories, ...categoryTree };
+        setCategories(mergedCategoriesData);
+        } else {
+          console.log('Document does not exist');
+        }
+      } catch (error) {
+        console.error('Error fetching userID document:', error);
+      }
+    };
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         fetchCategories();
+        fetchUserCategories();
       } else {
         console.log('User is logged out');
       }
