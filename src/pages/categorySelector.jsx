@@ -264,7 +264,7 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSele
 
       {selectedSubcategory && (
         <div style={{ margin: "8px" }}>
-          <label>Select Sub-subcategory: </label>
+          <label>Select Sub-subcategory (optional): </label>
           <select value={selectedSubSubcategory} onChange={(e) => handleSubSubcategorySelect(e.target.value)}>
             <option value="">Choose a Sub-subcategory</option>
             {subSubcategories.map((subSubcategory) => (

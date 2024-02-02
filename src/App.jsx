@@ -12,6 +12,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import ProdBox from "./pages/productBox"
+import Products from "./pages/products"
 
 
 
@@ -50,6 +51,9 @@ function App() {
           />
           <Route path="/account"
             element={<Account />}
+          />
+          <Route path="/products"
+            element={<Products />}
           />
           <Route path="/terms" element={<Terms />} />
           <Route path="/products" element={<ProdBox productNameUserID="laptop_cPPrTRqhv9Rjnle7rqF3wc3gpSb2" />} />
