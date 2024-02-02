@@ -136,15 +136,26 @@ const NewProd = () => {
 
       // Update the user document with the category tree information
       const userDocRef = doc(db, 'users', userID);
-      await updateDoc(userDocRef, {
-        categoryTree: {
-          [selectedCategory]: {
-            [selectedSubcategory]: {
-              [selectedSubSubcategory]: true // Include selected sub-subcategory
+      // Check if selectedSubSubcategory is null
+      if (selectedSubSubcategory === "") {
+        const docSnapshot = await getDoc(userDocRef);
+        if (docSnapshot.exists() && !docSnapshot.data().categoryTree[selectedCategory][selectedSubcategory]) {
+          await updateDoc(userDocRef, {
+            [`categoryTree.${selectedCategory}.${selectedSubcategory}`]: true
+          });
+        }
+      }
+      else {
+        await updateDoc(userDocRef, {
+          categoryTree: {
+            [selectedCategory]: {
+              [selectedSubcategory]: {
+                [selectedSubSubcategory]: true // Include selected sub-subcategory
+              }
             }
-          }
-        },
-      });
+          },
+        });
+      }
 
 
       // Create user directory and product subdirectory in Firebase Storage
@@ -172,18 +183,31 @@ const NewProd = () => {
 
       // Save product data
       const userProductRef = doc(db, 'products', productDocumentName);
+      let category = {};
+
+      // Check if selectedSubSubcategory is empty
+      if (selectedSubSubcategory === "") {
+        category = {
+          [selectedCategory]: {
+            [selectedSubcategory]: true
+          }
+        };
+      } else {
+        category = {
+          [selectedCategory]: {
+            [selectedSubcategory]: {
+              [selectedSubSubcategory]: true
+            }
+          }
+        };
+      }
+
       const productData = {
         productName,
         productDescription,
         variations,
-        category: {
-          [selectedCategory]: {
-            [selectedSubcategory]: {
-              [selectedSubSubcategory]: true // Include selected sub-subcategory
-            }
-          }
-        },
-        userId: userID, // Add userId to the product document
+        category,
+        userId: userID,
         // Include other relevant data
       };
 
