@@ -34,7 +34,10 @@ Save categories to user doc and product
 Load user categories in category selector.
 
 REMAINING:
+Add products to an object in user doc for indexing by category.
+
 Products page with sorting by category.
+
 Individual Product Page.
 Edit Product Page.
 Delete Photos, add more photos to product.
