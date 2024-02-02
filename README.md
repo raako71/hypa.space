@@ -39,4 +39,3 @@ Individual Product Page.
 Edit Product Page.
 Delete Photos, add more photos to product.
 Select default image for Products.
-...
