@@ -142,26 +142,42 @@ const NewProd = () => {
       if (productName === "") {
         throw new Error("Empty Product Name");
       }
-      // Update the user document with the category tree information
-      const userDocRef = doc(db, 'users', userID);
-      if (selectedSubSubcategory === "") {
-        const docSnapshot = await getDoc(userDocRef);
-        const categoryData = docSnapshot?.data()?.categoryTree;
-        if (!categoryData?.[selectedCategory]?.[selectedSubcategory]) {
-          await updateDoc(userDocRef, {
-            [`categoryTree.${selectedCategory}.${selectedSubcategory}`]: true
-          });
-        }
-      }
-      else {
-        await updateDoc(userDocRef, {
-          categoryTree: {
-            [selectedCategory]: {
-              [selectedSubcategory]: {
-                [selectedSubSubcategory]: true
+      // Check if selectedSubSubcategory is empty
+      if (cleanedSelectedSubSubcategory === "") {
+        category = {
+          [cleanedSelectedCategory]: {
+            name: selectedCategory,
+            [cleanedSelectedSubcategory]: {
+              name: selectedSubcategory,
+            }
+          }
+        };
+      } else {
+        category = {
+          [cleanedSelectedCategory]: {
+            name: selectedCategory,
+            [cleanedSelectedSubcategory]: {
+              name: selectedSubcategory,
+              [cleanedSelectedSubSubcategory]: {
+                name: selectedSubSubcategory,
               }
             }
-          },
+          }
+        };
+      }
+      // Update the user document with the category tree information
+      const userDocRef = doc(db, 'users', userID);
+      if (cleanedSelectedSubSubcategory === "") {
+        const docSnapshot = await getDoc(userDocRef);
+        const categoryData = docSnapshot?.data()?.categoryTree;
+        if (!categoryData?.[cleanedSelectedCategory]?.[cleanedSelectedSubcategory]) {
+          await updateDoc(userDocRef, {
+            [`categoryTree.${cleanedSelectedCategory}.${cleanedSelectedSubcategory}`]: category[cleanedSelectedCategory][cleanedSelectedSubcategory]
+          });
+        }
+      } else {
+        await updateDoc(userDocRef, {
+          categoryTree: category
         });
       }
       // Create user directory and product subdirectory in Firebase *Storage*
@@ -185,22 +201,11 @@ const NewProd = () => {
       // Save product data
       const userProductRef = doc(db, 'products', productDocumentName);
       let category = {};
-      // Check if selectedSubSubcategory is empty
-      if (selectedSubSubcategory === "") {
-        category = {
-          [selectedCategory]: {
-            [selectedSubcategory]: true
-          }
-        };
-      } else {
-        category = {
-          [selectedCategory]: {
-            [selectedSubcategory]: {
-              [selectedSubSubcategory]: true
-            }
-          }
-        };
-      }
+      const removeSpaces = (text) => text.replace(/\s+/g, '');
+      const cleanedSelectedCategory = removeSpaces(selectedCategory);
+      const cleanedSelectedSubcategory = removeSpaces(selectedSubcategory);
+      const cleanedSelectedSubSubcategory = removeSpaces(selectedSubSubcategory);
+
       const productData = {
         productName,
         productDescription,
