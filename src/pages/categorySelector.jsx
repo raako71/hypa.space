@@ -54,7 +54,6 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSele
         if (docSnapshot.exists) {
           const userData = docSnapshot.data();
           const categoryTree = userData.categoryTree;
-          console.log(categoryTree);
           // Merge categoryTree with categoriesData
         const mergedCategoriesData = { ...categories, ...categoryTree };
         setCategories(mergedCategoriesData);

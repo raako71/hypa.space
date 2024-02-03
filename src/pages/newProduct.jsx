@@ -6,12 +6,13 @@ import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
 import { onAuthStateChanged } from 'firebase/auth';
 import ImageModification from "./imageUpload";
 import { getStorage, ref, uploadString } from 'firebase/storage';
+import { useNavigate } from 'react-router-dom';
 
 const NewProd = () => {
   const [productName, setProductName] = useState("");
-  const [productNameError, setProductNameError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [productDescription, setProductDescription] = useState("");
-  const [productDescriptionError, setProductDescriptionError] = useState("");
   const [variations, setVariations] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
@@ -19,6 +20,7 @@ const NewProd = () => {
   const [passedImages, setPassedImages] = useState({ scaled: [], unscaled: [] });
   const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(null); // New state variable
 
+  const navigate = useNavigate();
 
   const handleProcessedImagesUpload = (images) => {
     const scaledDataURLs = images.scaled.toDataURL();
@@ -37,52 +39,52 @@ const NewProd = () => {
     });
   };
 
-
-
+  useEffect(() => {
+    // Check if both category and subcategory are selected
+    if (selectedCategory !== null && selectedSubcategory !== null) {
+      // Reset the error message
+      setErrorMessage("");
+    }
+    if (productName !== "") setErrorMessage("");
+  }, [selectedCategory, selectedSubcategory, productName]);
 
   const handleProductDescriptionChange = (event) => {
     const newDescription = event.target.value;
-    // Check for potentially harmful content
-    if (containsHarmfulContent(newDescription)) {
-      throw new Error("Product description contains disallowed content.");
-    }
-    setProductDescription(newDescription);
-    // Validate product description only if it's not empty
-    if (newDescription.trim() !== '') {
-      if (newDescription.length > 1000) {
-        setProductDescriptionError("Product description should be 1000 characters or less.");
-      } else {
-        setProductDescriptionError("");
+    try {
+      // Check for potentially harmful content
+      if (containsHarmfulContent(newDescription)) {
+        throw new Error("Disallowed characters blocked.");
       }
-    } else {
-      // Clear the error message if the field is empty
-      setProductDescriptionError("");
+      // Validate product description only if it's not empty
+      if (newDescription.length > 1000) {
+        throw new Error("Max description length reached.");
+      }
+      setProductDescription(newDescription);
+    } catch (error) {
+      console.error(error.message);
     }
   };
 
-  const containsHarmfulContent = (description) => {
-    const harmfulPatterns = /<\s*script|<\s*iframe|on\w+\s*=/i;
-    return harmfulPatterns.test(description);
-  };
 
   const handleProductNameChange = (event) => {
-    event.persist(); // Persist the synthetic event
 
     const newName = event.target.value;
-    setProductName(newName);
-
-    // Validate product name
-    if (newName.trim() !== '') {
-      if (newName.length > 30) {
-        setProductNameError("Product name should be 30 characters or less.");
-      } else if (!/^[a-zA-Z0-9_-\s+]+$/.test(newName)) {
-        setProductNameError("Product name should contain only letters, numbers, underscores, and hyphens.");
-      } else {
-        setProductNameError(""); // Clear the error when the name is valid
+    try {
+      if (containsHarmfulContent(newName)) {
+        throw new Error("Product name contains disallowed content.");
       }
-    } else {
-      setProductNameError("");
+      if (newName.length > 30) {
+        throw new Error("Product name should be 30 characters or less.");
+      }
+      setProductName(newName);
     }
+    catch (error) {
+      console.error(error.message);
+    }
+  };
+  const containsHarmfulContent = (description) => {
+    const harmfulPatterns = /[^0-9a-zA-Z\s_-]/;
+    return harmfulPatterns.test(description);
   };
 
   useEffect(() => {
@@ -128,12 +130,18 @@ const NewProd = () => {
   };
 
 
-  const handleSaveProduct = async () => {
-    try {
-      if (productNameError !== "") {
-        throw new Error("Product name is invalid.");
-      }
 
+
+
+  const handleSaveProduct = async () => {
+    setSaving(true);
+    try {
+      if (!selectedCategory || !selectedSubcategory) {
+        throw new Error("Category and Subcategory are not selected.");
+      }
+      if (productName === "") {
+        throw new Error("Empty Product Name");
+      }
       // Update the user document with the category tree information
       const userDocRef = doc(db, 'users', userID);
       // Check if selectedSubSubcategory is null
@@ -156,35 +164,26 @@ const NewProd = () => {
           },
         });
       }
-
-
       // Create user directory and product subdirectory in Firebase Storage
       const storage = getStorage();
       const userDirectoryRef = ref(storage, `users/${userID}`);
       await uploadString(userDirectoryRef, '');
-
       // Define productDocumentName
       const productDocumentName = `${productName}_${userID}`;
-
       const productDirectoryRef = ref(storage, `users/${userID}/${productDocumentName}`);
       await uploadString(productDirectoryRef, '');
-
-      try {
-        // Upload images to the product directory
-        await uploadImagesToStorage(passedImages, userID, productDocumentName);
-
-        // Clear passedImages state after successful upload
-        setPassedImages({ scaled: [], unscaled: [] });
-      } catch (error) {
-        console.error('Error uploading images:', error);
-        // Handle error if upload fails
+      if (passedImages.scaled.length > 0 || passedImages.unscaled.length > 0) {
+        try {
+          await uploadImagesToStorage(passedImages, userID, productDocumentName);
+          setPassedImages({ scaled: [], unscaled: [] });
+        } catch (error) {
+          console.error('Error uploading images:', error);
+        }
       }
-
-
+      else console.log("No Images to upload.")
       // Save product data
       const userProductRef = doc(db, 'products', productDocumentName);
       let category = {};
-
       // Check if selectedSubSubcategory is empty
       if (selectedSubSubcategory === "") {
         category = {
@@ -201,7 +200,6 @@ const NewProd = () => {
           }
         };
       }
-
       const productData = {
         productName,
         productDescription,
@@ -210,18 +208,16 @@ const NewProd = () => {
         userId: userID,
         // Include other relevant data
       };
-
       const docSnapshot = await getDoc(userProductRef);
-
       if (docSnapshot.exists()) {
         console.log('Product exists!');
         // Ask for confirmation before updating
-        const shouldUpdate = window.confirm('A product with this name already exists. Do you want to update it?');
-
+        const shouldUpdate = window.confirm('Confirm overwriting existing product?');
         if (shouldUpdate) {
           // If the user confirms, update the document
           await updateDoc(userProductRef, productData);
           console.log('Product updated successfully!');
+          return navigate(`/products?productName=${productDocumentName}`);
         } else {
           console.log('Update cancelled by user.');
         }
@@ -229,10 +225,13 @@ const NewProd = () => {
         // If the document doesn't exist, create a new one
         await setDoc(userProductRef, productData);
         console.log('Product saved successfully!');
+        return navigate(`/products?productName=${productDocumentName}`);
       }
     } catch (error) {
       console.error('Error saving product:', error);
+      setErrorMessage(error.message);
     }
+    setSaving(false);
   };
 
   return (
@@ -246,7 +245,6 @@ const NewProd = () => {
           value={productName}
           onChange={handleProductNameChange}
         />
-        {productNameError && <p className="error" style={{ marginLeft: "8px" }}>{productNameError}</p>}
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", margin: "8px" }}>
@@ -272,14 +270,6 @@ const NewProd = () => {
             ))}
           </div>
         )}
-
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {productDescriptionError && (
-            <p className="error" style={{ marginLeft: "8px", display: "block", order: 1 }}>
-              {productDescriptionError}
-            </p>
-          )}
-        </div>
       </div>
 
       <Variations variations={variations} setVariations={setVariations} />
@@ -289,8 +279,17 @@ const NewProd = () => {
         setSelectedSubcategory={setSelectedSubcategory}
         setSelectedSubSubcategory={setSelectedSubSubcategory} // Pass down setSelectedSubSubcategory
       />
-
-      <button onClick={handleSaveProduct} style={{ width: 'fit-content', margin: "8px" }} >Save</button>
+      <div style={{ display: "flex", alignItems: "center", margin: "8px" }}>
+        {!saving && (
+          <button onClick={handleSaveProduct} style={{ width: 'fit-content', margin: "8px" }}>Save</button>
+        )}
+        {saving && (
+          <button style={{ width: 'fit-content', margin: "8px" }} disabled>Saving...</button>
+        )}
+        {errorMessage && (
+          <p style={{ color: 'red', marginLeft: '8px' }}>{errorMessage}</p>
+        )}
+      </div>
     </div>
   );
 };
