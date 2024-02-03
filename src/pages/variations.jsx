@@ -1,122 +1,122 @@
-  import { useState, useEffect } from 'react';
-  import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
-  const Variations = ({ variations: propVariations, setVariations }) => {
-    const [variationName, setVariationName] = useState("");
-    const [numVariationTypes, setNumVariationTypes] = useState(2);
-    const [variationTypes, setVariationTypes] = useState(Array.from({ length: 2 }, () => ""));
-    const [currentVariationError, setCurrentVariationError] = useState("");
+const Variations = ({ variations: propVariations, setVariations }) => {
+  const [variationName, setVariationName] = useState("");
+  const [numVariationTypes, setNumVariationTypes] = useState(2);
+  const [variationTypes, setVariationTypes] = useState(Array.from({ length: 2 }, () => ""));
+  const [currentVariationError, setCurrentVariationError] = useState("");
 
-    const handleVariationNameChange = (event) => {
-      const newName = event.target.value;
-      // Filter out disallowed characters
-      const filteredName = newName.replace(/[<>]/g, '');
-      setVariationName(filteredName);
-    };
+  const handleVariationNameChange = (event) => {
+    const newName = event.target.value
+    const filteredName = newName.replace(/[<>]|on(?!(click|mouseover|focus)\b)\w+\s*=/gi, '');
+    const truncatedName = filteredName.substring(0, 25);
+    setVariationName(truncatedName);
+  };
 
-    useEffect(() => {
-      setVariationTypes(Array.from({ length: numVariationTypes }, () => ""));
-    }, [numVariationTypes]);
 
-    const handleNumVariationTypesChange = (event) => {
-      const numTypes = parseInt(event.target.value, 10);
-      // Filter out disallowed characters
-      const filteredNumTypes = event.target.value.replace(/[<>]/g, '');
-      setNumVariationTypes(Math.max(2, filteredNumTypes));
-      setVariationTypes(Array.from({ length: filteredNumTypes }, () => ""));
-    };
+  useEffect(() => {
+    setVariationTypes(Array.from({ length: numVariationTypes }, () => ""));
+  }, [numVariationTypes]);
 
-    const handleVariationTypeChange = (index, event) => {
-      const updatedVariationTypes = [...variationTypes];
-      // Filter out disallowed characters
-      const filteredValue = event.target.value.replace(/[<>]/g, '');
-      updatedVariationTypes[index] = filteredValue || "";
-      setVariationTypes(updatedVariationTypes);
-    };
+  const handleNumVariationTypesChange = (event) => {
+    const numTypes = parseInt(event.target.value, 10);
+    setNumVariationTypes(Math.max(2, numTypes));
+    setVariationTypes(Array.from({ length: filteredNumTypes }, () => ""));
+  };
 
-    const handleAddVariation = () => {
-      if (propVariations.length < 3) {
-        const newVariation = {
-          name: variationName,
-          types: variationTypes.slice(0, numVariationTypes),
-        };
+  const handleVariationTypeChange = (index, event) => {
+    const updatedVariationTypes = [...variationTypes];
+    // Filter out disallowed characters
+    const filteredValue = event.target.value.replace(/[<>]|on(?!(click|mouseover|focus)\b)\w+\s*=/gi, '');
+    const truncatedName = filteredValue.substring(0, 25);
+    updatedVariationTypes[index] = truncatedName || "";
+    setVariationTypes(updatedVariationTypes);
+  };
 
-        setVariations([...propVariations, newVariation]);
-        setVariationName("");
-        setNumVariationTypes(2);
-        setVariationTypes(Array.from({ length: 2 }, () => ""));
-        setCurrentVariationError("");
-      } else {
-        setCurrentVariationError("You can only add up to 3 variations.");
-      }
-    };
+  const handleAddVariation = () => {
+    if (propVariations.length < 3) {
+      const newVariation = {
+        name: variationName,
+        types: variationTypes.slice(0, numVariationTypes),
+      };
 
-    const handleDeleteVariation = (index) => {
-      const updatedVariations = [...propVariations];
-      updatedVariations.splice(index, 1);
-      setVariations(updatedVariations);
-    };
+      setVariations([...propVariations, newVariation]);
+      setVariationName("");
+      setNumVariationTypes(2);
+      setVariationTypes(Array.from({ length: 2 }, () => ""));
+      setCurrentVariationError("");
+    } else {
+      setCurrentVariationError("You can only add up to 3 variations.");
+    }
+  };
 
-    return (
-      <div style={{ display: "flex", flexDirection: "column", margin: "8px" }}>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
-          <label htmlFor="variationName" style={{ marginRight: "8px" }}>Product Variation Name:</label>
-          <input
-            type="text"
-            placeholder="colour/size etc"
-            id="variationName"
-            value={variationName}
-            onChange={handleVariationNameChange}
-          />
-          {variationName && (
-            <p style={{ color: 'red', marginLeft: '8px', flexShrink: 0 }}>Click &quot;Add Variation&quot; to add the variation.</p>
-          )}
-        </div>
+  const handleDeleteVariation = (index) => {
+    const updatedVariations = [...propVariations];
+    updatedVariations.splice(index, 1);
+    setVariations(updatedVariations);
+  };
 
-        <div style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
-          <label htmlFor="numVariationTypes" style={{ marginRight: "8px" }}>Number of Variation Types:</label>
-          <select
-            id="numVariationTypes"
-            value={numVariationTypes}
-            onChange={handleNumVariationTypesChange}
-          >
-            {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-              <option key={num} value={num}>{num}</option>
-            ))}
-          </select>
-        </div>
+  return (
+    <div style={{ display: "flex", flexDirection: "column", margin: "8px" }}>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
+        <label htmlFor="variationName" style={{ marginRight: "8px" }}>Product Variation Name:</label>
+        <input
+          type="text"
+          placeholder="colour/size etc"
+          id="variationName"
+          value={variationName}
+          onChange={handleVariationNameChange}
+        />
+        {variationName && (
+          <p style={{ color: 'red', marginLeft: '8px', flexShrink: 0 }}>Click &quot;Add Variation&quot; to add the variation.</p>
+        )}
+      </div>
 
-        <div>
-          {Array.from({ length: numVariationTypes }).map((_, index) => (
-            <div key={index} style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
-              <label htmlFor={`variationType${index}`} style={{ marginRight: "8px" }}>Variation Type {index + 1}:</label>
-              <input
-                type="text"
-                id={`variationType${index}`}
-                value={variationTypes[index]}
-                onChange={(event) => handleVariationTypeChange(index, event)}
-              />
-            </div>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
+        <label htmlFor="numVariationTypes" style={{ marginRight: "8px" }}>Number of Variation Types:</label>
+        <select
+          id="numVariationTypes"
+          value={numVariationTypes}
+          onChange={handleNumVariationTypesChange}
+        >
+          {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+            <option key={num} value={num}>{num}</option>
           ))}
-        </div>
+        </select>
+      </div>
 
-        <button onClick={handleAddVariation} style={{ width: '150px' }}>Add Variation</button>
-        {currentVariationError && <p className="error">{currentVariationError}</p>}
-
-        {propVariations.map((variation, index) => (
-          <div key={index} style={{ border: "1px solid #ccc", padding: "8px", width: 'fit-content', margin: "8px 0" }}>
-            <p>Variation Name: {variation.name}</p>
-            <p>Variation Types: {variation.types.join(', ')}</p>
-            <button onClick={() => handleDeleteVariation(index)}>Delete Variation</button>
+      <div>
+        {Array.from({ length: numVariationTypes }).map((_, index) => (
+          <div key={index} style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
+            <label htmlFor={`variationType${index}`} style={{ marginRight: "8px" }}>Variation Type {index + 1}:</label>
+            <input
+              type="text"
+              id={`variationType${index}`}
+              value={variationTypes[index]}
+              onChange={(event) => handleVariationTypeChange(index, event)}
+            />
           </div>
         ))}
       </div>
-    );
-  };
 
-  Variations.propTypes = {
-    variations: PropTypes.array.isRequired,
-    setVariations: PropTypes.func.isRequired,
-  };
+      <button onClick={handleAddVariation} style={{ width: '150px' }}>Add Variation</button>
+      {currentVariationError && <p className="error">{currentVariationError}</p>}
 
-  export default Variations;
+      {propVariations.map((variation, index) => (
+        <div key={index} style={{ border: "1px solid #ccc", padding: "8px", width: 'fit-content', margin: "8px 0" }}>
+          <p>Variation Name: {variation.name}</p>
+          <p>Variation Types: {variation.types.join(', ')}</p>
+          <button onClick={() => handleDeleteVariation(index)}>Delete Variation</button>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+Variations.propTypes = {
+  variations: PropTypes.array.isRequired,
+  setVariations: PropTypes.func.isRequired,
+};
+
+export default Variations;
