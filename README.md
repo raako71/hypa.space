@@ -34,18 +34,19 @@ Save categories to user doc and product
 Load user categories in category selector.
 
 3 Feb:
-Input filter for all new product fields. Only upload images if present. Empty product name error. error: require category/sub category. Display "saving" when clicked. Show error if required. Redirect to product page if save success.
+Input filter for all new product fields. Only upload images if present. Empty product name error. Require category/sub category error. Display "saving" when clicked. Show error if required. Redirect to product page if save success. Modify product name for no spaces.
 
 REMAINING:
-Modify product name for no spaces.
-
-modify category objects for name key
+Modify category objects for name key
 
 Add products to an object in user doc for indexing by category.
 
+Individual Product Page.
+
 Products page with sorting by category.
 
-Individual Product Page.
 Edit Product Page.
+
 Delete Photos, add more photos to product.
+
 Select default image for Products.

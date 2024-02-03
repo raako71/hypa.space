@@ -144,10 +144,10 @@ const NewProd = () => {
       }
       // Update the user document with the category tree information
       const userDocRef = doc(db, 'users', userID);
-      // Check if selectedSubSubcategory is null
       if (selectedSubSubcategory === "") {
         const docSnapshot = await getDoc(userDocRef);
-        if (docSnapshot.exists() && !docSnapshot.data().categoryTree[selectedCategory][selectedSubcategory]) {
+        const categoryData = docSnapshot?.data()?.categoryTree;
+        if (!categoryData?.[selectedCategory]?.[selectedSubcategory]) {
           await updateDoc(userDocRef, {
             [`categoryTree.${selectedCategory}.${selectedSubcategory}`]: true
           });
@@ -158,18 +158,19 @@ const NewProd = () => {
           categoryTree: {
             [selectedCategory]: {
               [selectedSubcategory]: {
-                [selectedSubSubcategory]: true // Include selected sub-subcategory
+                [selectedSubSubcategory]: true
               }
             }
           },
         });
       }
-      // Create user directory and product subdirectory in Firebase Storage
+      // Create user directory and product subdirectory in Firebase *Storage*
       const storage = getStorage();
       const userDirectoryRef = ref(storage, `users/${userID}`);
       await uploadString(userDirectoryRef, '');
-      // Define productDocumentName
-      const productDocumentName = `${productName}_${userID}`;
+      const productNameWithoutSpaces = productName.replace(/\s+/g, '');
+      console.log('productName without spaces:', productNameWithoutSpaces);
+      const productDocumentName = `${productNameWithoutSpaces}_${userID}`;
       const productDirectoryRef = ref(storage, `users/${userID}/${productDocumentName}`);
       await uploadString(productDirectoryRef, '');
       if (passedImages.scaled.length > 0 || passedImages.unscaled.length > 0) {
@@ -206,6 +207,7 @@ const NewProd = () => {
         variations,
         category,
         userId: userID,
+        images: passedImages.scaled.length > 0 || passedImages.unscaled.length > 0
         // Include other relevant data
       };
       const docSnapshot = await getDoc(userProductRef);
