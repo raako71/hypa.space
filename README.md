@@ -36,7 +36,17 @@ Load user categories in category selector.
 3 Feb:
 Input filter for all new product fields. Only upload images if present. Empty product name error. Require category/sub category error. Display "saving" when clicked. Show error if required. Redirect to product page if save success. Modify product name for no spaces.
 
+7 Feb:
+Load sub categories in editor.
+Load sub sub.
+
 REMAINING:
+Add new of each, and handling for each case
+Save to user doc
+load from user doc
+Save item to productTree object (same as CategoryTree without name key)
+
+
 Modify category objects for name key
 
 Add products to an object in user doc for indexing by category.
