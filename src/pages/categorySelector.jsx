@@ -7,17 +7,11 @@ import { auth, db } from '../firebase-config';
 const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSelectedSubSubcategory }) => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategoryLocal] = useState('');
-  const [subcategories, setSubcategories] = useState([]);
-  const [selectedSubcategory, setSelectedSubcategoryLocal] = useState('');
-  const [subSubcategories, setSubSubcategories] = useState([]);
-  const [selectedSubSubcategory, setSelectedSubSubcategoryLocal] = useState('');
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [selectedSubcategory, setSelectedSubCategoryLocal] = useState('');
+  const [selectedSubSubcategory, setSelectedSubSubCategoryLocal] = useState('');
   const [newCategory, setNewCategory] = useState('');
-  const [newSubcategory, setNewSubcategory] = useState('');
-  const [newSubSubcategory, setNewSubSubcategory] = useState('');
-  const newCategoryInputRef = useRef(null);
-  const newSubcategoryInputRef = useRef(null);
-  const newSubSubcategoryInputRef = useRef(null);
-
+  const newCategoryInputRef = useRef(null); // Define ref for the new category input
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -25,50 +19,24 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSele
         const categoriesCollectionRef = collection(db, 'categories');
         const querySnapshot = await getDocs(categoriesCollectionRef);
         const categoriesData = {};
+
         querySnapshot.forEach((doc) => {
           const categoryName = doc.id;
           const categoryData = doc.data();
-          const subcategories = Object.keys(categoryData);
-          const categoryObject = {};
-          subcategories.forEach((subcategory) => {
-            if (categoryData[subcategory] === true) {
-              categoryObject[subcategory] = true; // No nested categories, set to true
-            } else {
-              // Nested categories exist, copy the nested object
-              categoryObject[subcategory] = { ...categoryData[subcategory] };
-            }
-          });
-          categoriesData[categoryName] = categoryObject;
+          categoriesData[categoryName] = categoryData;
         });
+
         setCategories(categoriesData);
+        setLoadingCategories(false);
       } catch (error) {
         console.error('Error fetching categories:', error);
-      }
-    };
-
-    const fetchUserCategories = async () => {
-      try {
-        const userID = auth.currentUser.uid;
-        const userDocRef = doc(db, 'users', userID);
-        const docSnapshot = await getDoc(userDocRef);
-        if (docSnapshot.exists) {
-          const userData = docSnapshot.data();
-          const categoryTree = userData.categoryTree;
-          // Merge categoryTree with categoriesData
-        const mergedCategoriesData = { ...categories, ...categoryTree };
-        setCategories(mergedCategoriesData);
-        } else {
-          console.log('Document does not exist');
-        }
-      } catch (error) {
-        console.error('Error fetching userID document:', error);
+        setLoadingCategories(false);
       }
     };
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         fetchCategories();
-        fetchUserCategories();
       } else {
         console.log('User is logged out');
       }
@@ -77,131 +45,51 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSele
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (setSelectedCategory) {
-      setSelectedCategory(selectedCategory);
-    }
-  }, [selectedCategory, setSelectedCategory]);
-
-  useEffect(() => {
-    if (setSelectedSubcategory) {
-      setSelectedSubcategory(selectedSubcategory);
-    }
-  }, [selectedSubcategory, setSelectedSubcategory]);
-
-  useEffect(() => {
-    if (setSelectedSubSubcategory) {
-      setSelectedSubSubcategory(selectedSubSubcategory);
-    }
-  }, [selectedSubSubcategory, setSelectedSubSubcategory]);
-
-  const handleCategorySelect = (category) => {
-    setSelectedCategoryLocal(category);
-    if (category === "__new_category") {
-      // Clear subcategory and sub-subcategory selections
-      setSelectedSubcategoryLocal("");
-      setSelectedSubSubcategoryLocal("");
-      return; // Exit early
-    }
-    if (category) {
-      if (categories && categories[category]) {
-        setSubcategories(Object.keys(categories[category]));
-        setSelectedSubcategoryLocal('');
-        setSelectedSubSubcategoryLocal('');
-      } else {
-        console.error(`Category "${category}" does not exist in the categories state.`);
-      }
-    } else {
-      setSubcategories([]);
-      setSelectedSubcategoryLocal('');
-      setSelectedSubSubcategoryLocal('');
-    }
-  };
-
-
-  const handleSubcategorySelect = (subcategory) => {
-    setSelectedSubcategoryLocal(subcategory);
-    setSelectedSubSubcategoryLocal('');
-    
-    if (subcategory === "__new_subcategory") {
-      return; // Exit early if "__new_subcategory" is selected
-    }
-  
-    if (subcategory) {
-      if (categories[selectedCategory] && categories[selectedCategory][subcategory]) {
-        setSubSubcategories(Object.keys(categories[selectedCategory][subcategory]));
-      } else {
-        console.error(`Subcategory "${subcategory}" does not exist in the categories state.`);
-      }
-    } else {
-      setSubSubcategories([]);
-    }
-  };
-  
-
-  const handleSubSubcategorySelect = (subSubcategory) => {
-    setSelectedSubSubcategoryLocal(subSubcategory);
-  };
-
   const handleNewCategorySave = () => {
-    if (newCategory.trim() !== '') {
-      const updatedCategories = {
-        ...categories,
-        [newCategory]: {}
-      };
-      setCategories(updatedCategories);
-      setSelectedCategoryLocal(newCategory); // Update selected category to the new one
-      setSubcategories(Object.keys(updatedCategories[newCategory]));
+    const newCategoryTrimmed = newCategory.replace(/\s+/g, '');
+    const trimmedCat = newCategory.trim()
+    if (newCategoryTrimmed) { // Check if the trimmed category is not empty
+      setCategories(prevCategories => ({
+        ...prevCategories,
+        [newCategoryTrimmed]: { name: trimmedCat }
+      }));
+  
+      // Set selected category to the new category
+      setSelectedCategoryLocal(newCategoryTrimmed);
+  
+      // Reset newCategory state
       setNewCategory('');
-    }
-  };
-
-  const handleNewSubcategorySave = () => {
-    if (newSubcategory.trim() !== '') {
-      const updatedCategories = {
-        ...categories,
-        [selectedCategory]: {
-          ...categories[selectedCategory],
-          [newSubcategory]: {}
-        }
-      };
-      setCategories(updatedCategories);
-      setSelectedSubcategoryLocal(newSubcategory); // Update selected subcategory to the new one
-      setSubcategories(Object.keys(updatedCategories[selectedCategory]));
-      setNewSubcategory('');
-    }
-  };
-
-  const handleNewSubSubcategorySave = () => {
-    if (newSubSubcategory.trim() !== '') {
-      const updatedCategories = {
-        ...categories,
-        [selectedCategory]: {
-          ...categories[selectedCategory],
-          [selectedSubcategory]: {
-            ...categories[selectedCategory][selectedSubcategory],
-            [newSubSubcategory]: {}
-          }
-        }
-      };
-      setCategories(updatedCategories);
-      setSelectedSubSubcategoryLocal(newSubSubcategory); // Update selected sub-subcategory to the new one
-      setSubSubcategories(Object.keys(updatedCategories[selectedCategory][selectedSubcategory]));
-      setNewSubSubcategory('');
+  
+      // Focus on the input field after saving
+      if (newCategoryInputRef.current) {
+        newCategoryInputRef.current.focus();
+      }
+    } else {
+      console.log('New category name is empty or contains only spaces.');
     }
   };
   
+
   return (
     <div>
       <div style={{ margin: "8px" }}>
+        {loadingCategories ? (
+          <p>Loading global Categories...</p>
+        ) : Object.keys(categories).length > 0 ? (
+          <p>Loaded global Categories</p>
+        ) : (
+          <p>Failed to load global Categories </p>
+        )}
+
         <label>Select Category: </label>
-        <select value={selectedCategory} onChange={(e) => handleCategorySelect(e.target.value)}>
+        <select value={selectedCategory} onChange={(e) => setSelectedCategoryLocal(e.target.value)}>
           <option value="">Choose a Category</option>
-          {Object.keys(categories).map((category) => (
-            <option key={category} value={category}>
-              {category}
+          {Object.keys(categories).map((categoryKey) => (
+            <option key={categoryKey} value={categoryKey}>
+              {categories[categoryKey].name}
             </option>
           ))}
+
           <option value="__new_category">Add New Category</option>
         </select>
         {/* Add New Category input field */}
@@ -211,88 +99,79 @@ const CategorySelector = ({ setSelectedCategory, setSelectedSubcategory, setSele
               type="text"
               placeholder="Enter new category"
               value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
+              onChange={(e) => setNewCategory(e.target.value.replace(/[^a-zA-Z0-9\s_-]/g, ''))}
               style={{ marginRight: "5px" }}
               ref={newCategoryInputRef}
               autoFocus
             />
             <button onClick={() => {
               handleNewCategorySave();
-              if (newCategoryInputRef.current) {
-                newCategoryInputRef.current.focus();
-              }
             }}>Save</button>
           </div>
         )}
+
+        {selectedCategory && (
+          <div style={{ margin: "8px" }}>
+            <label>Select Subcategory: </label>
+            <select value={selectedSubcategory} onChange={(e) => setSelectedSubCategoryLocal(e.target.value)}>
+              <option value="">Choose a Subcategory</option>
+              {Object.keys(categories[selectedCategory] || {}).map((subcategoryKey) => (
+                // Exclude 'name' key assuming it's not a subcategory key
+                subcategoryKey !== 'name' && (
+                  <option key={subcategoryKey} value={subcategoryKey}>
+                    {categories[selectedCategory][subcategoryKey].name}
+                  </option>
+                )
+              ))}
+              <option value="__new_subcategory">Add New Subcategory</option>
+            </select>
+            {selectedSubcategory === "__new_subcategory" && (
+              <div style={{ marginTop: "5px" }}>
+                <input
+                  type="text"
+                  placeholder="Enter new subcategory"
+                  value={newSubcategory}
+                  onChange={(e) => setNewSubcategory(e.target.value)}
+                  style={{ marginRight: "5px" }}
+                  autoFocus
+                />
+                <button onClick={handleNewSubcategorySave}>Save</button>
+              </div>
+            )}
+
+            {selectedSubcategory && (
+              <div style={{ margin: "8px" }}>
+                <label>Select Sub-Subcategory (optional): </label>
+                <select value={selectedSubSubcategory} onChange={(e) => setSelectedSubSubCategoryLocal(e.target.value)}>
+                  <option value="">Choose a Sub-Subcategory</option>
+                  {Object.keys(categories[selectedCategory][selectedSubcategory] || {}).map((subSubcategoryKey) => (
+                    // Exclude 'name' key assuming it's not a subcategory key
+                    subSubcategoryKey !== 'name' && (
+                      <option key={subSubcategoryKey} value={subSubcategoryKey}>
+                        {categories[selectedCategory][selectedSubcategory][subSubcategoryKey].name}
+                      </option>
+                    )
+                  ))}
+                  <option value="__new_subsubcategory">Add New Sub-Subcategory</option>
+                </select>
+                {selectedSubSubcategory === "__new_subsubcategory" && (
+                  <div style={{ marginTop: "5px" }}>
+                    <input
+                      type="text"
+                      placeholder="Enter new sub-subcategory"
+                      value={newSubSubcategory}
+                      onChange={(e) => setNewSubSubcategory(e.target.value)}
+                      style={{ marginRight: "5px" }}
+                      autoFocus
+                    />
+                    <button onClick={handleNewSubSubcategorySave}>Save</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-
-      {selectedCategory && (
-        <div style={{ margin: "8px" }}>
-          <label>Select Subcategory: </label>
-          <select value={selectedSubcategory} onChange={(e) => handleSubcategorySelect(e.target.value)}>
-            <option value="">Choose a Subcategory</option>
-            {subcategories.map((subcategory) => (
-              <option key={subcategory} value={subcategory}>
-                {subcategory}
-              </option>
-            ))}
-            <option value="__new_subcategory">Add New Subcategory</option>
-          </select>
-          {selectedSubcategory === "__new_subcategory" && (
-            <div style={{ marginTop: "5px" }}>
-              <input
-                type="text"
-                placeholder="Enter new subcategory"
-                value={newSubcategory}
-                onChange={(e) => setNewSubcategory(e.target.value)}
-                style={{ marginRight: "5px" }}
-                ref={newSubcategoryInputRef}
-                autoFocus
-              />
-              <button onClick={() => {
-                handleNewSubcategorySave();
-                if (newSubcategoryInputRef.current) {
-                  newSubcategoryInputRef.current.focus();
-                }
-              }}>Save</button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {selectedSubcategory && (
-        <div style={{ margin: "8px" }}>
-          <label>Select Sub-subcategory (optional): </label>
-          <select value={selectedSubSubcategory} onChange={(e) => handleSubSubcategorySelect(e.target.value)}>
-            <option value="">Choose a Sub-subcategory</option>
-            {subSubcategories.map((subSubcategory) => (
-              <option key={subSubcategory} value={subSubcategory}>
-                {subSubcategory}
-              </option>
-            ))}
-            <option value="__new_subsubcategory">Add New Sub-subcategory</option>
-          </select>
-          {selectedSubSubcategory === "__new_subsubcategory" && (
-            <div style={{ marginTop: "5px" }}>
-              <input
-                type="text"
-                placeholder="Enter new sub-subcategory"
-                value={newSubSubcategory}
-                onChange={(e) => setNewSubSubcategory(e.target.value)}
-                style={{ marginRight: "5px" }}
-                ref={newSubSubcategoryInputRef}
-              />
-              <button onClick={() => {
-                handleNewSubSubcategorySave();
-                if (newSubSubcategoryInputRef.current) {
-                  newSubSubcategoryInputRef.current.focus();
-                }
-              }}>Save</button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
