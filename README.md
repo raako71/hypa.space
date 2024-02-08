@@ -39,24 +39,21 @@ Input filter for all new product fields. Only upload images if present. Empty pr
 7 Feb:
 Load sub categories in editor.
 Load sub sub.
+Add new of each, and handling for each case
+Pass category data to parent
 
 REMAINING:
-Add new of each, and handling for each case
 Save to user doc
 load from user doc
 Save item to productTree object (same as CategoryTree without name key)
 
-
-Modify category objects for name key
-
-Add products to an object in user doc for indexing by category.
-
 Individual Product Page.
+Edit button for product.
 
 Products page with sorting by category.
-
-Edit Product Page.
 
 Delete Photos, add more photos to product.
 
 Select default image for Products.
+
+delete product, and update upser ctegory tree accordingly.

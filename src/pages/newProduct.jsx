@@ -7,6 +7,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import ImageModification from "./imageUpload";
 import { getStorage, ref, uploadString } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
+import _ from 'lodash';
 
 const NewProd = () => {
   const [productName, setProductName] = useState("");
@@ -19,8 +20,41 @@ const NewProd = () => {
   const [userID, setUserID] = useState(null);
   const [passedImages, setPassedImages] = useState({ scaled: [], unscaled: [] });
   const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(null); // New state variable
+  const [categories, setCategories] = useState([]);
+
 
   const navigate = useNavigate();
+
+
+  useEffect(() => {
+    const categoryTree = {};
+
+    // Add selected category if it exists
+    if (selectedCategory) {
+      const categoryName = categories[selectedCategory]?.name;
+      if (categoryName) {
+        categoryTree[selectedCategory] = { name: categoryName };
+
+        // Add selected subcategory if it exists
+        if (selectedSubcategory) {
+          const subcategoryName = categories[selectedCategory][selectedSubcategory]?.name;
+          if (subcategoryName) {
+            categoryTree[selectedCategory][selectedSubcategory] = { name: subcategoryName };
+
+            // Add selected subsubcategory if it exists
+            if (selectedSubSubcategory) {
+              const subSubcategoryName = categories[selectedCategory][selectedSubcategory][selectedSubSubcategory]?.name;
+              if (subSubcategoryName) {
+                categoryTree[selectedCategory][selectedSubcategory][selectedSubSubcategory] = { name: subSubcategoryName };
+              }
+            }
+          }
+        }
+      }
+    }
+
+  }, [categories, selectedCategory, selectedSubcategory, selectedSubSubcategory]);
+
 
   const handleProcessedImagesUpload = (images) => {
     const scaledDataURLs = images.scaled.toDataURL();
@@ -123,7 +157,6 @@ const NewProd = () => {
         uploadImages(images.scaled, 'S'),
         uploadImages(images.unscaled, 'L')
       ]);
-      console.log('Images uploaded successfully.');
     } catch (error) {
       console.error('Error uploading images:', error);
     }
@@ -142,50 +175,54 @@ const NewProd = () => {
       if (productName === "") {
         throw new Error("Empty Product Name");
       }
-      // Check if selectedSubSubcategory is empty
-      if (cleanedSelectedSubSubcategory === "") {
-        category = {
-          [cleanedSelectedCategory]: {
-            name: selectedCategory,
-            [cleanedSelectedSubcategory]: {
-              name: selectedSubcategory,
-            }
-          }
-        };
-      } else {
-        category = {
-          [cleanedSelectedCategory]: {
-            name: selectedCategory,
-            [cleanedSelectedSubcategory]: {
-              name: selectedSubcategory,
-              [cleanedSelectedSubSubcategory]: {
-                name: selectedSubSubcategory,
+      //update categories in user file
+      const userDocRef = doc(db, 'users', userID);
+
+      // Fetch the existing document from Firestore
+      const userDocSnapshot = await getDoc(userDocRef);
+      const existingData = userDocSnapshot.data();
+
+      // Extract the categoryTree object if it exists
+      const existingCategoryTree = existingData?.categoryTree || {};
+      console.log("existingCategoryTree:", JSON.stringify(existingCategoryTree, null, 2));
+
+      // Construct the updated categoryTree object based on client-side updates
+      const categoryTreeUpdate = {};
+      if (selectedCategory) {
+        const categoryName = categories[selectedCategory]?.name;
+        if (categoryName) {
+          categoryTreeUpdate[selectedCategory] = { name: categoryName };
+          if (selectedSubcategory) {
+            const subcategoryName = categories[selectedCategory][selectedSubcategory]?.name;
+            if (subcategoryName) {
+              categoryTreeUpdate[selectedCategory][selectedSubcategory] = { name: subcategoryName };
+              if (selectedSubSubcategory) {
+                const subSubcategoryName = categories[selectedCategory][selectedSubcategory][selectedSubSubcategory]?.name;
+                if (subSubcategoryName) {
+                  categoryTreeUpdate[selectedCategory][selectedSubcategory][selectedSubSubcategory] = { name: subSubcategoryName };
+                }
               }
             }
           }
-        };
-      }
-      // Update the user document with the category tree information
-      const userDocRef = doc(db, 'users', userID);
-      if (cleanedSelectedSubSubcategory === "") {
-        const docSnapshot = await getDoc(userDocRef);
-        const categoryData = docSnapshot?.data()?.categoryTree;
-        if (!categoryData?.[cleanedSelectedCategory]?.[cleanedSelectedSubcategory]) {
-          await updateDoc(userDocRef, {
-            [`categoryTree.${cleanedSelectedCategory}.${cleanedSelectedSubcategory}`]: category[cleanedSelectedCategory][cleanedSelectedSubcategory]
-          });
         }
-      } else {
-        await updateDoc(userDocRef, {
-          categoryTree: category
-        });
       }
+      console.log("categoryTreeUpdate:", JSON.stringify(categoryTreeUpdate, null, 2));
+
+      // Merge the existing categoryTree with the client-side updates
+      const mergedCategoryTree = _.merge({}, existingCategoryTree, categoryTreeUpdate)
+      
+      console.log("mergedCategoryTree:", JSON.stringify(categoryTreeUpdate, null, 2));;
+
+      if (Object.keys(mergedCategoryTree).length > 0) {
+        // Update the categoryTree within the user document
+        await updateDoc(userDocRef, { categoryTree: mergedCategoryTree });
+      }
+
       // Create user directory and product subdirectory in Firebase *Storage*
       const storage = getStorage();
       const userDirectoryRef = ref(storage, `users/${userID}`);
       await uploadString(userDirectoryRef, '');
       const productNameWithoutSpaces = productName.replace(/\s+/g, '');
-      console.log('productName without spaces:', productNameWithoutSpaces);
       const productDocumentName = `${productNameWithoutSpaces}_${userID}`;
       const productDirectoryRef = ref(storage, `users/${userID}/${productDocumentName}`);
       await uploadString(productDirectoryRef, '');
@@ -197,24 +234,37 @@ const NewProd = () => {
           console.error('Error uploading images:', error);
         }
       }
-      else console.log("No Images to upload.")
       // Save product data
       const userProductRef = doc(db, 'products', productDocumentName);
-      let category = {};
-      const removeSpaces = (text) => text.replace(/\s+/g, '');
-      const cleanedSelectedCategory = removeSpaces(selectedCategory);
-      const cleanedSelectedSubcategory = removeSpaces(selectedSubcategory);
-      const cleanedSelectedSubSubcategory = removeSpaces(selectedSubSubcategory);
+
+      const categoryUpdate = {};
+
+      if (selectedCategory) {
+        categoryUpdate[selectedCategory] = { name: categories[selectedCategory]?.name };
+
+        if (selectedSubcategory) {
+          categoryUpdate[selectedCategory][selectedSubcategory] = {
+            name: categories[selectedCategory]?.[selectedSubcategory]?.name
+          };
+
+          if (selectedSubSubcategory && categories[selectedCategory][selectedSubcategory][selectedSubSubcategory]) {
+            categoryUpdate[selectedCategory][selectedSubcategory][selectedSubSubcategory] = {
+              name: categories[selectedCategory][selectedSubcategory][selectedSubSubcategory].name
+            };
+          }
+        }
+      }
 
       const productData = {
         productName,
         productDescription,
         variations,
-        category,
+        category: categoryUpdate,
         userId: userID,
         images: passedImages.scaled.length > 0 || passedImages.unscaled.length > 0
         // Include other relevant data
       };
+
       const docSnapshot = await getDoc(userProductRef);
       if (docSnapshot.exists()) {
         console.log('Product exists!');
@@ -282,6 +332,7 @@ const NewProd = () => {
       <Variations variations={variations} setVariations={setVariations} />
 
       <CategorySelector
+        sendCategories={setCategories}
         setSelectedCategory={setSelectedCategory}
         setSelectedSubcategory={setSelectedSubcategory}
         setSelectedSubSubcategory={setSelectedSubSubcategory} // Pass down setSelectedSubSubcategory
