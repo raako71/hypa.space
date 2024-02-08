@@ -162,31 +162,14 @@ const NewProd = () => {
     }
   };
 
-
-
-
-
-  const handleSaveProduct = async () => {
-    setSaving(true);
+  const updateCategoriesInUserFile = async () => {
     try {
-      if (!selectedCategory || !selectedSubcategory) {
-        throw new Error("Category and Subcategory are not selected.");
-      }
-      if (productName === "") {
-        throw new Error("Empty Product Name");
-      }
       //update categories in user file
       const userDocRef = doc(db, 'users', userID);
-
-      // Fetch the existing document from Firestore
       const userDocSnapshot = await getDoc(userDocRef);
       const existingData = userDocSnapshot.data();
-
-      // Extract the categoryTree object if it exists
       const existingCategoryTree = existingData?.categoryTree || {};
       console.log("existingCategoryTree:", JSON.stringify(existingCategoryTree, null, 2));
-
-      // Construct the updated categoryTree object based on client-side updates
       const categoryTreeUpdate = {};
       if (selectedCategory) {
         const categoryName = categories[selectedCategory]?.name;
@@ -206,19 +189,19 @@ const NewProd = () => {
           }
         }
       }
-      console.log("categoryTreeUpdate:", JSON.stringify(categoryTreeUpdate, null, 2));
-
-      // Merge the existing categoryTree with the client-side updates
       const mergedCategoryTree = _.merge({}, existingCategoryTree, categoryTreeUpdate)
-      
-      console.log("mergedCategoryTree:", JSON.stringify(categoryTreeUpdate, null, 2));;
-
       if (Object.keys(mergedCategoryTree).length > 0) {
-        // Update the categoryTree within the user document
         await updateDoc(userDocRef, { categoryTree: mergedCategoryTree });
       }
+    } catch (error) {
+      console.error('Error updating categories in user file:', error);
+      throw error; // Rethrow the error to handle it in the main function
+    }
+  };
 
-      // Create user directory and product subdirectory in Firebase *Storage*
+  const uploadImages = async () => {
+    try {
+      // Upload images
       const storage = getStorage();
       const userDirectoryRef = ref(storage, `users/${userID}`);
       await uploadString(userDirectoryRef, '');
@@ -234,19 +217,34 @@ const NewProd = () => {
           console.error('Error uploading images:', error);
         }
       }
-      // Save product data
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      throw error; // Rethrow the error to handle it in the main function
+    }
+  };
+
+  const handleSaveProduct = async () => {
+    setSaving(true);
+    try {
+      if (!selectedCategory || !selectedSubcategory) {
+        throw new Error("Category and Subcategory are not selected.");
+      }
+      if (productName === "") {
+        throw new Error("Empty Product Name");
+      }
+
+      // Rest of your code...
+      //Update product in DB
+      const productNameWithoutSpaces = productName.replace(/\s+/g, '');
+      const productDocumentName = `${productNameWithoutSpaces}_${userID}`;
       const userProductRef = doc(db, 'products', productDocumentName);
-
       const categoryUpdate = {};
-
       if (selectedCategory) {
         categoryUpdate[selectedCategory] = { name: categories[selectedCategory]?.name };
-
         if (selectedSubcategory) {
           categoryUpdate[selectedCategory][selectedSubcategory] = {
             name: categories[selectedCategory]?.[selectedSubcategory]?.name
           };
-
           if (selectedSubSubcategory && categories[selectedCategory][selectedSubcategory][selectedSubSubcategory]) {
             categoryUpdate[selectedCategory][selectedSubcategory][selectedSubSubcategory] = {
               name: categories[selectedCategory][selectedSubcategory][selectedSubSubcategory].name
@@ -254,7 +252,6 @@ const NewProd = () => {
           }
         }
       }
-
       const productData = {
         productName,
         productDescription,
@@ -262,9 +259,7 @@ const NewProd = () => {
         category: categoryUpdate,
         userId: userID,
         images: passedImages.scaled.length > 0 || passedImages.unscaled.length > 0
-        // Include other relevant data
       };
-
       const docSnapshot = await getDoc(userProductRef);
       if (docSnapshot.exists()) {
         console.log('Product exists!');
@@ -273,6 +268,8 @@ const NewProd = () => {
         if (shouldUpdate) {
           // If the user confirms, update the document
           await updateDoc(userProductRef, productData);
+          await updateCategoriesInUserFile();
+          await uploadImages();
           console.log('Product updated successfully!');
           return navigate(`/products?productName=${productDocumentName}`);
         } else {
@@ -281,6 +278,8 @@ const NewProd = () => {
       } else {
         // If the document doesn't exist, create a new one
         await setDoc(userProductRef, productData);
+        await updateCategoriesInUserFile();
+        await uploadImages();
         console.log('Product saved successfully!');
         return navigate(`/products?productName=${productDocumentName}`);
       }
@@ -290,6 +289,7 @@ const NewProd = () => {
     }
     setSaving(false);
   };
+
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
