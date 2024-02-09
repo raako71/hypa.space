@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getDocs, collection } from 'firebase/firestore/lite';
 import { auth, db } from '../firebase-config';
+import { doc, getDoc } from 'firebase/firestore/lite';
+import _ from 'lodash';
 
 const CategorySelector = ({
   sendCategories,
@@ -12,7 +14,8 @@ const CategorySelector = ({
 }) => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategoryLocal] = useState('');
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState("Waiting to load Categories");
+  const [loadingUserCategories, setLoadingUserCategories] = useState("");
   const [selectedSubcategory, setSelectedSubCategoryLocal] = useState('');
   const [selectedSubSubcategory, setSelectedSubSubCategoryLocal] = useState('');
   const [newCategory, setNewCategory] = useState('');
@@ -23,29 +26,46 @@ const CategorySelector = ({
   const newSubSubcategoryInputRef = useRef(null); // Define ref for the new sub-subcategory input
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    // Function to fetch local categories data
+    const fetchLocalCategories = async (userID) => {
+      let categoriesData = {};
       try {
+        setLoadingCategories("Loading Global Categories.");
         const categoriesCollectionRef = collection(db, 'categories');
         const querySnapshot = await getDocs(categoriesCollectionRef);
-        const categoriesData = {};
-
         querySnapshot.forEach((doc) => {
           const categoryName = doc.id;
           const categoryData = doc.data();
           categoriesData[categoryName] = categoryData;
         });
-
         setCategories(categoriesData);
-        setLoadingCategories(false);
+        setLoadingCategories("Loaded Global Categories.");
       } catch (error) {
-        console.error('Error fetching categories:', error);
-        setLoadingCategories(false);
+        setLoadingCategories("Failed to load Global Categories.");
+        console.error('Error fetching Global categories:', error);
+      }
+      try {
+        setLoadingUserCategories("Loading User Categories.");
+        // Fetch existing category tree from user document
+        const userDocRef = doc(db, 'users', userID);
+        const userDocSnapshot = await getDoc(userDocRef);
+        const existingData = userDocSnapshot.data();
+        const existingCategoryTree = existingData?.categoryTree || {};
+        // Deep merge the existing category tree with the global categories
+        const mergedCategories = _.merge({}, categoriesData, existingCategoryTree);
+        // Update the categories state with the merged category tree
+        setCategories(mergedCategories);
+        setLoadingUserCategories("Loaded User Categories.");
+      } catch (error) {
+        setLoadingUserCategories("Failed to load User Categories.");
+        console.error('Error fetching local categories:', error);
       }
     };
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        fetchCategories();
+        const userID = user.uid;
+        fetchLocalCategories(userID);
       } else {
         console.log('User is logged out');
       }
@@ -55,8 +75,9 @@ const CategorySelector = ({
   }, []);
 
   useEffect(() => {
-    if(sendCategories){
-      sendCategories(categories)}
+    if (sendCategories) {
+      sendCategories(categories)
+    }
     setSelectedCategory(selectedCategory);
     setSelectedSubcategory(selectedSubcategory);
     setSelectedSubSubcategory(selectedSubSubcategory);
@@ -134,13 +155,9 @@ const CategorySelector = ({
   return (
     <div>
       <div style={{ margin: '8px' }}>
-        {loadingCategories ? (
-          <p>Loading global Categories...</p>
-        ) : Object.keys(categories).length > 0 ? (
-          <p>Loaded global Categories</p>
-        ) : (
-          <p>Failed to load global Categories </p>
-        )}
+        <p>{loadingCategories}&nbsp;
+          {loadingUserCategories}
+        </p>
 
         <label>Select Category: </label>
         <select value={selectedCategory} onChange={(e) => setSelectedCategoryLocal(e.target.value)}>

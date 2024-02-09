@@ -42,9 +42,9 @@ Load sub sub.
 Add new of each, and handling for each case
 Pass category data to parent
 Save Category to user doc and merge.
+Load categories from user doc and merge with global categories.
 
 REMAINING:
-Load categories from user doc (fetchLocalCategories function) and merge with categories.
 Save item to productTree object in userdoc (same as CategoryTree without name key).
 
 Individual Product Page.
