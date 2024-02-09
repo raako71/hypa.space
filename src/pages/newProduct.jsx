@@ -28,19 +28,16 @@ const NewProd = () => {
 
   useEffect(() => {
     const categoryTree = {};
-
     // Add selected category if it exists
     if (selectedCategory) {
       const categoryName = categories[selectedCategory]?.name;
       if (categoryName) {
         categoryTree[selectedCategory] = { name: categoryName };
-
         // Add selected subcategory if it exists
         if (selectedSubcategory) {
           const subcategoryName = categories[selectedCategory][selectedSubcategory]?.name;
           if (subcategoryName) {
             categoryTree[selectedCategory][selectedSubcategory] = { name: subcategoryName };
-
             // Add selected subsubcategory if it exists
             if (selectedSubSubcategory) {
               const subSubcategoryName = categories[selectedCategory][selectedSubcategory][selectedSubSubcategory]?.name;
@@ -81,7 +78,6 @@ const NewProd = () => {
     }
     if (productName !== "") setErrorMessage("");
   }, [selectedCategory, selectedSubcategory, productName]);
-
   const handleProductDescriptionChange = (event) => {
     const newDescription = event.target.value;
     try {
@@ -101,7 +97,6 @@ const NewProd = () => {
 
 
   const handleProductNameChange = (event) => {
-
     const newName = event.target.value;
     try {
       if (containsHarmfulContent(newName)) {
@@ -121,6 +116,7 @@ const NewProd = () => {
     return harmfulPatterns.test(description);
   };
 
+  // grab UserID
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -128,21 +124,19 @@ const NewProd = () => {
         setUserID(userID);
       }
     });
-
     return () => {
       unsubscribe(); // Cleanup the listener on component unmount
     };
   }, [userID]);
 
+
   const uploadImagesToStorage = async (images, userID, productDocumentName) => {
     const storage = getStorage();
     const storageRef = ref(storage, `users/${userID}/${productDocumentName}`);
-
     const uploadImage = async (imageData, imageName) => {
       const imageRef = ref(storageRef, imageName);
       await uploadString(imageRef, imageData, 'data_url');
     };
-
     const uploadImages = async (imageURLs, prefix) => {
       await Promise.all(
         imageURLs.map(async (imageURL, index) => {
@@ -151,7 +145,6 @@ const NewProd = () => {
         })
       );
     };
-
     try {
       await Promise.all([
         uploadImages(images.scaled, 'S'),
@@ -162,6 +155,7 @@ const NewProd = () => {
     }
   };
 
+
   const updateCategoriesInUserFile = async () => {
     try {
       //update categories in user file
@@ -169,7 +163,6 @@ const NewProd = () => {
       const userDocSnapshot = await getDoc(userDocRef);
       const existingData = userDocSnapshot.data();
       const existingCategoryTree = existingData?.categoryTree || {};
-      console.log("existingCategoryTree:", JSON.stringify(existingCategoryTree, null, 2));
       const categoryTreeUpdate = {};
       if (selectedCategory) {
         const categoryName = categories[selectedCategory]?.name;
@@ -199,6 +192,7 @@ const NewProd = () => {
     }
   };
 
+
   const uploadImages = async () => {
     try {
       // Upload images
@@ -222,6 +216,38 @@ const NewProd = () => {
       throw error; // Rethrow the error to handle it in the main function
     }
   };
+
+  const updateProductTreeInUserFile = async () => {
+    const productNameWithoutSpaces = productName.replace(/\s+/g, '');
+    const productDocumentName = `${productNameWithoutSpaces}_${userID}`;
+    try {
+      //update categories in user file
+      const userDocRef = doc(db, 'users', userID);
+      const userDocSnapshot = await getDoc(userDocRef);
+      const existingData = userDocSnapshot.data();
+      const existingproductTree = existingData?.productTree || {};
+      console.log("existingproductTree:", JSON.stringify(existingproductTree, null, 2));
+      const productTreeUpdate = {};
+      productTreeUpdate[selectedCategory] = {};
+      productTreeUpdate[selectedCategory][selectedSubcategory] = {};
+      if (selectedSubSubcategory) {
+        productTreeUpdate[selectedCategory][selectedSubcategory][selectedSubSubcategory] = {};
+        productTreeUpdate[selectedCategory][selectedSubcategory][selectedSubSubcategory].products = { [productDocumentName]: true };
+      }
+      else {
+        productTreeUpdate[selectedCategory][selectedSubcategory].products = { [productDocumentName]: true };
+      }
+      const mergedProductTree = _.merge({}, existingproductTree, productTreeUpdate)
+      console.log("mergedProductTree:", JSON.stringify(mergedProductTree, null, 2));
+      if (Object.keys(mergedProductTree).length > 0) {
+        await updateDoc(userDocRef, { productTree: mergedProductTree });
+      }
+    } catch (error) {
+      console.error('Error updating productTree in user file:', error);
+      throw error; // Rethrow the error to handle it in the main function
+    }
+  };
+
 
   const handleSaveProduct = async () => {
     setSaving(true);
@@ -269,6 +295,7 @@ const NewProd = () => {
           // If the user confirms, update the document
           await updateDoc(userProductRef, productData);
           await updateCategoriesInUserFile();
+          await updateProductTreeInUserFile();
           await uploadImages();
           console.log('Product updated successfully!');
           return navigate(`/products?productName=${productDocumentName}`);

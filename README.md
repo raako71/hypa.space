@@ -39,15 +39,15 @@ Input filter for all new product fields. Only upload images if present. Empty pr
 7 Feb:
 Load sub categories in editor.
 Load sub sub.
-Add new of each, and handling for each case
-Pass category data to parent
+Add new of each, and handling for each case.
+Pass category data to parent.
 Save Category to user doc and merge.
 Load categories from user doc and merge with global categories.
-
-REMAINING:
 Save item to productTree object in userdoc (same as CategoryTree without name key).
 
+REMAINING:
 Individual Product Page.
+
 Edit button for product.
 
 Products page with sorting by category.
