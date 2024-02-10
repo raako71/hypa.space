@@ -298,7 +298,7 @@ const NewProd = () => {
           await updateProductTreeInUserFile();
           await uploadImages();
           console.log('Product updated successfully!');
-          return navigate(`/products?productName=${productDocumentName}`);
+          return navigate(`/product?productName=${productDocumentName}`);
         } else {
           console.log('Update cancelled by user.');
         }
@@ -308,7 +308,7 @@ const NewProd = () => {
         await updateCategoriesInUserFile();
         await uploadImages();
         console.log('Product saved successfully!');
-        return navigate(`/products?productName=${productDocumentName}`);
+        return navigate(`/product?productName=${productDocumentName}`);
       }
     } catch (error) {
       console.error('Error saving product:', error);

@@ -35,6 +35,10 @@ function App() {
     };
   }, []);
 
+  const queryParameters = new URLSearchParams(window.location.search)
+  const productName = queryParameters.get("productName")
+
+
   return (
     <Router>
       <div id='site'>
@@ -56,7 +60,7 @@ function App() {
             element={<Products />}
           />
           <Route path="/terms" element={<Terms />} />
-          <Route path="/products" element={<ProdBox productNameUserID="laptop_cPPrTRqhv9Rjnle7rqF3wc3gpSb2" />} />
+          <Route path="/product" element={<ProdBox productNameUserID={productName} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />
