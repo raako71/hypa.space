@@ -16,7 +16,7 @@ import Products from "./pages/products"
 
 
 
-export const domain = 'http://localhost:5173'; // Replace with your domain
+export const domain = window.location.origin;
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
