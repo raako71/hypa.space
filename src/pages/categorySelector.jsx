@@ -11,6 +11,7 @@ const CategorySelector = ({
   setSelectedCategory,
   setSelectedSubcategory,
   setSelectedSubSubcategory,
+  loadingTextStyle 
 }) => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategoryLocal] = useState('');
@@ -151,16 +152,28 @@ const CategorySelector = ({
       console.log('New sub-subcategory name is empty or contains only spaces.');
     }
   };
+  const handleCategoryChange = (e) => {
+    const selectedCategory = e.target.value;
+    setSelectedCategoryLocal(selectedCategory);
+    setSelectedSubCategoryLocal(''); // Reset selected subcategory
+    setSelectedSubSubCategoryLocal(''); // Reset selected sub-subcategory
+  };
+  
+  const handleSubcategoryChange = (e) => {
+    const selectedSubcategory = e.target.value;
+    setSelectedSubCategoryLocal(selectedSubcategory);
+    setSelectedSubSubCategoryLocal(''); // Reset selected sub-subcategory
+  };
 
   return (
     <div>
       <div style={{ margin: '8px' }}>
-        <p>{loadingCategories}&nbsp;
+        <p style={loadingTextStyle}>{loadingCategories}&nbsp;
           {loadingUserCategories}
         </p>
 
         <label>Select Category: </label>
-        <select value={selectedCategory} onChange={(e) => setSelectedCategoryLocal(e.target.value)}>
+        <select value={selectedCategory} onChange={handleCategoryChange}>
           <option value="">Choose a Category</option>
           {Object.keys(categories).map((categoryKey) => (
             <option key={categoryKey} value={categoryKey}>
@@ -189,7 +202,7 @@ const CategorySelector = ({
         {selectedCategory && selectedCategory !== '__new_category' && (
           <div style={{ margin: '8px' }}>
             <label>Select Subcategory: </label>
-            <select value={selectedSubcategory} onChange={(e) => setSelectedSubCategoryLocal(e.target.value)}>
+            <select value={selectedSubcategory} onChange={handleSubcategoryChange}>
               <option value="">Choose a Subcategory</option>
               {Object.keys(categories[selectedCategory] || {}).map((subcategoryKey) => (
                 subcategoryKey !== 'name' && (
@@ -259,6 +272,7 @@ CategorySelector.propTypes = {
   setSelectedCategory: PropTypes.func,
   setSelectedSubcategory: PropTypes.func,
   setSelectedSubSubcategory: PropTypes.func,
+  loadingTextStyle: PropTypes.object 
 };
 
 export default CategorySelector;

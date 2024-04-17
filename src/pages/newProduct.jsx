@@ -78,6 +78,7 @@ const NewProd = () => {
     }
     if (productName !== "") setErrorMessage("");
   }, [selectedCategory, selectedSubcategory, productName]);
+
   const handleProductDescriptionChange = (event) => {
     const newDescription = event.target.value;
     try {
@@ -95,7 +96,6 @@ const NewProd = () => {
     }
   };
 
-
   const handleProductNameChange = (event) => {
     const newName = event.target.value;
     try {
@@ -111,6 +111,7 @@ const NewProd = () => {
       console.error(error.message);
     }
   };
+
   const containsHarmfulContent = (description) => {
     const harmfulPatterns = /[^0-9a-zA-Z\s_-]/;
     return harmfulPatterns.test(description);
@@ -155,7 +156,6 @@ const NewProd = () => {
     }
   };
 
-
   const updateCategoriesInUserFile = async () => {
     try {
       //update categories in user file
@@ -191,7 +191,6 @@ const NewProd = () => {
       throw error; // Rethrow the error to handle it in the main function
     }
   };
-
 
   const uploadImages = async () => {
     try {
@@ -306,6 +305,7 @@ const NewProd = () => {
         // If the document doesn't exist, create a new one
         await setDoc(userProductRef, productData);
         await updateCategoriesInUserFile();
+        await updateProductTreeInUserFile();
         await uploadImages();
         console.log('Product saved successfully!');
         return navigate(`/product?productName=${productDocumentName}`);
