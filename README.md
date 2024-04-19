@@ -5,16 +5,18 @@ build for cloud: npm run build
 push to cloud: firebase deploy
 
 REMAINING:
-*Show products in selected category / sub category filter.
-*Add products to header.
-Edit button for product.
-Show all fields in ProdBox.
-Edit product (load existing fields, photos).
-Delete Photos, add more photos to product.
-Select default image for Products.
-delete product, and update user category tree accordingly etc.
+* Choose how many porducts to show, sort into pages.
+* Add products to header.
+* Remove add categories from products page
+* Edit button for product.
+* Show all fields in ProdBox.
+* Edit product (load existing fields, photos).
+* Delete Photos, add more photos to product.
+* Select default image for Products.
+* Delete product, and update user category tree accordingly etc.
 
-
+19 Apr:
+Show images on product page.
 
 17 Apr:
 Create breadcrums with dropdowns dynamiacally on product page.

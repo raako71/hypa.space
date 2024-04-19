@@ -3,7 +3,7 @@ import CategorySelector from "./categorySelector";
 import { auth, db } from '../firebase-config';
 import { doc, getDoc } from 'firebase/firestore/lite';
 import { onAuthStateChanged } from 'firebase/auth';
-
+import ProdBox from "./productBox"
 
 const Products = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -48,7 +48,7 @@ const Products = () => {
     useEffect(() => {
         const getProductChildrenArray = () => {
             let productsArray = [];
-        
+
             if (selectedSubSubcategory !== '') {
                 //console.log("Using sub-subcategory: " + selectedSubSubcategory)
                 const subSubcategory = categories[selectedCategory]?.[selectedSubcategory]?.[selectedSubSubcategory];
@@ -104,11 +104,11 @@ const Products = () => {
             }
             return productsArray;
         };
-        
+
 
         // Update the state with the array of product names
         setProductArray(getProductChildrenArray());
-    }, [selectedCategory, selectedSubcategory, selectedSubSubcategory]);
+    }, [categories, selectedCategory, selectedSubcategory, selectedSubSubcategory]);
 
     return (
         <div>
@@ -122,15 +122,15 @@ const Products = () => {
                 loadingTextStyle={loadingTextStyle}
             />
             <h2>Product Names:</h2>
-            <ul>
+            <div style={{ display: 'flex' }}>
                 {productArray.length > 0 ? (
                     productArray.map((productName, index) => (
-                        <li key={index}>{productName}</li>
+                        <ProdBox key={index} productNameUserID={productName || ''} />
                     ))
                 ) : (
-                    <li>No products found</li>
+                    <div>No products found</div>
                 )}
-            </ul>
+            </div>
         </div>
 
 
