@@ -122,7 +122,7 @@ const Products = () => {
                 loadingTextStyle={loadingTextStyle}
             />
             <h2>Product Names:</h2>
-            <div style={{ display: 'flex' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', }}>
                 {productArray.length > 0 ? (
                     productArray.map((productName, index) => (
                         <ProdBox key={index} productNameUserID={productName || ''} />

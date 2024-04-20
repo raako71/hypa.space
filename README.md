@@ -15,6 +15,9 @@ REMAINING:
 * Select default image for Products.
 * Delete product, and update user category tree accordingly etc.
 
+20 Apr:
+Lightbox in productBox
+
 19 Apr:
 Show images on product page.
 

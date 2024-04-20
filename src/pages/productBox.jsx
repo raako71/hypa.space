@@ -2,21 +2,38 @@ import { useState, useEffect } from 'react';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 
 const ProdBox = ({ productNameUserID }) => {
     const [imageUrl, setImageUrl] = useState('');
+    const [imageUrlL, setImageUrlL] = useState('');
     const [productInfo, setProductInfo] = useState(null);
+    const [isOpen, setIsOpen] = useState(false);
 
-    const getImageByName = async (imageName, userID) => {
+    const openLightbox = () => {
+        setIsOpen(true);
+    };
+
+    const closeLightbox = () => {
+        setIsOpen(false);
+    };
+
+    const getImageByName = async (userID) => {
         // Construct the full path to the image
-        const imagePath = `users/${userID}/${productNameUserID}/${imageName}`;
+        const imagePath = `users/${userID}/${productNameUserID}/S0`;
+        const imagePathL = `users/${userID}/${productNameUserID}/L0`;
 
         // Get the download URL for the image
         const storage = getStorage();
+        const storageL = getStorage();
         const imageRef = ref(storage, imagePath);
+        const imageRefL = ref(storageL, imagePathL);
         const url = await getDownloadURL(imageRef);
+        const urlL = await getDownloadURL(imageRefL);
 
         setImageUrl(url);
+        setImageUrlL(urlL);
     };
 
     const getProductInfo = async (productNameUserID) => {
@@ -45,13 +62,23 @@ const ProdBox = ({ productNameUserID }) => {
     useEffect(() => {
         // Extract the user ID from the productNameUserID
         const [, userID] = productNameUserID.split('_');
-        getImageByName('L0', userID);
+        getImageByName(userID);
         getProductInfo(productNameUserID);
     }, [productNameUserID]);
 
     return (
         <div className="prodBox">
-            {imageUrl && <img src={imageUrl} alt="Product Image" />}
+            <div className="image-container" onClick={openLightbox}>
+                {imageUrl && <img src={imageUrl} alt="Product Image" style={{ cursor: 'pointer' }}/>}
+            </div>
+            {/* Lightbox component */}
+            <Lightbox
+                open={isOpen}
+                close={closeLightbox}
+                slides={[
+                    { src: imageUrlL }
+                ]}
+            />
             {productInfo && (
                 <div className='text'>
                     <h2>{productInfo.productName}</h2>
