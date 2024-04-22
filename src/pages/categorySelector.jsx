@@ -167,11 +167,10 @@ const CategorySelector = ({
 
   return (
     <div>
-      <div style={{ margin: '8px' }}>
-        <p style={loadingTextStyle}>{loadingCategories}&nbsp;
-          {loadingUserCategories}
+      <div>
+        <p style={loadingTextStyle}>{loadingCategories}&nbsp; {loadingUserCategories}
         </p>
-
+        
         <label>Select Category: </label>
         <select value={selectedCategory} onChange={handleCategoryChange}>
           <option value="">Choose a Category</option>

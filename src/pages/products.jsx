@@ -11,22 +11,59 @@ const Products = () => {
     const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(''); // New state variable
     const [categories, setCategories] = useState([]);
     const [loadingUserCategories, setLoadingUserCategories] = useState("");
-    const [productArray, setProductArray] = useState([]);
-    const [loadingTextStyle, setLoadingTextStyle] = useState({ display: 'none' });
+    const [productArray, setProductArray] = useState(-1);
+    const [productsDisplayed, setProductsDisplayed] = useState(1);
+    const displayOptions = [10, 25, 50];
+    const [currentPage, setCurrentPage] = useState(1);
+    const [noOfPages, setNoOfPages] = useState(1);
+    const [textColor, setTextColor] = useState('initial');
+    const loadingTextStyle = { display: 'none' };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
+    useEffect(() => {
+        if (productArray.length > 0) {
+            const newNoOfPages = Math.ceil(productArray.length / productsDisplayed);
+            setNoOfPages(newNoOfPages);
+            setCurrentPage(1); // Reset to the first page when changing the number of products displayed
+        }
+    }, [productArray.length, productsDisplayed]);
+
+    const setNumOfProducts = (e) => {
+        setProductsDisplayed(parseInt(e.target.value, 10));
+    };
+
+    const renderProducts = () => {
+        const startIndex = (currentPage - 1) * productsDisplayed + 1;
+        const endIndex = Math.min(startIndex + productsDisplayed - 1, productArray.length);
+        return (
+            <>
+                {productArray.slice(startIndex - 1, endIndex).map((productName, index) => (
+                    <ProdBox key={index} productNameUserID={productName || ''} />
+                ))}
+            </>
+        );
+    };
+    
+    
+    
 
     // Function to fetch local categories data
     useEffect(() => {
         const fetchLocalCategories = async (userID) => {
-            let categoriesData = {};
             try {
                 setLoadingUserCategories("Loading User Categories.");
+                setTextColor('red');
                 // Fetch existing category tree from user document
                 const userDocRef = doc(db, 'users', userID);
                 const userDocSnapshot = await getDoc(userDocRef);
                 const existingData = userDocSnapshot.data();
                 const productTree = existingData?.productTree || {};
                 setCategories(productTree);
-                setLoadingUserCategories("Loaded User Categories.");
+                setLoadingUserCategories("");
+                setTextColor('initial');
             } catch (error) {
                 setLoadingUserCategories("Failed to load User Categories.");
                 console.error('Error fetching local categories:', error);
@@ -105,38 +142,75 @@ const Products = () => {
             return productsArray;
         };
 
-
         // Update the state with the array of product names
         setProductArray(getProductChildrenArray());
     }, [categories, selectedCategory, selectedSubcategory, selectedSubSubcategory]);
 
+    useEffect(() => {
+        // Set the default value for products displayed
+        setProductsDisplayed(displayOptions[0]); // Set default to the first option
+    }, []); 
+
+
     return (
-        <div>
+        <div style={{ padding: '15px' }}>
             <h1>Products</h1>
-            <p style={{ margin: '8px' }}>{loadingUserCategories}
-            </p>
+            <p style={{ color: textColor }}>{loadingUserCategories}</p>
             <CategorySelector
                 setSelectedCategory={setSelectedCategory}
                 setSelectedSubcategory={setSelectedSubcategory}
                 setSelectedSubSubcategory={setSelectedSubSubcategory}
                 loadingTextStyle={loadingTextStyle}
             />
-            <h2>Product Names:</h2>
-            <div style={{ display: 'flex', flexWrap: 'wrap', }}>
-                {productArray.length > 0 ? (
-                    productArray.map((productName, index) => (
-                        <ProdBox key={index} productNameUserID={productName || ''} />
-                    ))
-                ) : (
-                    <div>No products found</div>
+            <h2>Productos: {productArray.length}</h2>
+            <p style={{ textAlign: 'center', display: productArray.length === 0 ? 'none' : 'block' }}>Show <select value={productsDisplayed} onChange={setNumOfProducts}>
+                {displayOptions.map((option) => (
+                    <option key={option} value={option}>
+                        {`${option}`}
+                    </option>
+                ))}
+            </select> Products</p>
+            <div style={{ textAlign: 'center', display: productArray.length === 0 ? 'none' : 'block' }}>
+                {currentPage > 1 && (
+                    <button onClick={() => handlePageChange(1)}>«</button>
+                )}
+                {currentPage - 2 > 0 && (
+                    <button onClick={() => handlePageChange(currentPage - 2)}>
+                        {currentPage - 2}
+                    </button>
+                )}
+                {currentPage - 1 > 0 && (
+                    <button onClick={() => handlePageChange(currentPage - 1)}>
+                        {currentPage - 1}
+                    </button>
+                )}
+                <button disabled>{currentPage}</button>
+                {currentPage + 1 <= noOfPages && (
+                    <button onClick={() => handlePageChange(currentPage + 1)}>
+                        {currentPage + 1}
+                    </button>
+                )}
+                {currentPage + 2 <= noOfPages && (
+                    <button onClick={() => handlePageChange(currentPage + 2)}>
+                        {currentPage + 2}
+                    </button>
+                )}
+                {currentPage < noOfPages && (
+                    <button onClick={() => handlePageChange(noOfPages)}>»</button>
                 )}
             </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                {productArray === -1 ? null : (
+                    productArray === 0 ? (
+                        <div>No products found</div>
+                    ) : (
+                        renderProducts()
+                    )
+                )}
+
+
+            </div>
         </div>
-
-
-
     );
-
 };
-
 export default Products;

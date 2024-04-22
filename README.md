@@ -4,8 +4,7 @@ run vite app locally: npm run dev
 build for cloud: npm run build  
 push to cloud: firebase deploy
 
-REMAINING:
-* Choose how many porducts to show, sort into pages.
+REMAINING: 
 * Add products to header.
 * Remove add categories from products page
 * Edit button for product.
@@ -14,6 +13,9 @@ REMAINING:
 * Delete Photos, add more photos to product.
 * Select default image for Products.
 * Delete product, and update user category tree accordingly etc.
+
+22 Apr:
+Choose how many products to show, sort into pages.
 
 20 Apr:
 Lightbox in productBox
