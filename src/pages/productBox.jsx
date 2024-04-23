@@ -23,32 +23,26 @@ const ProdBox = ({ productNameUserID }) => {
         // Construct the full path to the image
         const imagePath = `users/${userID}/${productNameUserID}/S0`;
         const imagePathL = `users/${userID}/${productNameUserID}/L0`;
-        const imagePath2 = `images/placeHolder.jpg`;
 
         let imageRef, imageRefL;
+        setImageUrl("/placeHolder.jpg");
 
-        if (!hasImages) {
-            const storage = getStorage();
-            imageRef = ref(storage, imagePath2);
-            imageRefL = ref(storage, imagePath2);
-        } else {
+        if (hasImages) {
             const storage = getStorage();
             imageRef = ref(storage, imagePath);
             imageRefL = ref(storage, imagePathL);
-        }
-
-        try {
-            const url = await getDownloadURL(imageRef);
-            setImageUrl(url);
-        } catch (error) {
-            console.error(error);
-        }
-
-        try {
-            const urlL = await getDownloadURL(imageRefL);
-            setImageUrlL(urlL);
-        } catch (error) {
-            console.error(error);
+            try {
+                const url = await getDownloadURL(imageRef);
+                setImageUrl(url);
+            } catch (error) {
+                console.error(error);
+            }
+            try {
+                const urlL = await getDownloadURL(imageRefL);
+                setImageUrlL(urlL);
+            } catch (error) {
+                console.error(error);
+            }
         }
     };
 
@@ -88,7 +82,6 @@ const ProdBox = ({ productNameUserID }) => {
         const [, userID] = productNameUserID.split('_');
         getProductInfo(productNameUserID);
     }, [productNameUserID]);
-
 
 
     return (
