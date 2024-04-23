@@ -6,8 +6,8 @@ import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
 const ProdBox = ({ productNameUserID }) => {
-    const [imageUrl, setImageUrl] = useState('');
-    const [imageUrlL, setImageUrlL] = useState('');
+    const [imageUrl, setImageUrl] = useState(null);
+    const [imageUrlL, setImageUrlL] = useState(null);
     const [productInfo, setProductInfo] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -19,22 +19,40 @@ const ProdBox = ({ productNameUserID }) => {
         setIsOpen(false);
     };
 
-    const getImageByName = async (userID) => {
+    const getImageByName = async (userID, hasImages) => {
         // Construct the full path to the image
         const imagePath = `users/${userID}/${productNameUserID}/S0`;
         const imagePathL = `users/${userID}/${productNameUserID}/L0`;
+        const imagePath2 = `images/placeHolder.jpg`;
 
-        // Get the download URL for the image
-        const storage = getStorage();
-        const storageL = getStorage();
-        const imageRef = ref(storage, imagePath);
-        const imageRefL = ref(storageL, imagePathL);
-        const url = await getDownloadURL(imageRef);
-        const urlL = await getDownloadURL(imageRefL);
+        let imageRef, imageRefL;
 
-        setImageUrl(url);
-        setImageUrlL(urlL);
+        if (!hasImages) {
+            const storage = getStorage();
+            imageRef = ref(storage, imagePath2);
+            imageRefL = ref(storage, imagePath2);
+        } else {
+            const storage = getStorage();
+            imageRef = ref(storage, imagePath);
+            imageRefL = ref(storage, imagePathL);
+        }
+
+        try {
+            const url = await getDownloadURL(imageRef);
+            setImageUrl(url);
+        } catch (error) {
+            console.error(error);
+        }
+
+        try {
+            const urlL = await getDownloadURL(imageRefL);
+            setImageUrlL(urlL);
+        } catch (error) {
+            console.error(error);
+        }
     };
+
+
 
     const getProductInfo = async (productNameUserID) => {
         try {
@@ -42,7 +60,12 @@ const ProdBox = ({ productNameUserID }) => {
             const productDocRef = doc(firestore, 'products', productNameUserID);
             const productSnapshot = await getDoc(productDocRef);
             if (productSnapshot.exists()) {
-                setProductInfo(productSnapshot.data());
+                const productData = productSnapshot.data();
+                setProductInfo(productData);
+                if (productData) {
+                    const [, userID] = productNameUserID.split('_');
+                    getImageByName(userID, productData.images);
+                }
             } else {
                 console.log('Product document not found.');
             }
@@ -50,6 +73,7 @@ const ProdBox = ({ productNameUserID }) => {
             console.error('Error fetching product info:', error);
         }
     };
+    
 
     // Function to trim description to a certain length
     const trimDescription = (description, maxLength) => {
@@ -62,15 +86,18 @@ const ProdBox = ({ productNameUserID }) => {
     useEffect(() => {
         // Extract the user ID from the productNameUserID
         const [, userID] = productNameUserID.split('_');
-        getImageByName(userID);
         getProductInfo(productNameUserID);
     }, [productNameUserID]);
 
+
+
     return (
         <div className="prodBox">
-            <div className="image-container" onClick={openLightbox}>
-                {imageUrl && <img src={imageUrl} alt="Product Image" style={{ cursor: 'pointer' }}/>}
-            </div>
+            {productInfo && (
+                <div className="image-container" onClick={productInfo.images ? openLightbox : undefined}>
+                    {imageUrl && <img src={imageUrl} alt="Product Image" style={{ cursor: productInfo.images ? 'pointer' : 'default' }} />}
+                </div>
+            )}
             {/* Lightbox component */}
             <Lightbox
                 open={isOpen}

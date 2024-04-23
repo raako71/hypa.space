@@ -11,7 +11,8 @@ const CategorySelector = ({
   setSelectedCategory,
   setSelectedSubcategory,
   setSelectedSubSubcategory,
-  loadingTextStyle 
+  loadingTextStyle,
+  allowNewCats
 }) => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategoryLocal] = useState('');
@@ -158,7 +159,7 @@ const CategorySelector = ({
     setSelectedSubCategoryLocal(''); // Reset selected subcategory
     setSelectedSubSubCategoryLocal(''); // Reset selected sub-subcategory
   };
-  
+
   const handleSubcategoryChange = (e) => {
     const selectedSubcategory = e.target.value;
     setSelectedSubCategoryLocal(selectedSubcategory);
@@ -168,9 +169,8 @@ const CategorySelector = ({
   return (
     <div>
       <div>
-        <p style={loadingTextStyle}>{loadingCategories}&nbsp; {loadingUserCategories}
-        </p>
-        
+        <p style={loadingTextStyle}>{loadingCategories}&nbsp; {loadingUserCategories}</p>
+
         <label>Select Category: </label>
         <select value={selectedCategory} onChange={handleCategoryChange}>
           <option value="">Choose a Category</option>
@@ -179,11 +179,11 @@ const CategorySelector = ({
               {categories[categoryKey].name}
             </option>
           ))}
-
-          <option value="__new_category">Add New Category</option>
+          {allowNewCats && <option value="__new_category">Add New Category</option>}
         </select>
 
-        {selectedCategory === '__new_category' && (
+
+        {allowNewCats && selectedCategory === '__new_category' && (
           <div style={{ marginTop: '5px' }}>
             <input
               type="text"
@@ -210,10 +210,10 @@ const CategorySelector = ({
                   </option>
                 )
               ))}
-              <option value="__new_subcategory">Add New Subcategory</option>
+              {allowNewCats && <option value="__new_subcategory">Add New Subcategory</option>}
             </select>
 
-            {selectedSubcategory === '__new_subcategory' && (
+            {allowNewCats && selectedSubcategory === '__new_subcategory' && (
               <div style={{ marginTop: '5px' }}>
                 <input
                   type="text"
@@ -230,7 +230,7 @@ const CategorySelector = ({
 
             {selectedCategory !== '__new_category' && selectedSubcategory !== '__new_subcategory' && selectedSubcategory && (
               <div style={{ margin: '8px' }}>
-                <label>Select Sub-Subcategory (optional): </label>
+                <label>Select Sub-Subcategory{allowNewCats ? ' (optional)' : ''}: </label>
                 <select value={selectedSubSubcategory} onChange={(e) => setSelectedSubSubCategoryLocal(e.target.value)}>
                   <option value="">Choose a Sub-Subcategory</option>
                   {Object.keys(categories[selectedCategory][selectedSubcategory] || {}).map((subSubcategoryKey) => (
@@ -240,10 +240,10 @@ const CategorySelector = ({
                       </option>
                     )
                   ))}
-                  <option value="__new_subsubcategory">Add New Sub-Subcategory</option>
+                  {allowNewCats && <option value="__new_subsubcategory">Add New Sub-Subcategory</option>}
                 </select>
 
-                {selectedSubSubcategory === '__new_subsubcategory' && (
+                {allowNewCats && selectedSubSubcategory === '__new_subsubcategory' && (
                   <div style={{ marginTop: '5px' }}>
                     <input
                       type="text"
@@ -264,6 +264,7 @@ const CategorySelector = ({
       </div>
     </div>
   );
+
 };
 
 CategorySelector.propTypes = {
@@ -271,7 +272,8 @@ CategorySelector.propTypes = {
   setSelectedCategory: PropTypes.func,
   setSelectedSubcategory: PropTypes.func,
   setSelectedSubSubcategory: PropTypes.func,
-  loadingTextStyle: PropTypes.object 
+  loadingTextStyle: PropTypes.object,
+  allowNewCats: PropTypes.bool
 };
 
 export default CategorySelector;

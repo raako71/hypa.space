@@ -5,14 +5,21 @@ build for cloud: npm run build
 push to cloud: firebase deploy
 
 REMAINING: 
-* Add products to header.
-* Remove add categories from products page
-* Edit button for product.
-* Show all fields in ProdBox.
+* Title for ProdBox is product link
+* Product Page
+* Edit button for product, on product page.
 * Edit product (load existing fields, photos).
+
+* Show all fields in ProdBox.
 * Delete Photos, add more photos to product.
 * Select default image for Products.
+
 * Delete product, and update user category tree accordingly etc.
+
+23 Apr:
+Image placeholder for no image.
+Remove add categories from products page.
+Add products to header.
 
 22 Apr:
 Choose how many products to show, sort into pages.

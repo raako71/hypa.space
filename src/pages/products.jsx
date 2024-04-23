@@ -18,6 +18,7 @@ const Products = () => {
     const [noOfPages, setNoOfPages] = useState(1);
     const [textColor, setTextColor] = useState('initial');
     const loadingTextStyle = { display: 'none' };
+    const allowNewCats = false;
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
@@ -63,7 +64,6 @@ const Products = () => {
                 const productTree = existingData?.productTree || {};
                 setCategories(productTree);
                 setLoadingUserCategories("");
-                setTextColor('initial');
             } catch (error) {
                 setLoadingUserCategories("Failed to load User Categories.");
                 console.error('Error fetching local categories:', error);
@@ -151,6 +151,38 @@ const Products = () => {
         setProductsDisplayed(displayOptions[0]); // Set default to the first option
     }, []); 
 
+    const Pagination = () => (
+        <div style={{ textAlign: 'center', display: productArray.length === 0 ? 'none' : 'block' }}>
+            {currentPage > 1 && (
+                <button onClick={() => handlePageChange(1)}>«</button>
+            )}
+            {currentPage - 2 > 0 && (
+                <button onClick={() => handlePageChange(currentPage - 2)}>
+                    {currentPage - 2}
+                </button>
+            )}
+            {currentPage - 1 > 0 && (
+                <button onClick={() => handlePageChange(currentPage - 1)}>
+                    {currentPage - 1}
+                </button>
+            )}
+            <button disabled>{currentPage}</button>
+            {currentPage + 1 <= noOfPages && (
+                <button onClick={() => handlePageChange(currentPage + 1)}>
+                    {currentPage + 1}
+                </button>
+            )}
+            {currentPage + 2 <= noOfPages && (
+                <button onClick={() => handlePageChange(currentPage + 2)}>
+                    {currentPage + 2}
+                </button>
+            )}
+            {currentPage < noOfPages && (
+                <button onClick={() => handlePageChange(noOfPages)}>»</button>
+            )}
+        </div>
+    );
+
 
     return (
         <div style={{ padding: '15px' }}>
@@ -161,8 +193,9 @@ const Products = () => {
                 setSelectedSubcategory={setSelectedSubcategory}
                 setSelectedSubSubcategory={setSelectedSubSubcategory}
                 loadingTextStyle={loadingTextStyle}
+                allowNewCats = {allowNewCats}
             />
-            <h2>Productos: {productArray.length}</h2>
+            <h2>Products: {productArray.length}</h2>
             <p style={{ textAlign: 'center', display: productArray.length === 0 ? 'none' : 'block' }}>Show <select value={productsDisplayed} onChange={setNumOfProducts}>
                 {displayOptions.map((option) => (
                     <option key={option} value={option}>
@@ -170,35 +203,7 @@ const Products = () => {
                     </option>
                 ))}
             </select> Products</p>
-            <div style={{ textAlign: 'center', display: productArray.length === 0 ? 'none' : 'block' }}>
-                {currentPage > 1 && (
-                    <button onClick={() => handlePageChange(1)}>«</button>
-                )}
-                {currentPage - 2 > 0 && (
-                    <button onClick={() => handlePageChange(currentPage - 2)}>
-                        {currentPage - 2}
-                    </button>
-                )}
-                {currentPage - 1 > 0 && (
-                    <button onClick={() => handlePageChange(currentPage - 1)}>
-                        {currentPage - 1}
-                    </button>
-                )}
-                <button disabled>{currentPage}</button>
-                {currentPage + 1 <= noOfPages && (
-                    <button onClick={() => handlePageChange(currentPage + 1)}>
-                        {currentPage + 1}
-                    </button>
-                )}
-                {currentPage + 2 <= noOfPages && (
-                    <button onClick={() => handlePageChange(currentPage + 2)}>
-                        {currentPage + 2}
-                    </button>
-                )}
-                {currentPage < noOfPages && (
-                    <button onClick={() => handlePageChange(noOfPages)}>»</button>
-                )}
-            </div>
+            <Pagination />
             <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                 {productArray === -1 ? null : (
                     productArray === 0 ? (
@@ -207,9 +212,8 @@ const Products = () => {
                         renderProducts()
                     )
                 )}
-
-
             </div>
+            <Pagination />
         </div>
     );
 };

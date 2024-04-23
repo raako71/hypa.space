@@ -102,6 +102,9 @@ const ImageModification = ({ handleProcessedImagesUpload }) => {
                 style={{
                   bottom: "10px",
                   left: "50%",
+                  backgroundColor: "red",
+                  borderColor:"grey",
+                  color:"white"
                 }}
                 onClick={() => processImage(index)}
               >

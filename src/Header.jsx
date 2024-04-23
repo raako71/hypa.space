@@ -27,8 +27,13 @@ function Header({ isLoggedIn }) {
                 <a href={domain}>Home</a>
                 {isLoggedIn ? (
                     <>
-                        <a href={domain + "/newProduct"} className={currentPath === '/newProduct' ? 'active' : ''}>New Product</a>
                         <div className="has-submenu">
+                            <a href={domain + "/products"} className={currentPath === '/products' ? 'active' : ''}>Products</a>
+                            <ul className="submenu">
+                                <li><a href={domain + "/newProduct"} className={currentPath === '/newProduct' ? 'active' : ''}>New Product</a></li>
+                            </ul>
+                            </div>
+                            <div className="has-submenu">
                             <a href={domain + "/account"} className={currentPath === '/account' ? 'active' : ''}>Account</a>
                             <ul className="submenu">
                                 <li><a href="#" onClick={handleSignOut}>Logout</a></li>

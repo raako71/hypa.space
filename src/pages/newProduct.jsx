@@ -21,6 +21,7 @@ const NewProd = () => {
   const [passedImages, setPassedImages] = useState({ scaled: [], unscaled: [] });
   const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(null); // New state variable
   const [categories, setCategories] = useState([]);
+  const allowNewCats = true;
 
 
   const navigate = useNavigate();
@@ -319,7 +320,7 @@ const NewProd = () => {
 
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", flexDirection: "column", padding: '25px'}}>
       <h1>Add New Product</h1>
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", marginBottom: "4px" }}>
         <label htmlFor="productName" style={{ margin: "8px" }}>Product Name:</label>
@@ -363,6 +364,7 @@ const NewProd = () => {
         setSelectedCategory={setSelectedCategory}
         setSelectedSubcategory={setSelectedSubcategory}
         setSelectedSubSubcategory={setSelectedSubSubcategory} // Pass down setSelectedSubSubcategory
+        allowNewCats = {allowNewCats}
       />
       <div style={{ display: "flex", alignItems: "center", margin: "8px" }}>
         {!saving && (
