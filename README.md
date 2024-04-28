@@ -5,18 +5,18 @@ build for cloud: npm run build
 push to cloud: firebase deploy
 
 REMAINING: 
-* effect to remove image on prodbox load.
-* Title for ProdBox is product link.
 * Product Page.
-* Show all fields in ProdBox.
 
-* Edit button for product, on product page.
+* Edit button for product, on product page, prodbox.
 * Edit product (load existing fields, photos).
 
 * Delete Photos, add more photos to product.
 * Select default image for Products.
 
 * Delete product, and update user category tree accordingly etc.
+
+28 Apr:
+Title for ProdBox is product link.
 
 24 Apr:
 Image placeholder for no image (better).

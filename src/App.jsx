@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import ProdBox from "./pages/productBox"
 import Products from "./pages/products"
+import ProductPage from "./pages/productPage"
 
 
 
@@ -60,7 +61,7 @@ function App() {
             element={<Products />}
           />
           <Route path="/terms" element={<Terms />} />
-          <Route path="/product" element={<ProdBox productNameUserID={productName || ''} />} />
+          <Route path="/product" element={<ProductPage productNameUserID={productName || ''} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />

@@ -4,6 +4,7 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
+import { domain } from "../App"
 
 const ProdBox = ({ productNameUserID }) => {
     const [imageUrl, setImageUrl] = useState(null);
@@ -101,7 +102,7 @@ const ProdBox = ({ productNameUserID }) => {
             />
             {productInfo && (
                 <div className='text'>
-                    <h2>{productInfo.productName}</h2>
+                    <h2><a href={domain + "/product?productName=" + productNameUserID}>{productInfo.productName}</a></h2>
                     <p>Description: {trimDescription(productInfo.productDescription, 100)}</p>
                 </div>
             )}
