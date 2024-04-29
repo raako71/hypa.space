@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getStorage, ref, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, getDownloadURL, getMetadata } from 'firebase/storage';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 import Lightbox from "yet-another-react-lightbox";
@@ -10,41 +10,60 @@ const ProdBox = ({ productNameUserID }) => {
     const [imageUrlL, setImageUrlL] = useState(null);
     const [productInfo, setProductInfo] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
+    const [images, setImages] = useState([{ key: 'S0', src: '/placeHolder.jpg', alt: 'Default Img' }]);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-    const openLightbox = () => {
+    const openLightbox = (index) => {
         setIsOpen(true);
+        setSelectedImageIndex(index);
     };
+
 
     const closeLightbox = () => {
         setIsOpen(false);
     };
 
-    const getImageByName = async (userID, hasImages) => {
-        // Construct the full path to the image
-        const imagePath = `users/${userID}/${productNameUserID}/S0`;
-        const imagePathL = `users/${userID}/${productNameUserID}/L0`;
+    const indexImages = async (userID, hasImages) => {
+        const basePath = `users/${userID}/${productNameUserID}`;
 
-        let imageRef, imageRefL;
-        setImageUrl("/placeHolder.jpg");
+        let imageUrls = [];
 
         if (hasImages) {
             const storage = getStorage();
-            imageRef = ref(storage, imagePath);
-            imageRefL = ref(storage, imagePathL);
-            try {
-                const url = await getDownloadURL(imageRef);
-                setImageUrl(url);
-            } catch (error) {
-                console.error(error);
+            let totalImages = 0;
+            for (let i = 0; i < 10; i++) {
+                const imagePathS = `${basePath}/S${i}`;
+                try {
+                    const urlS = await getDownloadURL(ref(storage, imagePathS));
+                    const imgKey = `S${i}`;
+                    imageUrls.push({ key: imgKey, src: urlS, alt: `Small Image ${i}`, width: "350", height: "350" });
+                    setImages([...imageUrls]);
+                    totalImages += 1;
+                } catch (error) {
+                    break;
+                }
             }
-            try {
-                const urlL = await getDownloadURL(imageRefL);
-                setImageUrlL(urlL);
-            } catch (error) {
-                console.error(error);
+            for (let i = 0; i < totalImages; i++) {
+                const imagePathL = `${basePath}/L${i}`;
+                try {
+                    const urlL = await getDownloadURL(ref(storage, imagePathL));
+                    const smallImageKey = `S${i}`;
+                    const smallImageIndex = imageUrls.findIndex(image => image.key === smallImageKey);
+                    if (smallImageIndex !== -1) {
+                        const srcSet = [
+                            { src: imageUrls[smallImageIndex].src, width: imageUrls[smallImageIndex].width, height: imageUrls[smallImageIndex].height },
+                            { src: urlL, width: "1000", height: "1000" },
+                        ];
+                        imageUrls[smallImageIndex].srcSet = srcSet;
+                    }
+                } catch (error) {
+                    console.error(error);
+                    break;
+                }
             }
         }
     };
+
 
     const handleReload = () => {
         window.location.reload();
@@ -60,10 +79,10 @@ const ProdBox = ({ productNameUserID }) => {
                 setProductInfo(productData);
                 if (productData) {
                     const [, userID] = productNameUserID.split('_');
-                    getImageByName(userID, productData.images);
+                    indexImages(userID, productData.images);
                 }
             } else {
-                console.log('Product document not found.');
+                console.error('Product document not found.');
             }
         } catch (error) {
             console.error('Error fetching product info:', error);
@@ -105,11 +124,11 @@ const ProdBox = ({ productNameUserID }) => {
                             {productInfo.variations.map((variation, index) => (
                                 <div key={index}>
                                     <p>{variation.name}:&nbsp;
-                                    <select>
-                                        {variation.types.map((type, typeIndex) => (
-                                            <option key={typeIndex}>{type}</option>
-                                        ))}
-                                    </select>
+                                        <select>
+                                            {variation.types.map((type, typeIndex) => (
+                                                <option key={typeIndex}>{type}</option>
+                                            ))}
+                                        </select>
                                     </p>
                                 </div>
                             ))}
@@ -117,19 +136,31 @@ const ProdBox = ({ productNameUserID }) => {
                     )}
                 </div>
             )}
-            {productInfo && (
-                <div className="image-container" onClick={productInfo.images ? openLightbox : undefined}>
-                    {imageUrl && <img src={imageUrl} alt="Product Image" style={{ cursor: productInfo.images ? 'pointer' : 'default' }} />}
-                </div>
-            )}
-            {/* Lightbox component */}
-            <Lightbox
-                open={isOpen}
-                close={closeLightbox}
-                slides={[
-                    { src: imageUrlL }
-                ]}
-            />
+            <>
+                {productInfo?.images && (
+                    images.map((image, index) => (
+                        <div
+                            key={index}
+                            className="image-container"
+                            onClick={() => openLightbox(index)}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <img
+                                src={image.src}
+                                alt={image.alt}
+                            // Add width, height, srcSet, and sizes attributes if needed
+                            />
+                        </div>
+                    ))
+                )}
+                <Lightbox
+                    open={isOpen}
+                    close={closeLightbox}
+                    slides={images}
+                    index={selectedImageIndex}
+                />
+
+            </>
         </div>
     );
 };

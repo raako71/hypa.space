@@ -5,8 +5,7 @@ build for cloud: npm run build
 push to cloud: firebase deploy
 
 REMAINING: 
-* Product Page.
-
+* Carosel for product page.
 * Edit button for product, on product page, prodbox.
 * Edit product (load existing fields, photos).
 
@@ -15,8 +14,10 @@ REMAINING:
 
 * Delete product, and update user category tree accordingly etc.
 
+* resize L image on upload. Use JPG compression.
+
 29 Apr:
-Load New product correctly. Basic product page.
+Load New product correctly. Product page with images.
 
 28 Apr:
 Title for ProdBox is product link.
