@@ -226,7 +226,7 @@ const NewProd = () => {
       const userDocSnapshot = await getDoc(userDocRef);
       const existingData = userDocSnapshot.data();
       const existingproductTree = existingData?.productTree || {};
-      console.log("existingproductTree:", JSON.stringify(existingproductTree, null, 2));
+      //console.log("existingproductTree:", JSON.stringify(existingproductTree, null, 2));
       const productTreeUpdate = {};
       productTreeUpdate[selectedCategory] = {};
       productTreeUpdate[selectedCategory][selectedSubcategory] = {};
@@ -238,7 +238,7 @@ const NewProd = () => {
         productTreeUpdate[selectedCategory][selectedSubcategory].products = { [productDocumentName]: true };
       }
       const mergedProductTree = _.merge({}, existingproductTree, productTreeUpdate)
-      console.log("mergedProductTree:", JSON.stringify(mergedProductTree, null, 2));
+      //console.log("mergedProductTree:", JSON.stringify(mergedProductTree, null, 2));
       if (Object.keys(mergedProductTree).length > 0) {
         await updateDoc(userDocRef, { productTree: mergedProductTree });
       }

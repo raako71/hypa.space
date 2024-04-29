@@ -142,3 +142,15 @@ footer p {
   padding: 5px;
   margin: 10px;
 }
+
+#mainProductDiv {
+  padding: 15px;
+  background-color: #afefb2;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+.text{
+  padding: 20px;
+}

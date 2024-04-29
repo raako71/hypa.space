@@ -15,6 +15,9 @@ REMAINING:
 
 * Delete product, and update user category tree accordingly etc.
 
+29 Apr:
+Load New product correctly. Basic product page.
+
 28 Apr:
 Title for ProdBox is product link.
 

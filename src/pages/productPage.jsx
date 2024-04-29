@@ -46,7 +46,9 @@ const ProdBox = ({ productNameUserID }) => {
         }
     };
 
-
+    const handleReload = () => {
+        window.location.reload();
+    };
 
     const getProductInfo = async (productNameUserID) => {
         try {
@@ -65,9 +67,23 @@ const ProdBox = ({ productNameUserID }) => {
             }
         } catch (error) {
             console.error('Error fetching product info:', error);
+            setTimeout(() => handleReload(), 3000);
         }
     };
-    
+
+    useEffect(() => {
+        // Extract the user ID from the productNameUserID
+        const [, userID] = productNameUserID.split('_');
+        getProductInfo(productNameUserID);
+    }, [productNameUserID]);
+
+    // Clear timeout on component unmount
+    useEffect(() => {
+        return () => {
+            clearTimeout();
+        };
+    }, []);
+
 
     // Function to trim description to a certain length
     const trimDescription = (description, maxLength) => {
@@ -77,15 +93,15 @@ const ProdBox = ({ productNameUserID }) => {
         return description;
     };
 
-    useEffect(() => {
-        // Extract the user ID from the productNameUserID
-        const [, userID] = productNameUserID.split('_');
-        getProductInfo(productNameUserID);
-    }, [productNameUserID]);
-
 
     return (
-        <div className="prodBox">
+        <div id="mainProductDiv">
+            {productInfo && (
+                <div className='text'>
+                    <h2>{productInfo.productName}</h2>
+                    <p>Description: {trimDescription(productInfo.productDescription, 100)}</p>
+                </div>
+            )}
             {productInfo && (
                 <div className="image-container" onClick={productInfo.images ? openLightbox : undefined}>
                     {imageUrl && <img src={imageUrl} alt="Product Image" style={{ cursor: productInfo.images ? 'pointer' : 'default' }} />}
@@ -99,12 +115,6 @@ const ProdBox = ({ productNameUserID }) => {
                     { src: imageUrlL }
                 ]}
             />
-            {productInfo && (
-                <div className='text'>
-                    <h2>{productInfo.productName}</h2>
-                    <p>Description: {trimDescription(productInfo.productDescription, 100)}</p>
-                </div>
-            )}
         </div>
     );
 };
