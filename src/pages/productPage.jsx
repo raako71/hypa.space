@@ -100,6 +100,21 @@ const ProdBox = ({ productNameUserID }) => {
                 <div className='text'>
                     <h2>{productInfo.productName}</h2>
                     <p>Description: {trimDescription(productInfo.productDescription, 100)}</p>
+                    {productInfo.variations.length > 0 && (
+                        <div>
+                            {productInfo.variations.map((variation, index) => (
+                                <div key={index}>
+                                    <p>{variation.name}:&nbsp;
+                                    <select>
+                                        {variation.types.map((type, typeIndex) => (
+                                            <option key={typeIndex}>{type}</option>
+                                        ))}
+                                    </select>
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
             {productInfo && (
