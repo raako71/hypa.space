@@ -3,21 +3,21 @@ import { getStorage, ref, getDownloadURL, getMetadata } from 'firebase/storage';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 import Lightbox from "yet-another-react-lightbox";
+import Inline from "yet-another-react-lightbox/plugins/inline";
 import "yet-another-react-lightbox/styles.css";
 
 const ProdBox = ({ productNameUserID }) => {
-    const [imageUrl, setImageUrl] = useState(null);
-    const [imageUrlL, setImageUrlL] = useState(null);
     const [productInfo, setProductInfo] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [images, setImages] = useState([{ key: 'S0', src: '/placeHolder.jpg', alt: 'Default Img' }]);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-    const openLightbox = (index) => {
+    const openLightbox = () => {
         setIsOpen(true);
-        setSelectedImageIndex(index);
     };
 
+    const updateIndex = ({ index: current }) =>
+        setSelectedImageIndex(current);
 
     const closeLightbox = () => {
         setIsOpen(false);
@@ -137,21 +137,37 @@ const ProdBox = ({ productNameUserID }) => {
                 </div>
             )}
             <>
-                {productInfo?.images && (
-                    images.map((image, index) => (
-                        <div
-                            key={index}
-                            className="image-container"
-                            onClick={() => openLightbox(index)}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <img
-                                src={image.src}
-                                alt={image.alt}
-                            // Add width, height, srcSet, and sizes attributes if needed
-                            />
-                        </div>
-                    ))
+                {productInfo?.images ? (
+                    <Lightbox
+                        index={selectedImageIndex}
+                        slides={images}
+                        plugins={[Inline]}
+                        on={{
+                            view: updateIndex,
+                            click: () => openLightbox(),
+                        }}
+                        carousel={{
+                            padding: 0,
+                            spacing: 0,
+                            imageFit: "cover",
+                        }}
+                        inline={{
+                            style: {
+                                width: "100%",
+                                maxWidth: "350px",
+                                aspectRatio: "1 / 1",
+                                cursor: 'pointer'
+                            },
+                        }}
+                    />
+                ) : (
+                    <div className="image-container">
+                        <img
+                            src={images[0].src}
+                            alt={images[0].alt}
+                            style={{ width: '350px' }}
+                        />
+                    </div>
                 )}
                 <Lightbox
                     open={isOpen}

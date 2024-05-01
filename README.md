@@ -5,16 +5,20 @@ build for cloud: npm run build
 push to cloud: firebase deploy
 
 REMAINING: 
-* Carosel for product page.
 * Edit button for product, on product page, prodbox.
+
 * Edit product (load existing fields, photos).
 
 * Delete Photos, add more photos to product.
+
 * Select default image for Products.
 
 * Delete product, and update user category tree accordingly etc.
 
 * resize L image on upload. Use JPG compression.
+
+1 May:
+Carousel for product page.
 
 29 Apr:
 Load New product correctly. Product page with images.
@@ -40,7 +44,7 @@ Lightbox in productBox
 Show images on product page.
 
 17 Apr:
-Create breadcrums with dropdowns dynamiacally on product page.
+Show category dropdowns dynamiacally on product page.
 
 10 Feb: 
 Load categories from user doc and merge with global categories.
