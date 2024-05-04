@@ -24,6 +24,7 @@ const NewProd = ({ productNameUserID }) => {
   const allowNewCats = true;
   const navigate = useNavigate();
   const [productInfo, setProductInfo] = useState(null);
+  const [productInfoLoaded, setProductInfoLoaded] = useState(false);
   const [images, setImages] = useState([{ key: 'S0', src: '/placeHolder.jpg', alt: 'Default Img' }]);
 
   const getProductInfo = async (productNameUserID) => {
@@ -38,7 +39,6 @@ const NewProd = ({ productNameUserID }) => {
         setProductDescription(productData.productDescription);
         setVariations(productData.variations || []); // Set variations if available
         // Set category information if available
-      const Loadedcategory = productData.category;
         if (productData) {
           const [, userID] = productNameUserID.split('_');
           indexImages(userID, productData.images);
@@ -56,7 +56,30 @@ const NewProd = ({ productNameUserID }) => {
     if (productNameUserID !== "") {
       getProductInfo(productNameUserID);
     }
-  }, [productNameUserID]);
+  },[]);
+
+  const handleCategoriesLoaded = (productInfo) => {
+    if (productInfo != null) {
+      if (productInfo.category && Object.keys(productInfo.category).length > 0) {
+        const categoryName = Object.keys(productInfo.category)[0];
+        console.log(categoryName);
+        setSelectedCategory(categoryName);
+      } else {
+        console.log('Category data not found or empty.');
+      }
+    } else {
+      console.log('No data found.');
+    }
+  };
+  
+  
+  useEffect(() => {
+    if (productInfoLoaded && productInfo !== null) {
+      handleCategoriesLoaded(productInfo);
+    }
+  }, [productInfoLoaded, productInfo]);
+  
+  
 
   const indexImages = async (userID, hasImages) => {
     const basePath = `users/${userID}/${productNameUserID}`;
@@ -437,6 +460,7 @@ const NewProd = ({ productNameUserID }) => {
         setSelectedSubcategory={setSelectedSubcategory}
         setSelectedSubSubcategory={setSelectedSubSubcategory} // Pass down setSelectedSubSubcategory
         allowNewCats={allowNewCats}
+        onCategoriesLoaded={() => setProductInfoLoaded(true)}
       />
       <div style={{ display: "flex", alignItems: "center", margin: "8px" }}>
         {!saving && (

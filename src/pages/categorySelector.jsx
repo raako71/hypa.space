@@ -11,7 +11,6 @@ const CategorySelector = ({
   setSelectedCategory,
   setSelectedSubcategory,
   setSelectedSubSubcategory,
-  loadingTextStyle,
   allowNewCats,
   onCategoriesLoaded // Callback function to pass loadedCats to the parent component
 }) => {
@@ -21,10 +20,10 @@ const CategorySelector = ({
   const [loadingUserCategories, setLoadingUserCategories] = useState("");
   const [selectedSubcategory, setSelectedSubCategoryLocal] = useState('');
   const [selectedSubSubcategory, setSelectedSubSubCategoryLocal] = useState('');
+  const [loadingTextStyle, setLoadingTextStyle] = useState({});
   const [newCategory, setNewCategory] = useState('');
   const [newSubcategory, setNewSubcategory] = useState('');
   const [newSubSubcategory, setNewSubSubcategory] = useState('');
-  const [loadedCats, setLoadedCats] = useState(0); // Initialize loadedCats state to 0
   const newCategoryInputRef = useRef(null); // Define ref for the new category input
   const newSubcategoryInputRef = useRef(null); // Define ref for the new subcategory input
   const newSubSubcategoryInputRef = useRef(null); // Define ref for the new sub-subcategory input
@@ -33,6 +32,8 @@ const CategorySelector = ({
     // Function to fetch local categories data
     const fetchLocalCategories = async (userID) => {
       let categoriesData = {};
+      let mergedCategories = {}; // Initialize mergedCategories here
+      let loadedCatsVar = 0;
       try {
         setLoadingCategories("Loading Global Categories.");
         const categoriesCollectionRef = collection(db, 'categories');
@@ -43,12 +44,13 @@ const CategorySelector = ({
           categoriesData[categoryName] = categoryData;
         });
         setCategories(categoriesData);
-        setLoadingCategories("Loaded Global Categories.");
-        setLoadedCats(loadedCats => loadedCats + 1); // Increment loadedCats
+        setLoadingCategories("Loaded Global Categories");
+        loadedCatsVar = loadedCatsVar + 1;
       } catch (error) {
         setLoadingCategories("Failed to load Global Categories.");
         console.error('Error fetching Global categories:', error);
       }
+      
       try {
         setLoadingUserCategories("Loading User Categories.");
         // Fetch existing category tree from user document
@@ -57,16 +59,21 @@ const CategorySelector = ({
         const existingData = userDocSnapshot.data();
         const existingCategoryTree = existingData?.categoryTree || {};
         // Deep merge the existing category tree with the global categories
-        const mergedCategories = _.merge({}, categoriesData, existingCategoryTree);
+        mergedCategories = _.merge({}, categoriesData, existingCategoryTree); // Update mergedCategories here
         // Update the categories state with the merged category tree
         setCategories(mergedCategories);
-        setLoadingUserCategories("Loaded User Categories.");
-        setLoadedCats(loadedCats => loadedCats + 1); // Increment loadedCats
+        setLoadingUserCategories("Loaded User Categories");
+        loadedCatsVar = loadedCatsVar + 1;
       } catch (error) {
         setLoadingUserCategories("Failed to load User Categories.");
         console.error('Error fetching local categories:', error);
       }
-    };
+    
+      if (loadedCatsVar > 1) {
+        onCategoriesLoaded(mergedCategories);
+        setLoadingTextStyle({ display: 'none' });
+      }
+    };    
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -169,11 +176,6 @@ const CategorySelector = ({
     setSelectedSubCategoryLocal(selectedSubcategory);
     setSelectedSubSubCategoryLocal(''); // Reset selected sub-subcategory
   };
-
-  useEffect(() => {
-    // Call the onCategoriesLoaded function with the loadedCats value whenever it changes
-    onCategoriesLoaded && onCategoriesLoaded(loadedCats);
-  }, [loadedCats, onCategoriesLoaded]);
 
   return (
     <div>
@@ -281,7 +283,6 @@ CategorySelector.propTypes = {
   setSelectedCategory: PropTypes.func,
   setSelectedSubcategory: PropTypes.func,
   setSelectedSubSubcategory: PropTypes.func,
-  loadingTextStyle: PropTypes.object,
   allowNewCats: PropTypes.bool,
   onCategoriesLoaded: PropTypes.func // Callback function to pass loadedCats to the parent component
 };
