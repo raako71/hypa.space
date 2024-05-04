@@ -5,7 +5,7 @@ build for cloud: npm run build
 push to cloud: firebase deploy
 
 REMAINING: 
-* Edit button for product, on product page, prodbox.
+* Edit button on product page
 * Edit product (load existing fields, photos).
 
 * Delete Photos, add more photos to product.
@@ -15,6 +15,9 @@ REMAINING:
 * Delete product, and update user category tree accordingly etc.
 
 * resize L image on upload. Use JPG compression.
+
+4 May:
+Edit button working for ProdBox
 
 1 May:
 Carousel for product page.
