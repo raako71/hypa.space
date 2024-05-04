@@ -54,8 +54,7 @@ const Products = () => {
 
     // Function to fetch local categories data
     useEffect(() => {
-        const fetchLocalCategories = async (userID) => {
-            setUserID(userID);
+        const fetchLocalCategories = async (userID) => {            
             try {
                 setLoadingUserCategories("Loading User Categories.");
                 setTextColor('red');
@@ -75,6 +74,7 @@ const Products = () => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 const userID = user.uid;
+                setUserID(userID);
                 fetchLocalCategories(userID);
             } else {
                 console.log('User is logged out');

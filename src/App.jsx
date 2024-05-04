@@ -22,10 +22,15 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     localStorage.getItem('isLoggedIn') === 'true'
   );
+  const [currentUserID, setUserID] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       const loggedIn = !!user;
+      if (user) {
+        const userID = user.uid;
+        setUserID(userID);
+      }
       setIsLoggedIn(loggedIn); // Update isLoggedIn based on user existence
       localStorage.setItem('isLoggedIn', loggedIn.toString()); // Store in localStorage
     });
@@ -60,7 +65,7 @@ function App() {
             element={<Products />}
           />
           <Route path="/terms" element={<Terms />} />
-          <Route path="/product" element={<ProductPage productNameUserID={productName || ''} />} />
+          <Route path="/product" element={<ProductPage productNameUserID={productName || ''} currentUserID={currentUserID || ''}/>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />

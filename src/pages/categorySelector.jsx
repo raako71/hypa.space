@@ -8,18 +8,18 @@ import _ from 'lodash';
 
 const CategorySelector = ({
   sendCategories,
+  selectedCategory,
   setSelectedCategory,
+  selectedSubcategory,
   setSelectedSubcategory,
+  selectedSubSubcategory,
   setSelectedSubSubcategory,
   allowNewCats,
-  onCategoriesLoaded // Callback function to pass loadedCats to the parent component
+  onCategoriesLoaded
 }) => {
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategoryLocal] = useState('');
   const [loadingCategories, setLoadingCategories] = useState("Waiting to load Categories");
   const [loadingUserCategories, setLoadingUserCategories] = useState("");
-  const [selectedSubcategory, setSelectedSubCategoryLocal] = useState('');
-  const [selectedSubSubcategory, setSelectedSubSubCategoryLocal] = useState('');
   const [loadingTextStyle, setLoadingTextStyle] = useState({});
   const [newCategory, setNewCategory] = useState('');
   const [newSubcategory, setNewSubcategory] = useState('');
@@ -91,10 +91,7 @@ const CategorySelector = ({
     if (sendCategories) {
       sendCategories(categories)
     }
-    setSelectedCategory(selectedCategory);
-    setSelectedSubcategory(selectedSubcategory);
-    setSelectedSubSubcategory(selectedSubSubcategory);
-  }, [sendCategories, categories, selectedCategory, selectedSubcategory, selectedSubSubcategory]);
+  }, [sendCategories, categories]);
 
   const handleNewCategorySave = () => {
     const newCategoryTrimmed = newCategory.replace(/\s+/g, '');
@@ -105,7 +102,7 @@ const CategorySelector = ({
         [newCategoryTrimmed]: { name: trimmedCat },
       }));
 
-      setSelectedCategoryLocal(newCategoryTrimmed);
+      setSelectedCategory(newCategoryTrimmed);
       setNewCategory('');
 
       if (newCategoryInputRef.current) {
@@ -128,7 +125,7 @@ const CategorySelector = ({
         },
       }));
 
-      setSelectedSubCategoryLocal(newSubcategoryTrimmed);
+      setSelectedSubcategory(newSubcategoryTrimmed);
       setNewSubcategory('');
 
       if (newSubcategoryInputRef.current) {
@@ -154,7 +151,7 @@ const CategorySelector = ({
         },
       }));
 
-      setSelectedSubSubCategoryLocal(newSubSubcategoryTrimmed);
+      setSelectedSubSubcategory(newSubSubcategoryTrimmed);
       setNewSubSubcategory('');
 
       if (newSubSubcategoryInputRef.current) {
@@ -166,15 +163,15 @@ const CategorySelector = ({
   };
   const handleCategoryChange = (e) => {
     const selectedCategory = e.target.value;
-    setSelectedCategoryLocal(selectedCategory);
-    setSelectedSubCategoryLocal(''); // Reset selected subcategory
-    setSelectedSubSubCategoryLocal(''); // Reset selected sub-subcategory
+    setSelectedCategory(selectedCategory);
+    setSelectedSubcategory(''); // Reset selected subcategory
+    setSelectedSubSubcategory(''); // Reset selected sub-subcategory
   };
 
   const handleSubcategoryChange = (e) => {
     const selectedSubcategory = e.target.value;
-    setSelectedSubCategoryLocal(selectedSubcategory);
-    setSelectedSubSubCategoryLocal(''); // Reset selected sub-subcategory
+    setSelectedSubcategory(selectedSubcategory);
+    setSelectedSubSubcategory(''); // Reset selected sub-subcategory
   };
 
   return (
@@ -242,7 +239,7 @@ const CategorySelector = ({
             {selectedCategory !== '__new_category' && selectedSubcategory !== '__new_subcategory' && selectedSubcategory && (
               <div style={{ margin: '8px' }}>
                 <label>Select Sub-Subcategory{allowNewCats ? ' (optional)' : ''}: </label>
-                <select value={selectedSubSubcategory} onChange={(e) => setSelectedSubSubCategoryLocal(e.target.value)}>
+                <select value={selectedSubSubcategory} onChange={(e) => setSelectedSubSubcategory(e.target.value)}>
                   <option value="">Choose a Sub-Subcategory</option>
                   {Object.keys(categories[selectedCategory][selectedSubcategory] || {}).map((subSubcategoryKey) => (
                     subSubcategoryKey !== 'name' && (
@@ -279,6 +276,9 @@ const CategorySelector = ({
 };
 
 CategorySelector.propTypes = {
+  selectedCategory: PropTypes.string, // Add prop validation for selectedCategory
+  selectedSubCategory: PropTypes.string, // Add prop validation for selectedCategory
+  selectedSubSubCategory: PropTypes.string, // Add prop validation for selectedCategory
   sendCategories: PropTypes.func,
   setSelectedCategory: PropTypes.func,
   setSelectedSubcategory: PropTypes.func,

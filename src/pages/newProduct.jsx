@@ -56,14 +56,30 @@ const NewProd = ({ productNameUserID }) => {
     if (productNameUserID !== "") {
       getProductInfo(productNameUserID);
     }
-  },[]);
+  }, []);
 
   const handleCategoriesLoaded = (productInfo) => {
     if (productInfo != null) {
       if (productInfo.category && Object.keys(productInfo.category).length > 0) {
-        const categoryName = Object.keys(productInfo.category)[0];
-        console.log(categoryName);
+        const categories = Object.keys(productInfo.category);
+        const categoryName = categories[0];
         setSelectedCategory(categoryName);
+        const subcategories = productInfo.category[categoryName];
+        if (subcategories) {
+          const subcategoryKeys = Object.keys(subcategories);
+          if (subcategoryKeys.length > 0) {
+            const subcategoryName = subcategoryKeys[1];
+            setSelectedSubcategory(subcategoryName);
+            const subSubcategories = subcategories[subcategoryName];
+            if (subSubcategories) {
+              const subSubcategoryKeys = Object.keys(subSubcategories);
+              if (subSubcategoryKeys.length > 0) {
+                const subSubcategoryName = subSubcategoryKeys[1];
+                setSelectedSubSubcategory(subSubcategoryName);
+              }
+            }
+          }
+        }
       } else {
         console.log('Category data not found or empty.');
       }
@@ -71,15 +87,17 @@ const NewProd = ({ productNameUserID }) => {
       console.log('No data found.');
     }
   };
-  
-  
+
+
+
+
   useEffect(() => {
     if (productInfoLoaded && productInfo !== null) {
       handleCategoriesLoaded(productInfo);
     }
   }, [productInfoLoaded, productInfo]);
-  
-  
+
+
 
   const indexImages = async (userID, hasImages) => {
     const basePath = `users/${userID}/${productNameUserID}`;
@@ -456,9 +474,12 @@ const NewProd = ({ productNameUserID }) => {
 
       <CategorySelector
         sendCategories={setCategories}
+        selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
+        selectedSubcategory={selectedSubcategory}
         setSelectedSubcategory={setSelectedSubcategory}
-        setSelectedSubSubcategory={setSelectedSubSubcategory} // Pass down setSelectedSubSubcategory
+        selectedSubSubcategory={selectedSubSubcategory}
+        setSelectedSubSubcategory={setSelectedSubSubcategory}
         allowNewCats={allowNewCats}
         onCategoriesLoaded={() => setProductInfoLoaded(true)}
       />

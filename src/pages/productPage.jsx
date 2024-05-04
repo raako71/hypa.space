@@ -5,12 +5,14 @@ import PropTypes from 'prop-types';
 import Lightbox from "yet-another-react-lightbox";
 import Inline from "yet-another-react-lightbox/plugins/inline";
 import "yet-another-react-lightbox/styles.css";
+import { domain } from "../App"
 
-const ProdBox = ({ productNameUserID }) => {
+const ProdBox = ({ productNameUserID, currentUserID }) => {
     const [productInfo, setProductInfo] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [images, setImages] = useState([{ key: 'S0', src: '/placeHolder.jpg', alt: 'Default Img' }]);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [productUserID, setProductUserID] = useState('');
 
     const openLightbox = () => {
         setIsOpen(true);
@@ -91,8 +93,8 @@ const ProdBox = ({ productNameUserID }) => {
     };
 
     useEffect(() => {
-        // Extract the user ID from the productNameUserID
         const [, userID] = productNameUserID.split('_');
+        setProductUserID(userID);
         getProductInfo(productNameUserID);
     }, [productNameUserID]);
 
@@ -134,6 +136,11 @@ const ProdBox = ({ productNameUserID }) => {
                             ))}
                         </div>
                     )}
+                    {productUserID == currentUserID &&
+                        <div>
+                            <a href={domain + "/newProduct?productName=" + productNameUserID}>edit</a>
+                        </div>
+                    }
                 </div>
             )}
             <>
@@ -183,6 +190,7 @@ const ProdBox = ({ productNameUserID }) => {
 
 ProdBox.propTypes = {
     productNameUserID: PropTypes.string.isRequired,
+    currentUserID: PropTypes.string.isRequired,
 };
 
 export default ProdBox;
