@@ -6,11 +6,12 @@ import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { domain } from "../App"
 
-const ProdBox = ({ productNameUserID }) => {
+const ProdBox = ({ productNameUserID, currentUserID }) => {
     const [imageUrl, setImageUrl] = useState(null);
     const [imageUrlL, setImageUrlL] = useState(null);
     const [productInfo, setProductInfo] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
+    const [productUserID, setProductUserID] = useState('');
 
     const openLightbox = () => {
         setIsOpen(true);
@@ -68,7 +69,7 @@ const ProdBox = ({ productNameUserID }) => {
             console.error('Error fetching product info:', error);
         }
     };
-    
+
 
     // Function to trim description to a certain length
     const trimDescription = (description, maxLength) => {
@@ -79,8 +80,8 @@ const ProdBox = ({ productNameUserID }) => {
     };
 
     useEffect(() => {
-        // Extract the user ID from the productNameUserID
         const [, userID] = productNameUserID.split('_');
+        setProductUserID(userID);
         getProductInfo(productNameUserID);
     }, [productNameUserID]);
 
@@ -101,17 +102,23 @@ const ProdBox = ({ productNameUserID }) => {
                 ]}
             />
             {productInfo && (
-                <div className='text'>
-                    <h2><a href={domain + "/product?productName=" + productNameUserID}>{productInfo.productName}</a></h2>
-                    <p>Description: {trimDescription(productInfo.productDescription, 100)}</p>
-                </div>
+                <>
+                    <div className='text'>
+                        <h2><a href={domain + "/product?productName=" + productNameUserID}>{productInfo.productName}</a></h2>
+                        <p>Description: {trimDescription(productInfo.productDescription, 100)}</p>
+                    </div>
+                    {productUserID == currentUserID && <div className="prEdit">
+                        <a href={domain + "/newProduct?productName=" + productNameUserID}>edit</a></div>}
+                </>
             )}
+
         </div>
     );
 };
 
 ProdBox.propTypes = {
     productNameUserID: PropTypes.string.isRequired,
+    currentUserID: PropTypes.string.isRequired,
 };
 
 export default ProdBox;

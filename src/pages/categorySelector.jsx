@@ -12,7 +12,8 @@ const CategorySelector = ({
   setSelectedSubcategory,
   setSelectedSubSubcategory,
   loadingTextStyle,
-  allowNewCats
+  allowNewCats,
+  onCategoriesLoaded // Callback function to pass loadedCats to the parent component
 }) => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategoryLocal] = useState('');
@@ -23,6 +24,7 @@ const CategorySelector = ({
   const [newCategory, setNewCategory] = useState('');
   const [newSubcategory, setNewSubcategory] = useState('');
   const [newSubSubcategory, setNewSubSubcategory] = useState('');
+  const [loadedCats, setLoadedCats] = useState(0); // Initialize loadedCats state to 0
   const newCategoryInputRef = useRef(null); // Define ref for the new category input
   const newSubcategoryInputRef = useRef(null); // Define ref for the new subcategory input
   const newSubSubcategoryInputRef = useRef(null); // Define ref for the new sub-subcategory input
@@ -42,6 +44,7 @@ const CategorySelector = ({
         });
         setCategories(categoriesData);
         setLoadingCategories("Loaded Global Categories.");
+        setLoadedCats(loadedCats => loadedCats + 1); // Increment loadedCats
       } catch (error) {
         setLoadingCategories("Failed to load Global Categories.");
         console.error('Error fetching Global categories:', error);
@@ -58,6 +61,7 @@ const CategorySelector = ({
         // Update the categories state with the merged category tree
         setCategories(mergedCategories);
         setLoadingUserCategories("Loaded User Categories.");
+        setLoadedCats(loadedCats => loadedCats + 1); // Increment loadedCats
       } catch (error) {
         setLoadingUserCategories("Failed to load User Categories.");
         console.error('Error fetching local categories:', error);
@@ -166,6 +170,11 @@ const CategorySelector = ({
     setSelectedSubSubCategoryLocal(''); // Reset selected sub-subcategory
   };
 
+  useEffect(() => {
+    // Call the onCategoriesLoaded function with the loadedCats value whenever it changes
+    onCategoriesLoaded && onCategoriesLoaded(loadedCats);
+  }, [loadedCats, onCategoriesLoaded]);
+
   return (
     <div>
       <div>
@@ -273,7 +282,8 @@ CategorySelector.propTypes = {
   setSelectedSubcategory: PropTypes.func,
   setSelectedSubSubcategory: PropTypes.func,
   loadingTextStyle: PropTypes.object,
-  allowNewCats: PropTypes.bool
+  allowNewCats: PropTypes.bool,
+  onCategoriesLoaded: PropTypes.func // Callback function to pass loadedCats to the parent component
 };
 
 export default CategorySelector;

@@ -11,7 +11,6 @@ import { auth } from "./firebase-config"
 import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import ProdBox from "./pages/productBox"
 import Products from "./pages/products"
 import ProductPage from "./pages/productPage"
 
@@ -52,7 +51,7 @@ function App() {
             element={isLoggedIn ? <Navigate to="/" /> : <Login />}
           />
           <Route path="/newProduct"
-            element={isLoggedIn ? <NewProd /> : <Navigate to="/" />}
+            element={isLoggedIn ? <NewProd productNameUserID={productName || ''}/> : <Navigate to="/" />}
           />
           <Route path="/account"
             element={<Account />}

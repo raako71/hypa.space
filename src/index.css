@@ -7,11 +7,14 @@ body {
 .prodBox {
   width: 350px;
   background-color: #4dc752;
-  height: 400px;
   margin: 30px auto;
   display: block;
-  border-radius: 30px;
+  border-radius: 3px;
 
+}
+.prEdit{
+  text-align: right;
+  padding: 0 10px 10px;
 }
 
 .prodBox img{

@@ -2,14 +2,14 @@ import CategorySelector from "./categorySelector";
 import Variations from "./variations";
 import { useEffect, useState } from 'react';
 import { auth, db } from "../firebase-config"
-import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
+import { getFirestore, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
 import { onAuthStateChanged } from 'firebase/auth';
 import ImageModification from "./imageUpload";
 import { getStorage, ref, uploadString } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
 import _ from 'lodash';
 
-const NewProd = () => {
+const NewProd = ({ productNameUserID }) => {
   const [productName, setProductName] = useState("");
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -22,11 +22,84 @@ const NewProd = () => {
   const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(null); // New state variable
   const [categories, setCategories] = useState([]);
   const allowNewCats = true;
-
-
   const navigate = useNavigate();
+  const [productInfo, setProductInfo] = useState(null);
+  const [images, setImages] = useState([{ key: 'S0', src: '/placeHolder.jpg', alt: 'Default Img' }]);
 
+  const getProductInfo = async (productNameUserID) => {
+    try {
+      const firestore = getFirestore();
+      const productDocRef = doc(firestore, 'products', productNameUserID);
+      const productSnapshot = await getDoc(productDocRef);
+      if (productSnapshot.exists()) {
+        const productData = productSnapshot.data();
+        setProductInfo(productData);
+        setProductName(productData.productName);
+        setProductDescription(productData.productDescription);
+        setVariations(productData.variations || []); // Set variations if available
+        // Set category information if available
+      const Loadedcategory = productData.category;
+        if (productData) {
+          const [, userID] = productNameUserID.split('_');
+          indexImages(userID, productData.images);
+        }
+      } else {
+        console.error('Product document not found.');
+      }
+    } catch (error) {
+      console.error('Error fetching product info:', error);
+      //setTimeout(() => handleReload(), 3000);
+    }
+  };
 
+  useEffect(() => {
+    if (productNameUserID !== "") {
+      getProductInfo(productNameUserID);
+    }
+  }, [productNameUserID]);
+
+  const indexImages = async (userID, hasImages) => {
+    const basePath = `users/${userID}/${productNameUserID}`;
+
+    let imageUrls = [];
+
+    if (hasImages) {
+      const storage = getStorage();
+      let totalImages = 0;
+      for (let i = 0; i < 10; i++) {
+        const imagePathS = `${basePath}/S${i}`;
+        try {
+          const urlS = await getDownloadURL(ref(storage, imagePathS));
+          const imgKey = `S${i}`;
+          imageUrls.push({ key: imgKey, src: urlS, alt: `Small Image ${i}`, width: "350", height: "350" });
+          setImages([...imageUrls]);
+          totalImages += 1;
+        } catch (error) {
+          break;
+        }
+      }
+      for (let i = 0; i < totalImages; i++) {
+        const imagePathL = `${basePath}/L${i}`;
+        try {
+          const urlL = await getDownloadURL(ref(storage, imagePathL));
+          const smallImageKey = `S${i}`;
+          const smallImageIndex = imageUrls.findIndex(image => image.key === smallImageKey);
+          if (smallImageIndex !== -1) {
+            const srcSet = [
+              { src: imageUrls[smallImageIndex].src, width: imageUrls[smallImageIndex].width, height: imageUrls[smallImageIndex].height },
+              { src: urlL, width: "1000", height: "1000" },
+            ];
+            imageUrls[smallImageIndex].srcSet = srcSet;
+          }
+        } catch (error) {
+          console.error(error);
+          break;
+        }
+      }
+    }
+  };
+
+  //category selector
   useEffect(() => {
     const categoryTree = {};
     // Add selected category if it exists
@@ -52,7 +125,6 @@ const NewProd = () => {
     }
 
   }, [categories, selectedCategory, selectedSubcategory, selectedSubSubcategory]);
-
 
   const handleProcessedImagesUpload = (images) => {
     const scaledDataURLs = images.scaled.toDataURL();
@@ -320,7 +392,7 @@ const NewProd = () => {
 
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", padding: '25px'}}>
+    <div style={{ display: "flex", flexDirection: "column", padding: '25px' }}>
       <h1>Add New Product</h1>
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", marginBottom: "4px" }}>
         <label htmlFor="productName" style={{ margin: "8px" }}>Product Name:</label>
@@ -364,7 +436,7 @@ const NewProd = () => {
         setSelectedCategory={setSelectedCategory}
         setSelectedSubcategory={setSelectedSubcategory}
         setSelectedSubSubcategory={setSelectedSubSubcategory} // Pass down setSelectedSubSubcategory
-        allowNewCats = {allowNewCats}
+        allowNewCats={allowNewCats}
       />
       <div style={{ display: "flex", alignItems: "center", margin: "8px" }}>
         {!saving && (

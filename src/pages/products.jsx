@@ -17,6 +17,7 @@ const Products = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [noOfPages, setNoOfPages] = useState(1);
     const [textColor, setTextColor] = useState('initial');
+    const [currentUserID, setUserID] = useState('');
     const loadingTextStyle = { display: 'none' };
     const allowNewCats = false;
 
@@ -42,7 +43,7 @@ const Products = () => {
         return (
             <>
                 {productArray.slice(startIndex - 1, endIndex).map((productName, index) => (
-                    <ProdBox key={index} productNameUserID={productName || ''} />
+                    <ProdBox key={index} productNameUserID={productName || ''} currentUserID={currentUserID || ''} />
                 ))}
             </>
         );
@@ -54,6 +55,7 @@ const Products = () => {
     // Function to fetch local categories data
     useEffect(() => {
         const fetchLocalCategories = async (userID) => {
+            setUserID(userID);
             try {
                 setLoadingUserCategories("Loading User Categories.");
                 setTextColor('red');

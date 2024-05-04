@@ -6,7 +6,6 @@ push to cloud: firebase deploy
 
 REMAINING: 
 * Edit button for product, on product page, prodbox.
-
 * Edit product (load existing fields, photos).
 
 * Delete Photos, add more photos to product.
