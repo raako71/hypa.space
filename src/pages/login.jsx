@@ -30,7 +30,7 @@ export default function Login() {
     const [isChecked, setIsChecked] = useState(false);
 
     const actionCodeSettings = {
-        url: 'http://localhost:5173/',
+        url: domain,
         // This must be true.
         handleCodeInApp: true,
     };

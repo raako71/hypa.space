@@ -1,13 +1,14 @@
-import CategorySelector from "./categorySelector";
-import Variations from "./variations";
+import CategorySelector from "../components/categorySelector";
+import Variations from "../components/variations";
 import { useEffect, useState } from 'react';
 import { auth, db } from "../firebase-config"
 import { getFirestore, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
 import { onAuthStateChanged } from 'firebase/auth';
-import ImageModification from "./imageUpload";
+import ImageModification from "../components/imageUpload";
 import { getStorage, ref, uploadString } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
 import _ from 'lodash';
+import PropTypes from 'prop-types';
 
 const NewProd = ({ productNameUserID }) => {
   const [productName, setProductName] = useState("");
@@ -497,5 +498,7 @@ const NewProd = ({ productNameUserID }) => {
     </div>
   );
 };
-
+NewProd.propTypes = {
+  productNameUserID: PropTypes.string.isRequired,
+};
 export default NewProd;

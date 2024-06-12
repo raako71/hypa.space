@@ -1,8 +1,10 @@
 # PHIL Web App. Built in React + Vite
 Commands:
-run vite app locally: npm run dev
-build for cloud: npm run build  
-push to cloud: firebase deploy
+Local: 
+    npm run dev
+Cloud: 
+    npm run build  
+    push to cloud: firebase deploy
 
 REMAINING: 
 * Edit images.
@@ -11,6 +13,8 @@ REMAINING:
 * resize L image on upload. Use JPG compression.
 
 * Delete product, and update user category tree accordingly etc.
+
+* ensure blank image loads for no image in ProdBox (isolated components)
 
 
 

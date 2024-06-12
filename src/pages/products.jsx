@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import CategorySelector from "./categorySelector";
+import CategorySelector from "../components/categorySelector";
 import { auth, db } from '../firebase-config';
 import { doc, getDoc } from 'firebase/firestore/lite';
 import { onAuthStateChanged } from 'firebase/auth';
-import ProdBox from "./productBox"
+import ProdBox from "../components/productBox"
 
 const Products = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
