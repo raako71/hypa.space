@@ -16,11 +16,11 @@ const NewProd = ({ productNameUserID }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [variations, setVariations] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [userID, setUserID] = useState(null);
   const [passedImages, setPassedImages] = useState({ scaled: [], unscaled: [] });
-  const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(null); // New state variable
+  const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(''); // New state variable
   const [categories, setCategories] = useState([]);
   const allowNewCats = true;
   const navigate = useNavigate();
