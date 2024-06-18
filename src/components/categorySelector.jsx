@@ -70,7 +70,9 @@ const CategorySelector = ({
       }
     
       if (loadedCatsVar > 1) {
-        onCategoriesLoaded(mergedCategories);
+        if (typeof onCategoriesLoaded === 'function') {
+          onCategoriesLoaded(mergedCategories);
+        }
         setLoadingTextStyle({ display: 'none' });
       }
     };    
