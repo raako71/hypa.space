@@ -8,15 +8,28 @@ Cloud:
 
 REMAINING: 
 * Edit images.
+* Resize L image on upload (origional aspect). Use JPG compression.
+* Store Image
+* Store name as url.
+* Show stores on front page
+
+
+
 * Delete Photos, add more photos to product.
 * Select default image for Products.
-* resize L image on upload. Use JPG compression.
+
 
 * Delete product, and update user category tree accordingly etc.
+* Update user category tree on edit product.
 
 * ensure blank image loads for no image in ProdBox (isolated components)
 
 
+19 June:
+Store Name
+
+18 June:
+Bugs
 
 4 May:
 Edit button working.

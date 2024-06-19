@@ -38,8 +38,9 @@ export default function Account() {
   const [showValidateMessage, sellerValidateMsg] = useState("add a username above to enable.");
   const [telegramEnabled, enableTelegram] = useState(false);
   const [wspEnabled, enableWSP] = useState(false);
+  const [storeName, setStoreName] = useState("");
 
-  
+
 
   const showEmailSentFunction = () => {
     showEmailSent(true);
@@ -89,20 +90,21 @@ export default function Account() {
                 usernameValidFunc(true);
               }
               const phoneNumber = docSnapshot.data().phoneNumber;
-              if(phoneNumber != null){
+              if (phoneNumber != null) {
                 setNewPhoneNumber(phoneNumber);
               }
               const telegramEnabled = docSnapshot.data().telegram;
-              if(telegramEnabled != null){
+              if (telegramEnabled != null) {
                 enableTelegram(telegramEnabled);
               }
               const wspEnabled = docSnapshot.data().whatsApp;
-              if(wspEnabled != null){
+              if (wspEnabled != null) {
                 enableWSP(wspEnabled);
               }
-
-
-
+              const storeName = docSnapshot.data().storeName;
+              if (storeName != null) {
+                setStoreName(storeName);
+              }
 
             } else {
               console.log('No such document!');
@@ -123,7 +125,7 @@ export default function Account() {
     return () => {
       unsubscribe(); // Cleanup the listener on component unmount
     };
-  }, [userName, navigate, userID, sellerEnabled,newPhoneNumber]);
+  }, [userName, navigate, userID, sellerEnabled, newPhoneNumber]);
 
   const updateUsernamelink = async () => {
     showusernameDiv(false);
@@ -136,6 +138,13 @@ export default function Account() {
     usernameValidFunc(false);
     sellerValidateMsg("enabled");
   };
+
+  const cancelUpdate = () => {
+    sellerEnabledDivFunc(true);
+    sellerUpdateFunc(false);
+    usernameValidFunc(true);
+  };
+  
 
   const updateUsernameFunc = async (e) => {
     e.preventDefault(); // Prevent the default behavior of the link click
@@ -222,6 +231,7 @@ export default function Account() {
         phoneNumber: newPhoneNumber,
         telegram: telegramEnabled,
         whatsApp: wspEnabled,
+        storeName: storeName,
       });
       sellerEnabledDivFunc(true);
       sellerUpdateFunc(false);
@@ -239,8 +249,20 @@ export default function Account() {
     enableWSP(!wspEnabled);
   };
 
+  function filterString(input) {
+    const pattern = /[a-zA-Z0-9\s\-_.]+/g;
+    const filteredString = input.match(pattern)?.join('') || '';
+    return filteredString;
+  }
 
-
+  const handleInputChange = (e) => {
+    const inputValue = e.target.value;
+    const filteredValue = filterString(inputValue);
+    if (filteredValue.length > 20) {
+      filteredValue = filteredValue.slice(0, 20);
+    }
+    setStoreName(filteredValue);
+  };
 
   return (
     <>
@@ -284,16 +306,26 @@ export default function Account() {
           </p>
           {sellerEnabledDiv && (
             <>
+              <p>Store Name: {storeName}</p>
               <p>Address:</p>
               <p>Seller Phone number: <a target='_blank' rel="noreferrer" href={`tel:${newPhoneNumber}`}>{newPhoneNumber}</a></p>
-              {wspEnabled && (<p><a target='_blank' rel="noreferrer" href={`https://wa.me/${newPhoneNumber}`}>WhatsApp link</a></p>)} 
+              {wspEnabled && (<p><a target='_blank' rel="noreferrer" href={`https://wa.me/${newPhoneNumber}`}>WhatsApp link</a></p>)}
               {telegramEnabled && (<p><a target='_blank' rel="noreferrer" href={`https://t.me/${newPhoneNumber}`}>Telegram Link</a></p>)}
-              
+
               <p><a href="#" onClick={updateSellerDetails}>Update</a></p>
             </>
           )}
           {sellerUpdate && (
             <>
+              <div>
+                <p>Store Name:&nbsp;
+                  <input
+                    type="text"
+                    value={storeName}
+                    onChange={handleInputChange} />
+                </p>
+
+              </div>
               <div>
                 <p>Address: //div function.</p>
               </div>
@@ -306,19 +338,22 @@ export default function Account() {
                   defaultCountry="US" // Set default country if needed
                 />
                 <p>enable WhatsApp link
-              <input type="checkbox"
-                  checked={wspEnabled}
-                  onChange={enableWSPFunc} />
-              </p>
-              <p>enable Telegram link
-              <input type="checkbox"
-                  checked={telegramEnabled}
-                  onChange={enableTelegramFunc} />
-              </p>
+                  <input type="checkbox"
+                    checked={wspEnabled}
+                    onChange={enableWSPFunc} />
+                </p>
+                <p>enable Telegram link
+                  <input type="checkbox"
+                    checked={telegramEnabled}
+                    onChange={enableTelegramFunc} />
+                </p>
               </div>
               <div>
                 <button onClick={() => handleSaveDetails(userID)}>
                   Save new details
+                </button>&nbsp;
+                <button onClick={cancelUpdate}>
+                  Cancel
                 </button>
               </div>
             </>
