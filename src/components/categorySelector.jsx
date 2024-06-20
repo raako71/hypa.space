@@ -4,7 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { getDocs, collection } from 'firebase/firestore/lite';
 import { auth, db } from '../firebase-config';
 import { doc, getDoc } from 'firebase/firestore/lite';
-import _ from 'lodash';
+import merge from 'lodash/merge';
 
 const CategorySelector = ({
   sendCategories,
@@ -59,7 +59,7 @@ const CategorySelector = ({
         const existingData = userDocSnapshot.data();
         const existingCategoryTree = existingData?.categoryTree || {};
         // Deep merge the existing category tree with the global categories
-        mergedCategories = _.merge({}, categoriesData, existingCategoryTree); // Update mergedCategories here
+        mergedCategories = merge({}, categoriesData, existingCategoryTree); // Update mergedCategories here
         // Update the categories state with the merged category tree
         setCategories(mergedCategories);
         setLoadingUserCategories("Loaded User Categories");

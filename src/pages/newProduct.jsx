@@ -7,7 +7,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import ImageModification from "../components/imageUpload";
 import { getStorage, ref, uploadString } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
-import _ from 'lodash';
+import merge from 'lodash/merge';
 import PropTypes from 'prop-types';
 
 const NewProd = ({ productNameUserID }) => {
@@ -302,7 +302,7 @@ const NewProd = ({ productNameUserID }) => {
           }
         }
       }
-      const mergedCategoryTree = _.merge({}, existingCategoryTree, categoryTreeUpdate)
+      const mergedCategoryTree = merge({}, existingCategoryTree, categoryTreeUpdate)
       if (Object.keys(mergedCategoryTree).length > 0) {
         await updateDoc(userDocRef, { categoryTree: mergedCategoryTree });
       }
@@ -356,7 +356,7 @@ const NewProd = ({ productNameUserID }) => {
       else {
         productTreeUpdate[selectedCategory][selectedSubcategory].products = { [productDocumentName]: true };
       }
-      const mergedProductTree = _.merge({}, existingproductTree, productTreeUpdate)
+      const mergedProductTree = merge({}, existingproductTree, productTreeUpdate)
       //console.log("mergedProductTree:", JSON.stringify(mergedProductTree, null, 2));
       if (Object.keys(mergedProductTree).length > 0) {
         await updateDoc(userDocRef, { productTree: mergedProductTree });
