@@ -169,21 +169,26 @@ const NewProd = ({ productNameUserID }) => {
   }, [categories, selectedCategory, selectedSubcategory, selectedSubSubcategory]);
 
   const handleProcessedImagesUpload = (images) => {
-    const scaledDataURLs = images.scaled.toDataURL();
-    const unscaledDataURLs = images.unscaled.toDataURL();
+    const scaledDataURL = images.scaled.toDataURL('image/jpeg');
+    const unscaledDataURL = images.unscaled.toDataURL('image/jpeg');
+    
     const currentScaledImages = [...passedImages.scaled];
     const currentUnscaledImages = [...passedImages.unscaled];
+    
     if (currentScaledImages.length < 10) {
-      currentScaledImages.push(scaledDataURLs);
+      currentScaledImages.push(scaledDataURL);
     }
+    
     if (currentUnscaledImages.length < 10) {
-      currentUnscaledImages.push(unscaledDataURLs);
+      currentUnscaledImages.push(unscaledDataURL);
     }
+    
     setPassedImages({
       scaled: currentScaledImages,
       unscaled: currentUnscaledImages
     });
   };
+  
 
   useEffect(() => {
     // Check if both category and subcategory are selected

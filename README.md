@@ -8,22 +8,21 @@ Cloud:
 
 REMAINING: 
 * Edit images.
-* Resize L image on upload (origional aspect). Use JPG compression.
 * Store Image
 * Store name as url.
 * Show stores on front page
 
-
-
 * Delete Photos, add more photos to product.
 * Select default image for Products.
-
 
 * Delete product, and update user category tree accordingly etc.
 * Update user category tree on edit product.
 
 * ensure blank image loads for no image in ProdBox (isolated components)
 
+
+20 June:
+Scale images to JPG.
 
 19 June:
 Store Name

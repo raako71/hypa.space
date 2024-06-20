@@ -32,15 +32,25 @@ const ImageModification = ({ handleProcessedImagesUpload }) => {
     }
   };
   
-
   const scaleImage = (imageData, maxWidth) => {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
-        const scaleFactor = Math.min(1, maxWidth / img.width);
+        const aspectRatio = img.width / img.height;
+        let canvasWidth, canvasHeight;
+  
+        if (img.width > maxWidth) {
+          canvasWidth = maxWidth;
+          canvasHeight = canvasWidth / aspectRatio;
+        } else {
+          canvasWidth = img.width;
+          canvasHeight = img.height;
+        }
+  
         const canvas = document.createElement('canvas');
-        canvas.width = img.width * scaleFactor;
-        canvas.height = img.height * scaleFactor;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+  
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         resolve(canvas);
@@ -48,6 +58,9 @@ const ImageModification = ({ handleProcessedImagesUpload }) => {
       img.src = imageData.toDataURL();
     });
   };
+  
+  
+  
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
