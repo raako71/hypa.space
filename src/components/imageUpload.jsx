@@ -85,7 +85,7 @@ const ImageModification = ({ handleProcessedImagesUpload }) => {
           padding: "20px",
           cursor: "pointer",
           margin: "8px 0",
-          width: "350px",
+          maxWidth: "350px"
         }}
       >
         <input {...getInputProps()} />

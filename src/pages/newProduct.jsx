@@ -5,7 +5,7 @@ import { auth, db } from "../firebase-config"
 import { getFirestore, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
 import { onAuthStateChanged } from 'firebase/auth';
 import ImageModification from "../components/imageUpload";
-import { getStorage, ref, uploadString } from 'firebase/storage';
+import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
 import merge from 'lodash/merge';
 import PropTypes from 'prop-types';
@@ -378,7 +378,6 @@ const NewProd = ({ productNameUserID }) => {
         throw new Error("Empty Product Name");
       }
 
-      // Rest of your code...
       //Update product in DB
       const productNameWithoutSpaces = productName.replace(/\s+/g, '');
       const productDocumentName = `${productNameWithoutSpaces}_${userID}`;

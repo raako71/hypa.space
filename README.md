@@ -7,11 +7,10 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING: 
-* Edit images.
-* Store Image
 * Store name as url.
-* Show stores on front page
+* Show stores on front page.
 
+* Edit images.
 * Delete Photos, add more photos to product.
 * Select default image for Products.
 
@@ -20,6 +19,8 @@ REMAINING:
 
 * ensure blank image loads for no image in ProdBox (isolated components)
 
+21 June:
+* Store Image.
 
 20 June:
 Scale images to JPG.

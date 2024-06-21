@@ -8,14 +8,13 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore/lite';
 import { useNavigate } from 'react-router-dom';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css'; // Styles for react-phone-number-input
-
+import ImageModification from "../components/imageUpload";
+import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 const actionCodeSettings = {
   url: 'http://localhost:5173/account',
   handleCodeInApp: true,
 };
-
-
 
 export default function Account() {
 
@@ -39,6 +38,7 @@ export default function Account() {
   const [telegramEnabled, enableTelegram] = useState(false);
   const [wspEnabled, enableWSP] = useState(false);
   const [storeName, setStoreName] = useState("");
+  const [passedImages, setPassedImages] = useState('');
 
 
 
@@ -61,58 +61,70 @@ export default function Account() {
   let userVerificationText = userVer ? "Yes." : "No.";
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // User is signed in, get the email
-        setUserEmail(user.email);
-        //setUserName(user.displayName);
-        setUserVer(user.emailVerified);
-        if (!user.emailVerified) {
-          showVerify(true); // Show verification UI
-        } else {
-          showVerify(false); // Hide verification UI
-        }
-        // Get the username from the Firestore /users/{userID} path
-        const userID = user.uid;
-        setUserID(userID);
-        // Assuming you have a reference to the user's document
-        const userDocRef = doc(db, 'users', userID);
-        getDoc(userDocRef)
-          .then((docSnapshot) => {
-            if (docSnapshot.exists()) {
-              // Access the username field from the document data
-              const username = docSnapshot.data().username;
-              const sellerEnabled = docSnapshot.data().sellerEnabled
-              sellerEnabledFunc(sellerEnabled);
-              sellerEnabledDivFunc(sellerEnabled);
-              if (username != null) {
-                setUserName(username);
-                usernameValidFunc(true);
-              }
-              const phoneNumber = docSnapshot.data().phoneNumber;
-              if (phoneNumber != null) {
-                setNewPhoneNumber(phoneNumber);
-              }
-              const telegramEnabled = docSnapshot.data().telegram;
-              if (telegramEnabled != null) {
-                enableTelegram(telegramEnabled);
-              }
-              const wspEnabled = docSnapshot.data().whatsApp;
-              if (wspEnabled != null) {
-                enableWSP(wspEnabled);
-              }
-              const storeName = docSnapshot.data().storeName;
-              if (storeName != null) {
-                setStoreName(storeName);
-              }
-
-            } else {
-              console.log('No such document!');
+        try {
+          // User is signed in, get the email
+          setUserEmail(user.email);
+          setUserVer(user.emailVerified);
+          if (!user.emailVerified) {
+            showVerify(true); // Show verification UI
+          } else {
+            showVerify(false); // Hide verification UI
+          }
+  
+          // Get the username from the Firestore /users/{userID} path
+          const userID = user.uid;
+          setUserID(userID);
+  
+          // Assuming you have a reference to the user's document
+          const userDocRef = doc(db, 'users', userID);
+          const docSnapshot = await getDoc(userDocRef);
+  
+          if (docSnapshot.exists()) {
+            // Access the username field from the document data
+            const userData = docSnapshot.data();
+            const { username, sellerEnabled, phoneNumber, telegram, whatsApp, storeName } = userData;
+  
+            sellerEnabledFunc(sellerEnabled);
+            sellerEnabledDivFunc(sellerEnabled);
+  
+            if (username != null) {
+              setUserName(username);
+              usernameValidFunc(true);
             }
-          })
-          .catch((error) => {
-            console.log('Error getting document:', error);
+  
+            if (phoneNumber != null) {
+              setNewPhoneNumber(phoneNumber);
+            }
+  
+            if (telegram != null) {
+              enableTelegram(telegram);
+            }
+  
+            if (whatsApp != null) {
+              enableWSP(whatsApp);
+            }
+  
+            if (storeName != null) {
+              setStoreName(storeName);
+            }
+          } else {
+            console.log('No such document!');
+          }
+  
+          // Fetch and set user account image
+          const storage = getStorage();
+          const userAccountDirectoryRef = ref(storage, `users/${userID}/account/accountImageS`);
+          const downloadURL = await getDownloadURL(userAccountDirectoryRef);
+          setPassedImages({
+            scaled: downloadURL,
+            unscaled: ''
           });
+  
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
       } else {
         // No user signed in
         setUserEmail(null);
@@ -121,11 +133,26 @@ export default function Account() {
         navigate('/login');
       }
     });
-
+  
     return () => {
       unsubscribe(); // Cleanup the listener on component unmount
     };
   }, [userName, navigate, userID, sellerEnabled, newPhoneNumber]);
+  
+
+  const fetchAndSetImage = async (uid) => {
+    const storage = getStorage();
+    const userAccountDirectoryRef = ref(storage, `users/${uid}/account/accountImageS`);
+    try {
+      const downloadURL = await getDownloadURL(userAccountDirectoryRef);
+      setPassedImages({
+        scaled: downloadURL,
+        unscaled: ''
+      });
+    } catch (error) {
+      console.error('Error fetching image:', error);
+    }
+  };
 
   const updateUsernamelink = async () => {
     showusernameDiv(false);
@@ -144,7 +171,7 @@ export default function Account() {
     sellerUpdateFunc(false);
     usernameValidFunc(true);
   };
-  
+
 
   const updateUsernameFunc = async (e) => {
     e.preventDefault(); // Prevent the default behavior of the link click
@@ -216,11 +243,6 @@ export default function Account() {
   };
 
 
-
-
-
-
-
   const handleSaveDetails = async (userID) => {
     const userDocRef = doc(db, 'users', userID);
 
@@ -238,6 +260,23 @@ export default function Account() {
       usernameValidFunc(true);
     } catch (error) {
       console.error('Error updating user details: ', error);
+    }
+
+    try {
+      // Upload images
+      const storage = getStorage();
+      const userAccountDirectoryRef = ref(storage, `users/${userID}/account/accountImageS`);
+      const userAccountDirectoryRefL = ref(storage, `users/${userID}/account/accountImageL`);
+      // Ensure passedImages is a string
+      if (typeof passedImages.scaled !== 'string') {
+        throw new Error('passedImages must be a data URL string');
+      }
+      await uploadString(userAccountDirectoryRef, passedImages.scaled, 'data_url');
+      await uploadString(userAccountDirectoryRefL, passedImages.unscaled, 'data_url');
+      console.log('Image uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error; // Rethrow the error to handle it in the main function
     }
   };
 
@@ -262,6 +301,16 @@ export default function Account() {
       filteredValue = filteredValue.slice(0, 20);
     }
     setStoreName(filteredValue);
+  };
+
+  const handleProcessedImagesUpload = (images) => {
+    const scaledDataURL = images.scaled.toDataURL('image/jpeg');
+    const unscaledDataURL = images.unscaled.toDataURL('image/jpeg');
+
+    setPassedImages({
+      scaled: scaledDataURL,
+      unscaled: unscaledDataURL
+    });
   };
 
   return (
@@ -307,6 +356,17 @@ export default function Account() {
           {sellerEnabledDiv && (
             <>
               <p>Store Name: {storeName}</p>
+              {passedImages.scaled && (
+                  <div>
+                    {passedImages.scaled && (
+                      <img
+                        src={passedImages.scaled}
+                        alt="Scaled Image"
+                        style={{ margin: "10px", width: "350px" }}
+                      />
+                    )}
+                  </div>
+                )}
               <p>Address:</p>
               <p>Seller Phone number: <a target='_blank' rel="noreferrer" href={`tel:${newPhoneNumber}`}>{newPhoneNumber}</a></p>
               {wspEnabled && (<p><a target='_blank' rel="noreferrer" href={`https://wa.me/${newPhoneNumber}`}>WhatsApp link</a></p>)}
@@ -324,7 +384,19 @@ export default function Account() {
                     value={storeName}
                     onChange={handleInputChange} />
                 </p>
-
+                <ImageModification handleProcessedImagesUpload={handleProcessedImagesUpload} />
+                {passedImages.scaled && (
+                  <div>
+                    <h3>Store Image</h3>
+                    {passedImages.scaled && (
+                      <img
+                        src={passedImages.scaled}
+                        alt="Scaled Image"
+                        style={{ margin: "10px", width: "350px" }}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
               <div>
                 <p>Address: //div function.</p>
