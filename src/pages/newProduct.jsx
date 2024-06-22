@@ -44,7 +44,6 @@ const NewProd = ({ productNameUserID }) => {
         if (productData) {
           const [, userID] = productNameUserID.split('_');
           indexImages(userID, productData.images);
-          setImageCheck(true);
         }
       } else {
         setImageCheck(true);
@@ -146,6 +145,7 @@ const NewProd = ({ productNameUserID }) => {
         scaled: scaledUrls,
         unscaled: unscaledUrls
       });
+      setImageCheck(true);
       setloadingImages(false);
     }
   };
