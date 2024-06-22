@@ -27,6 +27,7 @@ const NewProd = ({ productNameUserID }) => {
   const [productInfo, setProductInfo] = useState(null);
   const [productInfoLoaded, setProductInfoLoaded] = useState(false);
   const [imageCheck, setImageCheck] = useState(false);
+  const [loadingImages, setloadingImages] = useState(false);
 
   const getProductInfo = async (productNameUserID) => {
     try {
@@ -103,6 +104,7 @@ const NewProd = ({ productNameUserID }) => {
     const basePath = `users/${userID}/${productNameUserID}`;
 
     if (hasImages) {
+      setloadingImages(true);
       const storage = getStorage();
       let totalImages = 0;
       const directoryRef = ref(storage, basePath);
@@ -144,6 +146,7 @@ const NewProd = ({ productNameUserID }) => {
         scaled: scaledUrls,
         unscaled: unscaledUrls
       });
+      setloadingImages(false);
     }
   };
 
@@ -478,6 +481,9 @@ const NewProd = ({ productNameUserID }) => {
         </div>
         {imageCheck && (
         <ImageModification handleProcessedImagesUpload={handleProcessedImagesUpload} />
+        )}
+        {loadingImages && (
+          <h3>Loading Images</h3>
         )}
         {passedImages.scaled.length > 0 && (
           <div>
