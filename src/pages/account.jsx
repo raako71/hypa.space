@@ -138,21 +138,6 @@ export default function Account() {
       unsubscribe(); // Cleanup the listener on component unmount
     };
   }, [userName, navigate, userID, sellerEnabled, newPhoneNumber]);
-  
-
-  const fetchAndSetImage = async (uid) => {
-    const storage = getStorage();
-    const userAccountDirectoryRef = ref(storage, `users/${uid}/account/accountImageS`);
-    try {
-      const downloadURL = await getDownloadURL(userAccountDirectoryRef);
-      setPassedImages({
-        scaled: downloadURL,
-        unscaled: ''
-      });
-    } catch (error) {
-      console.error('Error fetching image:', error);
-    }
-  };
 
   const updateUsernamelink = async () => {
     showusernameDiv(false);

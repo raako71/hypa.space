@@ -10,17 +10,17 @@ REMAINING:
 * Store name as url.
 * Show stores on front page.
 
-* Edit images.
-* Delete Photos, add more photos to product.
+* Delete Photos.
 * Select default image for Products.
-
 * Delete product, and update user category tree accordingly etc.
 * Update user category tree on edit product.
-
 * ensure blank image loads for no image in ProdBox (isolated components)
 
+22 June:
+Load existing images to product editor, allow adding more.
+
 21 June:
-* Store Image.
+Store Image.
 
 20 June:
 Scale images to JPG.

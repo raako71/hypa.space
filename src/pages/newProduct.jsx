@@ -5,7 +5,7 @@ import { auth, db } from "../firebase-config"
 import { getFirestore, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
 import { onAuthStateChanged } from 'firebase/auth';
 import ImageModification from "../components/imageUpload";
-import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, uploadString, getDownloadURL, listAll } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
 import merge from 'lodash/merge';
 import PropTypes from 'prop-types';
@@ -26,7 +26,7 @@ const NewProd = ({ productNameUserID }) => {
   const navigate = useNavigate();
   const [productInfo, setProductInfo] = useState(null);
   const [productInfoLoaded, setProductInfoLoaded] = useState(false);
-  const [images, setImages] = useState([{ key: 'S0', src: '/placeHolder.jpg', alt: 'Default Img' }]);
+  const [imageCheck, setImageCheck] = useState(false);
 
   const getProductInfo = async (productNameUserID) => {
     try {
@@ -43,8 +43,10 @@ const NewProd = ({ productNameUserID }) => {
         if (productData) {
           const [, userID] = productNameUserID.split('_');
           indexImages(userID, productData.images);
+          setImageCheck(true);
         }
       } else {
+        setImageCheck(true);
         console.error('Product document not found.');
       }
     } catch (error) {
@@ -89,9 +91,6 @@ const NewProd = ({ productNameUserID }) => {
     }
   };
 
-
-
-
   useEffect(() => {
     if (productInfoLoaded && productInfo !== null) {
       handleCategoriesLoaded(productInfo);
@@ -99,45 +98,52 @@ const NewProd = ({ productNameUserID }) => {
   }, [productInfoLoaded, productInfo]);
 
 
-
+  //pull existing images
   const indexImages = async (userID, hasImages) => {
     const basePath = `users/${userID}/${productNameUserID}`;
-
-    let imageUrls = [];
 
     if (hasImages) {
       const storage = getStorage();
       let totalImages = 0;
-      for (let i = 0; i < 10; i++) {
-        const imagePathS = `${basePath}/S${i}`;
-        try {
-          const urlS = await getDownloadURL(ref(storage, imagePathS));
-          const imgKey = `S${i}`;
-          imageUrls.push({ key: imgKey, src: urlS, alt: `Small Image ${i}`, width: "350", height: "350" });
-          setImages([...imageUrls]);
-          totalImages += 1;
-        } catch (error) {
-          break;
-        }
+      const directoryRef = ref(storage, basePath);
+      try {
+        const listResult = await listAll(directoryRef);
+        listResult.items.forEach((itemRef) => {   
+          const fileName = itemRef.name;
+          if (fileName.startsWith('S')) {
+            const numberPart = parseInt(fileName.substring(1)); // Extract number after 'S'
+            if (!isNaN(numberPart) && numberPart > totalImages) {
+              totalImages = numberPart; // Increment to the next number
+            }
+          }
+        });
+      } catch (error) {
+        console.error("Error listing files:", error);
       }
-      for (let i = 0; i < totalImages; i++) {
+      const scaledUrls = [];
+      const unscaledUrls = [];
+      for (let i = 0; i <= totalImages; i++) {
+        const imagePathS = `${basePath}/S${i}`;
         const imagePathL = `${basePath}/L${i}`;
         try {
-          const urlL = await getDownloadURL(ref(storage, imagePathL));
-          const smallImageKey = `S${i}`;
-          const smallImageIndex = imageUrls.findIndex(image => image.key === smallImageKey);
-          if (smallImageIndex !== -1) {
-            const srcSet = [
-              { src: imageUrls[smallImageIndex].src, width: imageUrls[smallImageIndex].width, height: imageUrls[smallImageIndex].height },
-              { src: urlL, width: "1000", height: "1000" },
-            ];
-            imageUrls[smallImageIndex].srcSet = srcSet;
-          }
+          const urlS = await getDownloadURL(ref(storage, imagePathS));
+          scaledUrls.push(urlS); // Collect each urlS into the scaledUrls array
         } catch (error) {
-          console.error(error);
+          console.error(error)
+          break;
+        }
+        try {
+          const urlL = await getDownloadURL(ref(storage, imagePathL));
+          unscaledUrls.push(urlL); // Collect each urlS into the scaledUrls array
+        } catch (error) {
+          console.error(error)
           break;
         }
       }
+      setPassedImages({
+        scaled: scaledUrls,
+        unscaled: unscaledUrls
+      });
     }
   };
 
@@ -250,6 +256,13 @@ const NewProd = ({ productNameUserID }) => {
     };
   }, [userID]);
 
+  const isValidDataUrl = (url) => {
+    // Regular expression to match a valid Data URL format
+    const dataUrlRegex = /^data:([A-Za-z-+/]+);base64,(.+)$/;
+  
+    return dataUrlRegex.test(url);
+  };
+
 
   const uploadImagesToStorage = async (images, userID, productDocumentName) => {
     const storage = getStorage();
@@ -262,7 +275,11 @@ const NewProd = ({ productNameUserID }) => {
       await Promise.all(
         imageURLs.map(async (imageURL, index) => {
           const imageName = `${prefix}${index}`;
-          await uploadImage(imageURL, imageName);
+          if (isValidDataUrl(imageURL)) {
+            await uploadImage(imageURL, imageName);
+          } else {
+            console.log("skipping...")
+          }
         })
       );
     };
@@ -459,7 +476,9 @@ const NewProd = ({ productNameUserID }) => {
             onChange={handleProductDescriptionChange}
           />
         </div>
+        {imageCheck && (
         <ImageModification handleProcessedImagesUpload={handleProcessedImagesUpload} />
+        )}
         {passedImages.scaled.length > 0 && (
           <div>
             <h3>Scaled Images</h3>
