@@ -10,10 +10,10 @@ const CategorySelector = ({
   sendCategories,
   selectedCategory,
   setSelectedCategory,
-  selectedSubcategory,
-  setSelectedSubcategory,
-  selectedSubSubcategory,
-  setSelectedSubSubcategory,
+  selectedSubCategory,
+  setSelectedSubCategory,
+  selectedSubSubCategory,
+  setSelectedSubSubCategory,
   allowNewCats,
   onCategoriesLoaded
 }) => {
@@ -70,7 +70,7 @@ const CategorySelector = ({
       }
     
       if (loadedCatsVar > 1) {
-        if (typeof onCategoriesLoaded === 'function') {
+        if (onCategoriesLoaded) {
           onCategoriesLoaded(mergedCategories);
         }
         setLoadingTextStyle({ display: 'none' });
@@ -87,13 +87,15 @@ const CategorySelector = ({
     });
 
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (sendCategories) {
       sendCategories(categories)
     }
-  }, [sendCategories, categories]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories]);
 
   const handleNewCategorySave = () => {
     const newCategoryTrimmed = newCategory.replace(/\s+/g, '');
@@ -127,7 +129,7 @@ const CategorySelector = ({
         },
       }));
 
-      setSelectedSubcategory(newSubcategoryTrimmed);
+      setSelectedSubCategory(newSubcategoryTrimmed);
       setNewSubcategory('');
 
       if (newSubcategoryInputRef.current) {
@@ -146,14 +148,14 @@ const CategorySelector = ({
         ...prevCategories,
         [selectedCategory]: {
           ...prevCategories[selectedCategory],
-          [selectedSubcategory]: {
-            ...prevCategories[selectedCategory][selectedSubcategory],
+          [selectedSubCategory]: {
+            ...prevCategories[selectedCategory][selectedSubCategory],
             [newSubSubcategoryTrimmed]: { name: trimmedSubSub },
           },
         },
       }));
 
-      setSelectedSubSubcategory(newSubSubcategoryTrimmed);
+      setSelectedSubSubCategory(newSubSubcategoryTrimmed);
       setNewSubSubcategory('');
 
       if (newSubSubcategoryInputRef.current) {
@@ -164,17 +166,23 @@ const CategorySelector = ({
     }
   };
   const handleCategoryChange = (e) => {
-    const selectedCategory = e.target.value;
-    setSelectedCategory(selectedCategory);
-    setSelectedSubcategory(''); // Reset selected subcategory
-    setSelectedSubSubcategory(''); // Reset selected sub-subcategory
+    const grabbedCategory = e.target.value;
+    setSelectedCategory(grabbedCategory);
+    setSelectedSubCategory(''); // Reset selected subcategory
+    setSelectedSubSubCategory(''); // Reset selected sub-subcategory
   };
 
   const handleSubcategoryChange = (e) => {
-    const selectedSubcategory = e.target.value;
-    setSelectedSubcategory(selectedSubcategory);
-    setSelectedSubSubcategory(''); // Reset selected sub-subcategory
+    const grabbedSubcategory = e.target.value;
+    setSelectedSubCategory(grabbedSubcategory);
+    setSelectedSubSubCategory(''); // Reset selected sub-subcategory
   };
+
+  function filterCategoryInput(value) {
+    let filteredValue = value.replace(/[^a-zA-Z0-9\s_-]/g, '');
+    filteredValue = filteredValue.slice(0, 20);
+    return filteredValue;
+  }
 
   return (
     <div>
@@ -199,7 +207,7 @@ const CategorySelector = ({
               type="text"
               placeholder="Enter new category"
               value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value.replace(/[^a-zA-Z0-9\s_-]/g, ''))}
+              onChange={(e) => setNewCategory(filterCategoryInput(e.target.value))}
               style={{ marginRight: '5px' }}
               ref={newCategoryInputRef}
               autoFocus
@@ -211,7 +219,7 @@ const CategorySelector = ({
         {selectedCategory && selectedCategory !== '__new_category' && (
           <div style={{ margin: '8px' }}>
             <label>Select Subcategory: </label>
-            <select value={selectedSubcategory} onChange={handleSubcategoryChange}>
+            <select value={selectedSubCategory} onChange={handleSubcategoryChange}>
               <option value="">Choose a Subcategory</option>
               {Object.keys(categories[selectedCategory] || {}).map((subcategoryKey) => (
                 subcategoryKey !== 'name' && (
@@ -223,13 +231,13 @@ const CategorySelector = ({
               {allowNewCats && <option value="__new_subcategory">Add New Subcategory</option>}
             </select>
 
-            {allowNewCats && selectedSubcategory === '__new_subcategory' && (
+            {allowNewCats && selectedSubCategory === '__new_subcategory' && (
               <div style={{ marginTop: '5px' }}>
                 <input
                   type="text"
                   placeholder="Enter new subcategory"
                   value={newSubcategory}
-                  onChange={(e) => setNewSubcategory(e.target.value.replace(/[^a-zA-Z0-9\s_-]/g, ''))}
+                  onChange={(e) => setNewSubcategory(filterCategoryInput(e.target.value))}
                   style={{ marginRight: '5px' }}
                   ref={newSubcategoryInputRef}
                   autoFocus
@@ -238,28 +246,28 @@ const CategorySelector = ({
               </div>
             )}
 
-            {selectedCategory !== '__new_category' && selectedSubcategory !== '__new_subcategory' && selectedSubcategory && (
+            {selectedCategory !== '__new_category' && selectedSubCategory !== '__new_subcategory' && selectedSubCategory && (
               <div style={{ margin: '8px' }}>
                 <label>Select Sub-Subcategory{allowNewCats ? ' (optional)' : ''}: </label>
-                <select value={selectedSubSubcategory} onChange={(e) => setSelectedSubSubcategory(e.target.value)}>
+                <select value={selectedSubSubCategory} onChange={(e) => setSelectedSubSubCategory(e.target.value)}>
                   <option value="">Choose a Sub-Subcategory</option>
-                  {Object.keys(categories[selectedCategory][selectedSubcategory] || {}).map((subSubcategoryKey) => (
+                  {Object.keys(categories[selectedCategory][selectedSubCategory] || {}).map((subSubcategoryKey) => (
                     subSubcategoryKey !== 'name' && (
                       <option key={subSubcategoryKey} value={subSubcategoryKey}>
-                        {categories[selectedCategory][selectedSubcategory][subSubcategoryKey].name}
+                        {categories[selectedCategory][selectedSubCategory][subSubcategoryKey].name}
                       </option>
                     )
                   ))}
                   {allowNewCats && <option value="__new_subsubcategory">Add New Sub-Subcategory</option>}
                 </select>
 
-                {allowNewCats && selectedSubSubcategory === '__new_subsubcategory' && (
+                {allowNewCats && selectedSubSubCategory === '__new_subsubcategory' && (
                   <div style={{ marginTop: '5px' }}>
                     <input
                       type="text"
                       placeholder="Enter new sub-subcategory"
                       value={newSubSubcategory}
-                      onChange={(e) => setNewSubSubcategory(e.target.value.replace(/[^a-zA-Z0-9\s_-]/g, ''))}
+                      onChange={(e) => setNewSubSubcategory(filterCategoryInput(e.target.value))}
                       style={{ marginRight: '5px' }}
                       ref={newSubSubcategoryInputRef}
                       autoFocus
@@ -283,8 +291,8 @@ CategorySelector.propTypes = {
   selectedSubSubCategory: PropTypes.string, // Add prop validation for selectedCategory
   sendCategories: PropTypes.func,
   setSelectedCategory: PropTypes.func,
-  setSelectedSubcategory: PropTypes.func,
-  setSelectedSubSubcategory: PropTypes.func,
+  setSelectedSubCategory: PropTypes.func,
+  setSelectedSubSubCategory: PropTypes.func,
   allowNewCats: PropTypes.bool,
   onCategoriesLoaded: PropTypes.func // Callback function to pass loadedCats to the parent component
 };
