@@ -17,15 +17,14 @@ const NewProd = ({ productNameUserID }) => {
   const [productDescription, setProductDescription] = useState("");
   const [variations, setVariations] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [selectedSubCategory, setSelectedSubcategory] = useState('');
   const [userID, setUserID] = useState(null);
   const [passedImages, setPassedImages] = useState({ scaled: [], unscaled: [] });
-  const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(''); // New state variable
+  const [selectedSubSubCategory, setSelectedSubSubcategory] = useState(''); // New state variable
   const [categories, setCategories] = useState([]);
   const allowNewCats = true;
   const navigate = useNavigate();
-  const [productInfo, setProductInfo] = useState(null);
-  const [productInfoLoaded, setProductInfoLoaded] = useState(false);
+  //const [productInfo, setProductInfo] = useState(null);
   const [imageCheck, setImageCheck] = useState(false);
   const [loadingImages, setloadingImages] = useState(false);
 
@@ -36,7 +35,7 @@ const NewProd = ({ productNameUserID }) => {
       const productSnapshot = await getDoc(productDocRef);
       if (productSnapshot.exists()) {
         const productData = productSnapshot.data();
-        setProductInfo(productData);
+        //setProductInfo(productData);
         setProductName(productData.productName);
         setProductDescription(productData.productDescription);
         setVariations(productData.variations || []); // Set variations if available
@@ -59,43 +58,8 @@ const NewProd = ({ productNameUserID }) => {
     if (productNameUserID !== "") {
       getProductInfo(productNameUserID);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleCategoriesLoaded = (productInfo) => {
-    if (productInfo != null) {
-      if (productInfo.category && Object.keys(productInfo.category).length > 0) {
-        const categories = Object.keys(productInfo.category);
-        const categoryName = categories[0];
-        setSelectedCategory(categoryName);
-        const subcategories = productInfo.category[categoryName];
-        if (subcategories) {
-          const subcategoryKeys = Object.keys(subcategories);
-          if (subcategoryKeys.length > 0) {
-            const subcategoryName = subcategoryKeys[1];
-            setSelectedSubcategory(subcategoryName);
-            const subSubcategories = subcategories[subcategoryName];
-            if (subSubcategories) {
-              const subSubcategoryKeys = Object.keys(subSubcategories);
-              if (subSubcategoryKeys.length > 0) {
-                const subSubcategoryName = subSubcategoryKeys[1];
-                setSelectedSubSubcategory(subSubcategoryName);
-              }
-            }
-          }
-        }
-      } else {
-        console.log('Category data not found or empty.');
-      }
-    } else {
-      console.log('No data found.');
-    }
-  };
-
-  useEffect(() => {
-    if (productInfoLoaded && productInfo !== null) {
-      handleCategoriesLoaded(productInfo);
-    }
-  }, [productInfoLoaded, productInfo]);
 
 
   //pull existing images
@@ -159,15 +123,15 @@ const NewProd = ({ productNameUserID }) => {
       if (categoryName) {
         categoryTree[selectedCategory] = { name: categoryName };
         // Add selected subcategory if it exists
-        if (selectedSubcategory) {
-          const subcategoryName = categories[selectedCategory][selectedSubcategory]?.name;
+        if (selectedSubCategory) {
+          const subcategoryName = categories[selectedCategory][selectedSubCategory]?.name;
           if (subcategoryName) {
-            categoryTree[selectedCategory][selectedSubcategory] = { name: subcategoryName };
+            categoryTree[selectedCategory][selectedSubCategory] = { name: subcategoryName };
             // Add selected subsubcategory if it exists
-            if (selectedSubSubcategory) {
-              const subSubcategoryName = categories[selectedCategory][selectedSubcategory][selectedSubSubcategory]?.name;
+            if (selectedSubSubCategory) {
+              const subSubcategoryName = categories[selectedCategory][selectedSubCategory][selectedSubSubCategory]?.name;
               if (subSubcategoryName) {
-                categoryTree[selectedCategory][selectedSubcategory][selectedSubSubcategory] = { name: subSubcategoryName };
+                categoryTree[selectedCategory][selectedSubCategory][selectedSubSubCategory] = { name: subSubcategoryName };
               }
             }
           }
@@ -175,7 +139,7 @@ const NewProd = ({ productNameUserID }) => {
       }
     }
 
-  }, [categories, selectedCategory, selectedSubcategory, selectedSubSubcategory]);
+  }, [categories, selectedCategory, selectedSubCategory, selectedSubSubCategory]);
 
   const handleProcessedImagesUpload = (images) => {
     const scaledDataURL = images.scaled.toDataURL('image/jpeg');
@@ -201,12 +165,12 @@ const NewProd = ({ productNameUserID }) => {
 
   useEffect(() => {
     // Check if both category and subcategory are selected
-    if (selectedCategory !== null && selectedSubcategory !== null) {
+    if (selectedCategory !== null && selectedSubCategory !== null) {
       // Reset the error message
       setErrorMessage("");
     }
     if (productName !== "") setErrorMessage("");
-  }, [selectedCategory, selectedSubcategory, productName]);
+  }, [selectedCategory, selectedSubCategory, productName]);
 
   const handleProductDescriptionChange = (event) => {
     const newDescription = event.target.value;
@@ -308,14 +272,14 @@ const NewProd = ({ productNameUserID }) => {
         const categoryName = categories[selectedCategory]?.name;
         if (categoryName) {
           categoryTreeUpdate[selectedCategory] = { name: categoryName };
-          if (selectedSubcategory) {
-            const subcategoryName = categories[selectedCategory][selectedSubcategory]?.name;
+          if (selectedSubCategory) {
+            const subcategoryName = categories[selectedCategory][selectedSubCategory]?.name;
             if (subcategoryName) {
-              categoryTreeUpdate[selectedCategory][selectedSubcategory] = { name: subcategoryName };
-              if (selectedSubSubcategory) {
-                const subSubcategoryName = categories[selectedCategory][selectedSubcategory][selectedSubSubcategory]?.name;
+              categoryTreeUpdate[selectedCategory][selectedSubCategory] = { name: subcategoryName };
+              if (selectedSubSubCategory) {
+                const subSubcategoryName = categories[selectedCategory][selectedSubCategory][selectedSubSubCategory]?.name;
                 if (subSubcategoryName) {
-                  categoryTreeUpdate[selectedCategory][selectedSubcategory][selectedSubSubcategory] = { name: subSubcategoryName };
+                  categoryTreeUpdate[selectedCategory][selectedSubCategory][selectedSubSubCategory] = { name: subSubcategoryName };
                 }
               }
             }
@@ -368,13 +332,13 @@ const NewProd = ({ productNameUserID }) => {
       //console.log("existingproductTree:", JSON.stringify(existingproductTree, null, 2));
       const productTreeUpdate = {};
       productTreeUpdate[selectedCategory] = {};
-      productTreeUpdate[selectedCategory][selectedSubcategory] = {};
-      if (selectedSubSubcategory) {
-        productTreeUpdate[selectedCategory][selectedSubcategory][selectedSubSubcategory] = {};
-        productTreeUpdate[selectedCategory][selectedSubcategory][selectedSubSubcategory].products = { [productDocumentName]: true };
+      productTreeUpdate[selectedCategory][selectedSubCategory] = {};
+      if (selectedSubSubCategory) {
+        productTreeUpdate[selectedCategory][selectedSubCategory][selectedSubSubCategory] = {};
+        productTreeUpdate[selectedCategory][selectedSubCategory][selectedSubSubCategory].products = { [productDocumentName]: true };
       }
       else {
-        productTreeUpdate[selectedCategory][selectedSubcategory].products = { [productDocumentName]: true };
+        productTreeUpdate[selectedCategory][selectedSubCategory].products = { [productDocumentName]: true };
       }
       const mergedProductTree = merge({}, existingproductTree, productTreeUpdate)
       //console.log("mergedProductTree:", JSON.stringify(mergedProductTree, null, 2));
@@ -391,7 +355,7 @@ const NewProd = ({ productNameUserID }) => {
   const handleSaveProduct = async () => {
     setSaving(true);
     try {
-      if (!selectedCategory || !selectedSubcategory) {
+      if (!selectedCategory || !selectedSubCategory) {
         throw new Error("Category and Subcategory are not selected.");
       }
       if (productName === "") {
@@ -405,13 +369,13 @@ const NewProd = ({ productNameUserID }) => {
       const categoryUpdate = {};
       if (selectedCategory) {
         categoryUpdate[selectedCategory] = { name: categories[selectedCategory]?.name };
-        if (selectedSubcategory) {
-          categoryUpdate[selectedCategory][selectedSubcategory] = {
-            name: categories[selectedCategory]?.[selectedSubcategory]?.name
+        if (selectedSubCategory) {
+          categoryUpdate[selectedCategory][selectedSubCategory] = {
+            name: categories[selectedCategory]?.[selectedSubCategory]?.name
           };
-          if (selectedSubSubcategory && categories[selectedCategory][selectedSubcategory][selectedSubSubcategory]) {
-            categoryUpdate[selectedCategory][selectedSubcategory][selectedSubSubcategory] = {
-              name: categories[selectedCategory][selectedSubcategory][selectedSubSubcategory].name
+          if (selectedSubSubCategory && categories[selectedCategory][selectedSubCategory][selectedSubSubCategory]) {
+            categoryUpdate[selectedCategory][selectedSubCategory][selectedSubSubCategory] = {
+              name: categories[selectedCategory][selectedSubCategory][selectedSubSubCategory].name
             };
           }
         }
@@ -504,14 +468,14 @@ const NewProd = ({ productNameUserID }) => {
 
       <CategorySelector
         sendCategories={setCategories}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        selectedSubcategory={selectedSubcategory}
-        setSelectedSubcategory={setSelectedSubcategory}
-        selectedSubSubcategory={selectedSubSubcategory}
-        setSelectedSubSubcategory={setSelectedSubSubcategory}
+        selectedCat={setSelectedCategory}
+        passCat={selectedCategory} // pass data for editing existing product
+        selectedSubCat={setSelectedSubcategory}
+        passSubCat={selectedSubCategory}
+        selectedSubSubCat={setSelectedSubSubcategory}
+        passSubSubCat={selectedSubSubCategory}
         allowNewCats={allowNewCats}
-        onCategoriesLoaded={() => setProductInfoLoaded(true)}
+        //onCategoriesLoaded={}
       />
       <div style={{ display: "flex", alignItems: "center", margin: "8px" }}>
         {!saving && (

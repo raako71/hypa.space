@@ -7,30 +7,31 @@ import { doc, getDoc } from 'firebase/firestore/lite';
 import merge from 'lodash/merge';
 
 const CategorySelector = ({
-  sendCategories,
-  selectedCategory,
+  sendCategories, //pass full category object when changed.
+  selectedCat,
   setSelectedCategory,
-  selectedSubcategory,
-  setSelectedSubcategory,
-  selectedSubSubcategory,
-  setSelectedSubSubcategory,
+  selectedSubCat,
+  selectedSubSubCat,
   allowNewCats,
   onCategoriesLoaded
 }) => {
-  const [categories, setCategories] = useState([]);
+  const [categoriesObject, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState("Waiting to load Categories");
   const [loadingUserCategories, setLoadingUserCategories] = useState("");
   const [loadingTextStyle, setLoadingTextStyle] = useState({});
   const [newCategory, setNewCategory] = useState('');
   const [newSubcategory, setNewSubcategory] = useState('');
   const [newSubSubcategory, setNewSubSubcategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubCategory, setSelectedSubcategory] = useState('');
+  const [selectedSubSubCategory, setSelectedSubSubcategory] = useState('');
   const newCategoryInputRef = useRef(null); // Define ref for the new category input
   const newSubcategoryInputRef = useRef(null); // Define ref for the new subcategory input
   const newSubSubcategoryInputRef = useRef(null); // Define ref for the new sub-subcategory input
 
   useEffect(() => {
     // Function to fetch local categories data
-    const fetchLocalCategories = async (userID) => {
+    const fetchAllCategories = async (userID) => {
       let categoriesData = {};
       let mergedCategories = {}; // Initialize mergedCategories here
       let loadedCatsVar = 0;
@@ -70,8 +71,8 @@ const CategorySelector = ({
       }
     
       if (loadedCatsVar > 1) {
-        if (typeof onCategoriesLoaded === 'function') {
-          onCategoriesLoaded(mergedCategories);
+        if (onCategoriesLoaded) {
+          onCategoriesLoaded();
         }
         setLoadingTextStyle({ display: 'none' });
       }
@@ -80,20 +81,46 @@ const CategorySelector = ({
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         const userID = user.uid;
-        fetchLocalCategories(userID);
+        fetchAllCategories(userID);
       } else {
         console.log('User is logged out');
       }
     });
 
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (sendCategories) {
-      sendCategories(categories)
+      sendCategories(categoriesObject)
     }
-  }, [sendCategories, categories]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoriesObject]);
+
+  useEffect(() => {
+    if (selectedCat) {
+      selectedCat(selectedCategory);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (selectedSubCat) {
+      selectedSubCat(selectedSubCategory);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSubCategory]);
+
+  useEffect(() => {
+    if (selectedSubSubCat) {
+      selectedSubCat(selectedSubSubCategory);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSubSubCategory]);
+
+
+  
 
   const handleNewCategorySave = () => {
     const newCategoryTrimmed = newCategory.replace(/\s+/g, '');
@@ -146,8 +173,8 @@ const CategorySelector = ({
         ...prevCategories,
         [selectedCategory]: {
           ...prevCategories[selectedCategory],
-          [selectedSubcategory]: {
-            ...prevCategories[selectedCategory][selectedSubcategory],
+          [selectedSubCategory]: {
+            ...prevCategories[selectedCategory][selectedSubCategory],
             [newSubSubcategoryTrimmed]: { name: trimmedSubSub },
           },
         },
@@ -176,30 +203,33 @@ const CategorySelector = ({
     setSelectedSubSubcategory(''); // Reset selected sub-subcategory
   };
 
+  function filterCategoryInput(value) {
+    let filteredValue = value.replace(/[^a-zA-Z0-9\s_-]/g, '');
+    filteredValue = filteredValue.slice(0, 20);
+    return filteredValue;
+  }
+
   return (
     <div>
+      <p style={loadingTextStyle}>{loadingCategories}&nbsp; {loadingUserCategories}</p>
       <div>
-        <p style={loadingTextStyle}>{loadingCategories}&nbsp; {loadingUserCategories}</p>
-
         <label>Select Category: </label>
         <select value={selectedCategory} onChange={handleCategoryChange}>
           <option value="">Choose a Category</option>
-          {Object.keys(categories).map((categoryKey) => (
+          {Object.keys(categoriesObject).map((categoryKey) => (
             <option key={categoryKey} value={categoryKey}>
-              {categories[categoryKey].name}
+              {categoriesObject[categoryKey].name}
             </option>
           ))}
           {allowNewCats && <option value="__new_category">Add New Category</option>}
         </select>
-
-
         {allowNewCats && selectedCategory === '__new_category' && (
           <div style={{ marginTop: '5px' }}>
             <input
               type="text"
               placeholder="Enter new category"
               value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value.replace(/[^a-zA-Z0-9\s_-]/g, ''))}
+              onChange={(e) => setNewCategory(filterCategoryInput(e.target.value))}
               style={{ marginRight: '5px' }}
               ref={newCategoryInputRef}
               autoFocus
@@ -211,25 +241,25 @@ const CategorySelector = ({
         {selectedCategory && selectedCategory !== '__new_category' && (
           <div style={{ margin: '8px' }}>
             <label>Select Subcategory: </label>
-            <select value={selectedSubcategory} onChange={handleSubcategoryChange}>
+            <select value={selectedSubCategory} onChange={handleSubcategoryChange}>
               <option value="">Choose a Subcategory</option>
-              {Object.keys(categories[selectedCategory] || {}).map((subcategoryKey) => (
+              {Object.keys(categoriesObject[selectedCategory] || {}).map((subcategoryKey) => (
                 subcategoryKey !== 'name' && (
                   <option key={subcategoryKey} value={subcategoryKey}>
-                    {categories[selectedCategory][subcategoryKey].name}
+                    {categoriesObject[selectedCategory][subcategoryKey].name}
                   </option>
                 )
               ))}
               {allowNewCats && <option value="__new_subcategory">Add New Subcategory</option>}
             </select>
 
-            {allowNewCats && selectedSubcategory === '__new_subcategory' && (
+            {allowNewCats && selectedSubCategory === '__new_subcategory' && (
               <div style={{ marginTop: '5px' }}>
                 <input
                   type="text"
                   placeholder="Enter new subcategory"
                   value={newSubcategory}
-                  onChange={(e) => setNewSubcategory(e.target.value.replace(/[^a-zA-Z0-9\s_-]/g, ''))}
+                  onChange={(e) => setNewSubcategory(filterCategoryInput(e.target.value))}
                   style={{ marginRight: '5px' }}
                   ref={newSubcategoryInputRef}
                   autoFocus
@@ -238,28 +268,28 @@ const CategorySelector = ({
               </div>
             )}
 
-            {selectedCategory !== '__new_category' && selectedSubcategory !== '__new_subcategory' && selectedSubcategory && (
+            {selectedCategory !== '__new_category' && selectedSubCategory !== '__new_subcategory' && selectedSubCategory && (
               <div style={{ margin: '8px' }}>
                 <label>Select Sub-Subcategory{allowNewCats ? ' (optional)' : ''}: </label>
-                <select value={selectedSubSubcategory} onChange={(e) => setSelectedSubSubcategory(e.target.value)}>
+                <select value={selectedSubSubCategory} onChange={(e) => setSelectedSubSubcategory(e.target.value)}>
                   <option value="">Choose a Sub-Subcategory</option>
-                  {Object.keys(categories[selectedCategory][selectedSubcategory] || {}).map((subSubcategoryKey) => (
+                  {Object.keys(categoriesObject[selectedCategory][selectedSubCategory] || {}).map((subSubcategoryKey) => (
                     subSubcategoryKey !== 'name' && (
                       <option key={subSubcategoryKey} value={subSubcategoryKey}>
-                        {categories[selectedCategory][selectedSubcategory][subSubcategoryKey].name}
+                        {categoriesObject[selectedCategory][selectedSubCategory][subSubcategoryKey].name}
                       </option>
                     )
                   ))}
                   {allowNewCats && <option value="__new_subsubcategory">Add New Sub-Subcategory</option>}
                 </select>
 
-                {allowNewCats && selectedSubSubcategory === '__new_subsubcategory' && (
+                {allowNewCats && selectedSubSubCategory === '__new_subsubcategory' && (
                   <div style={{ marginTop: '5px' }}>
                     <input
                       type="text"
                       placeholder="Enter new sub-subcategory"
                       value={newSubSubcategory}
-                      onChange={(e) => setNewSubSubcategory(e.target.value.replace(/[^a-zA-Z0-9\s_-]/g, ''))}
+                      onChange={(e) => setNewSubSubcategory(filterCategoryInput(e.target.value))}
                       style={{ marginRight: '5px' }}
                       ref={newSubSubcategoryInputRef}
                       autoFocus
@@ -278,13 +308,11 @@ const CategorySelector = ({
 };
 
 CategorySelector.propTypes = {
-  selectedCategory: PropTypes.string, // Add prop validation for selectedCategory
-  selectedSubCategory: PropTypes.string, // Add prop validation for selectedCategory
-  selectedSubSubCategory: PropTypes.string, // Add prop validation for selectedCategory
   sendCategories: PropTypes.func,
-  setSelectedCategory: PropTypes.func,
-  setSelectedSubcategory: PropTypes.func,
-  setSelectedSubSubcategory: PropTypes.func,
+  selectedCat: PropTypes.func,
+  selectedSubCat: PropTypes.func,
+  selectedSubSubCat: PropTypes.func,
+  setSelectedCategory: PropTypes.string,
   allowNewCats: PropTypes.bool,
   onCategoriesLoaded: PropTypes.func // Callback function to pass loadedCats to the parent component
 };
