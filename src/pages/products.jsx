@@ -8,7 +8,7 @@ import ProdBox from "../components/productBox"
 const Products = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSubCategory, setSelectedSubCategory] = useState('');
-    const [selectedSubSubcategory, setSelectedSubSubCategory] = useState(''); // New state variable
+    const [selectedSubSubCategory, setSelectedSubSubCategory] = useState(''); // New state variable
     const [categories, setCategories] = useState([]);
     const [loadingUserCategories, setLoadingUserCategories] = useState("");
     const [productArray, setProductArray] = useState(-1);
@@ -88,9 +88,9 @@ const Products = () => {
         const getProductChildrenArray = () => {
             let productsArray = [];
 
-            if (selectedSubSubcategory !== '') {
-                //console.log("Using sub-subcategory: " + selectedSubSubcategory)
-                const subSubcategory = categories[selectedCategory]?.[selectedSubCategory]?.[selectedSubSubcategory];
+            if (selectedSubSubCategory !== '') {
+                //console.log("Using sub-subcategory: " + selectedSubSubCategory)
+                const subSubcategory = categories[selectedCategory]?.[selectedSubCategory]?.[selectedSubSubCategory];
                 if (subSubcategory && subSubcategory.products) {
                     productsArray = Object.keys(subSubcategory.products);
                 }
@@ -146,7 +146,7 @@ const Products = () => {
 
         // Update the state with the array of product names
         setProductArray(getProductChildrenArray());
-    }, [categories, selectedCategory, selectedSubCategory, selectedSubSubcategory]);
+    }, [categories, selectedCategory, selectedSubCategory, selectedSubSubCategory]);
 
     useEffect(() => {
         // Set the default value for products displayed
@@ -193,8 +193,11 @@ const Products = () => {
             <p style={{ color: textColor }}>{loadingUserCategories}</p>
             <CategorySelector
                 setSelectedCategory={setSelectedCategory}
+                selectedCategory={selectedCategory} // pass category for existing product
                 setSelectedSubCategory={setSelectedSubCategory}
+                selectedSubCategory={selectedSubCategory}
                 setSelectedSubSubCategory={setSelectedSubSubCategory}
+                selectedSubSubCategory={selectedSubSubCategory}
                 loadingTextStyle={loadingTextStyle}
                 allowNewCats={allowNewCats}
             />
