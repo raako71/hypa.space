@@ -7,8 +7,8 @@ import ProdBox from "../components/productBox"
 
 const Products = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [selectedSubcategory, setSelectedSubcategory] = useState('');
-    const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(''); // New state variable
+    const [selectedSubCategory, setSelectedSubCategory] = useState('');
+    const [selectedSubSubcategory, setSelectedSubSubCategory] = useState(''); // New state variable
     const [categories, setCategories] = useState([]);
     const [loadingUserCategories, setLoadingUserCategories] = useState("");
     const [productArray, setProductArray] = useState(-1);
@@ -90,13 +90,13 @@ const Products = () => {
 
             if (selectedSubSubcategory !== '') {
                 //console.log("Using sub-subcategory: " + selectedSubSubcategory)
-                const subSubcategory = categories[selectedCategory]?.[selectedSubcategory]?.[selectedSubSubcategory];
+                const subSubcategory = categories[selectedCategory]?.[selectedSubCategory]?.[selectedSubSubcategory];
                 if (subSubcategory && subSubcategory.products) {
                     productsArray = Object.keys(subSubcategory.products);
                 }
-            } else if (selectedSubcategory !== '') {
-                //console.log("Using subcategory: " + selectedSubcategory)
-                const subcategory = categories[selectedCategory]?.[selectedSubcategory];
+            } else if (selectedSubCategory !== '') {
+                //console.log("Using subcategory: " + selectedSubCategory)
+                const subcategory = categories[selectedCategory]?.[selectedSubCategory];
                 if (subcategory && subcategory.products) {
                     productsArray = Object.keys(subcategory.products);
                 }
@@ -146,11 +146,12 @@ const Products = () => {
 
         // Update the state with the array of product names
         setProductArray(getProductChildrenArray());
-    }, [categories, selectedCategory, selectedSubcategory, selectedSubSubcategory]);
+    }, [categories, selectedCategory, selectedSubCategory, selectedSubSubcategory]);
 
     useEffect(() => {
         // Set the default value for products displayed
         setProductsDisplayed(displayOptions[0]); // Set default to the first option
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); 
 
     const Pagination = () => (
@@ -192,10 +193,10 @@ const Products = () => {
             <p style={{ color: textColor }}>{loadingUserCategories}</p>
             <CategorySelector
                 setSelectedCategory={setSelectedCategory}
-                setSelectedSubcategory={setSelectedSubcategory}
-                setSelectedSubSubcategory={setSelectedSubSubcategory}
+                setSelectedSubCategory={setSelectedSubCategory}
+                setSelectedSubSubCategory={setSelectedSubSubCategory}
                 loadingTextStyle={loadingTextStyle}
-                allowNewCats = {allowNewCats}
+                allowNewCats={allowNewCats}
             />
             <h2>Products: {productArray.length}</h2>
             <p style={{ textAlign: 'center', display: productArray.length === 0 ? 'none' : 'block' }}>Show <select value={productsDisplayed} onChange={setNumOfProducts}>
