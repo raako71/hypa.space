@@ -7,6 +7,7 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING: 
+spend limit
 * Store name as url.
 * Show stores on front page.
 
@@ -15,6 +16,12 @@ REMAINING:
 * Delete product, and update user category tree accordingly etc.
 * Update user category tree on edit product.
 * ensure blank image loads for no image in ProdBox (isolated components)
+
+24 June:
+Rate limiting work (firebase rules).
+
+23 June:
+Load sub cats in product page.
 
 22 June:
 Load existing images to product editor, allow adding more.
