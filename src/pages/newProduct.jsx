@@ -1,16 +1,18 @@
 import CategorySelector from "../components/categorySelector";
 import Variations from "../components/variations";
 import { useEffect, useState } from 'react';
-import { auth, db } from "../firebase-config"
+import { db } from "../firebase-config"
 import { getFirestore, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
-import { onAuthStateChanged } from 'firebase/auth';
 import ImageModification from "../components/imageUpload";
 import { getStorage, ref, uploadString, getDownloadURL, listAll } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
 import merge from 'lodash/merge';
 import PropTypes from 'prop-types';
 
-const NewProd = ({ productNameUserID }) => {
+const NewProd = ({ 
+  userID,
+  existingData,
+  productNameUserID }) => {
   const [productName, setProductName] = useState("");
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -18,7 +20,6 @@ const NewProd = ({ productNameUserID }) => {
   const [variations, setVariations] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubCategory, setSelectedSubCategory] = useState('');
-  const [userID, setUserID] = useState(null);
   const [passedImages, setPassedImages] = useState({ scaled: [], unscaled: [] });
   const [selectedSubSubCategory, setSelectedSubSubCategory] = useState(''); // New state variable
   const [categories, setCategories] = useState([]);
@@ -42,8 +43,8 @@ const NewProd = ({ productNameUserID }) => {
         setVariations(productData.variations || []); // Set variations if available
         // Set category information if available
         if (productData) {
-          const [, userID] = productNameUserID.split('_');
-          indexImages(userID, productData.images);
+          const [, userIDVar] = productNameUserID.split('_');
+          indexImages(userIDVar, productData.images);
         }
       } else {
         setImageCheck(true);
@@ -59,6 +60,7 @@ const NewProd = ({ productNameUserID }) => {
     if (productNameUserID !== "") {
       getProductInfo(productNameUserID);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCategoriesLoaded = (productInfo) => {
@@ -246,19 +248,6 @@ const NewProd = ({ productNameUserID }) => {
     return harmfulPatterns.test(description);
   };
 
-  // grab UserID
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const userID = user.uid;
-        setUserID(userID);
-      }
-    });
-    return () => {
-      unsubscribe(); // Cleanup the listener on component unmount
-    };
-  }, [userID]);
-
   const isValidDataUrl = (url) => {
     // Regular expression to match a valid Data URL format
     const dataUrlRegex = /^data:([A-Za-z-+/]+);base64,(.+)$/;
@@ -298,10 +287,6 @@ const NewProd = ({ productNameUserID }) => {
 
   const updateCategoriesInUserFile = async () => {
     try {
-      //update categories in user file
-      const userDocRef = doc(db, 'users', userID);
-      const userDocSnapshot = await getDoc(userDocRef);
-      const existingData = userDocSnapshot.data();
       const existingCategoryTree = existingData?.categoryTree || {};
       const categoryTreeUpdate = {};
       if (selectedCategory) {
@@ -323,6 +308,7 @@ const NewProd = ({ productNameUserID }) => {
         }
       }
       const mergedCategoryTree = merge({}, existingCategoryTree, categoryTreeUpdate)
+      const userDocRef = doc(db, 'users', userID);
       if (Object.keys(mergedCategoryTree).length > 0) {
         await updateDoc(userDocRef, { categoryTree: mergedCategoryTree });
       }
@@ -503,6 +489,8 @@ const NewProd = ({ productNameUserID }) => {
       <Variations variations={variations} setVariations={setVariations} />
 
       <CategorySelector
+        existingData={existingData}
+        userID={userID}
         sendCategories={setCategories} // categories are store in parent state.
         selectedCategory={selectedCategory} // pass category for existing product
         setSelectedCategory={setSelectedCategory}
@@ -528,6 +516,8 @@ const NewProd = ({ productNameUserID }) => {
   );
 };
 NewProd.propTypes = {
+  userID: PropTypes.string,
+  existingData: PropTypes.object,
   productNameUserID: PropTypes.string.isRequired,
 };
 export default NewProd;

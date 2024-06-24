@@ -8,38 +8,46 @@ import NewProd from "./pages/newProduct"
 import Search from "./pages/search"
 import './index.css'
 import publicStore from "./pages/store"
-import { auth } from "./firebase-config"
+import { auth, db } from "./firebase-config"
 import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Products from "./pages/products"
 import ProductPage from "./pages/productPage"
-
-
+import { doc, getDoc } from 'firebase/firestore/lite';
 
 export const domain = window.location.origin;
 
+
 function App() {
+  const [existingData, setExistingData] = useState(null);
+  const [userID, setUserID] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(
     localStorage.getItem('isLoggedIn') === 'true'
   );
-  const [currentUserID, setUserID] = useState('');
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       const loggedIn = !!user;
       if (user) {
         const userID = user.uid;
         setUserID(userID);
+        const userDocRefVar = doc(db, 'users', userID);
+        const userDocSnapshotVar = await getDoc(userDocRefVar);
+        const existingDataVar = userDocSnapshotVar.data();
+        setExistingData(existingDataVar);
+        setIsLoggedIn(loggedIn); // Update isLoggedIn based on user existence
+        localStorage.setItem('isLoggedIn', loggedIn.toString()); // Store in localStorage
+      } else {
+        setIsLoggedIn(false); // Handle user not logged in
+        localStorage.setItem('isLoggedIn', 'false'); // Store in localStorage
       }
-      setIsLoggedIn(loggedIn); // Update isLoggedIn based on user existence
-      localStorage.setItem('isLoggedIn', loggedIn.toString()); // Store in localStorage
     });
 
     return () => {
       unsubscribe();
     };
-  }, [isLoggedIn]);
+  }, []);
 
   const queryParameters = new URLSearchParams(window.location.search)
   const productName = queryParameters.get("productName")
@@ -56,17 +64,27 @@ function App() {
             element={isLoggedIn ? <Navigate to="/" /> : <Login />}
           />
           <Route path="/newProduct"
-            element={isLoggedIn ? <NewProd productNameUserID={productName || ''}/> : <Navigate to="/" />}
+            element={isLoggedIn ? <NewProd 
+              existingData={existingData}
+              userID={userID}
+              productNameUserID={productName || ''} 
+              /> : <Navigate to="/" />}
           />
           <Route path="/account"
             element={<Account />}
           />
           <Route path="/products"
-            element={<Products />}
+            element={<Products
+              existingData={existingData}
+              userID={userID}
+            />}
           />
           <Route path="/terms" element={<Terms />} />
-          <Route path="/product" element={<ProductPage productNameUserID={productName || ''} currentUserID={currentUserID || ''}/>} />
-          <Route path="/store" element={<publicStore publicStore={publicStore || ''}/>} />
+          <Route path="/product" element={<ProductPage 
+          productNameUserID={productName || ''} 
+          userID={userID || ''} 
+          />} />
+          <Route path="/store" element={<publicStore publicStore={publicStore || ''} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />

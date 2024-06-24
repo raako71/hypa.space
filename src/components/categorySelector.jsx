@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { onAuthStateChanged } from 'firebase/auth';
 import { getDocs, collection } from 'firebase/firestore/lite';
-import { auth, db } from '../firebase-config';
-import { doc, getDoc } from 'firebase/firestore/lite';
+import { db } from '../firebase-config';
 import merge from 'lodash/merge';
 
 const CategorySelector = ({
@@ -15,7 +13,9 @@ const CategorySelector = ({
   selectedSubSubCategory,
   setSelectedSubSubCategory,
   allowNewCats,
-  onCategoriesLoaded
+  onCategoriesLoaded,
+  existingData,
+  userID
 }) => {
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState("Waiting to load Categories");
@@ -30,7 +30,7 @@ const CategorySelector = ({
 
   useEffect(() => {
     // Function to fetch local categories data
-    const fetchLocalCategories = async (userID) => {
+    const fetchLocalCategories = async () => {
       let categoriesData = {};
       let mergedCategories = {}; // Initialize mergedCategories here
       let loadedCatsVar = 0;
@@ -50,17 +50,11 @@ const CategorySelector = ({
         setLoadingCategories("Failed to load Global Categories.");
         console.error('Error fetching Global categories:', error);
       }
-      
+
       try {
         setLoadingUserCategories("Loading User Categories.");
-        // Fetch existing category tree from user document
-        const userDocRef = doc(db, 'users', userID);
-        const userDocSnapshot = await getDoc(userDocRef);
-        const existingData = userDocSnapshot.data();
         const existingCategoryTree = existingData?.categoryTree || {};
-        // Deep merge the existing category tree with the global categories
-        mergedCategories = merge({}, categoriesData, existingCategoryTree); // Update mergedCategories here
-        // Update the categories state with the merged category tree
+        mergedCategories = merge({}, categoriesData, existingCategoryTree); 
         setCategories(mergedCategories);
         setLoadingUserCategories("Loaded User Categories");
         loadedCatsVar = loadedCatsVar + 1;
@@ -68,33 +62,25 @@ const CategorySelector = ({
         setLoadingUserCategories("Failed to load User Categories.");
         console.error('Error fetching local categories:', error);
       }
-    
+
       if (loadedCatsVar > 1) {
         if (onCategoriesLoaded) {
           onCategoriesLoaded(mergedCategories);
         }
         setLoadingTextStyle({ display: 'none' });
       }
-    };    
+    };
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const userID = user.uid;
-        fetchLocalCategories(userID);
-      } else {
-        console.log('User is logged out');
-      }
-    });
-
-    return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (userID) {
+      fetchLocalCategories();
+    }
+  }, [userID, existingData]);
 
   useEffect(() => {
     if (sendCategories) {
       sendCategories(categories)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categories]);
 
   const handleNewCategorySave = () => {
@@ -286,6 +272,8 @@ const CategorySelector = ({
 };
 
 CategorySelector.propTypes = {
+  userID: PropTypes.string,
+  existingData: PropTypes.object,
   selectedCategory: PropTypes.string, // Add prop validation for selectedCategory
   selectedSubCategory: PropTypes.string, // Add prop validation for selectedCategory
   selectedSubSubCategory: PropTypes.string, // Add prop validation for selectedCategory

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import CategorySelector from "../components/categorySelector";
-import { auth, db } from '../firebase-config';
-import { doc, getDoc } from 'firebase/firestore/lite';
-import { onAuthStateChanged } from 'firebase/auth';
 import ProdBox from "../components/productBox"
+import PropTypes from 'prop-types';
 
-const Products = () => {
+const Products = ({
+    existingData,
+    userID
+}) => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSubCategory, setSelectedSubCategory] = useState('');
     const [selectedSubSubCategory, setSelectedSubSubCategory] = useState(''); // New state variable
@@ -17,7 +18,6 @@ const Products = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [noOfPages, setNoOfPages] = useState(1);
     const [textColor, setTextColor] = useState('initial');
-    const [currentUserID, setUserID] = useState('');
     const loadingTextStyle = { display: 'none' };
     const allowNewCats = false;
 
@@ -43,7 +43,11 @@ const Products = () => {
         return (
             <>
                 {productArray.slice(startIndex - 1, endIndex).map((productName, index) => (
-                    <ProdBox key={index} productNameUserID={productName || ''} currentUserID={currentUserID || ''} />
+                    <ProdBox 
+                    key={index} 
+                    productNameUserID={productName || ''} 
+                    userID={userID || ''} 
+                    />
                 ))}
             </>
         );
@@ -54,14 +58,11 @@ const Products = () => {
 
     // Function to fetch local categories data
     useEffect(() => {
-        const fetchLocalCategories = async (userID) => {            
+        const fetchLocalCategories = async () => {            
             try {
-                setLoadingUserCategories("Loading User Categories.");
+                setLoadingUserCategories("Loading Categories.");
                 setTextColor('red');
                 // Fetch existing category tree from user document
-                const userDocRef = doc(db, 'users', userID);
-                const userDocSnapshot = await getDoc(userDocRef);
-                const existingData = userDocSnapshot.data();
                 const productTree = existingData?.productTree || {};
                 setCategories(productTree);
                 setLoadingUserCategories("");
@@ -70,19 +71,13 @@ const Products = () => {
                 console.error('Error fetching local categories:', error);
             }
         };
+        if (userID) {
+            fetchLocalCategories(userID);
+        }
+    }, [userID, existingData]);
 
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const userID = user.uid;
-                setUserID(userID);
-                fetchLocalCategories(userID);
-            } else {
-                console.log('User is logged out');
-            }
-        });
 
-        return () => unsubscribe();
-    }, []);
+
 
     useEffect(() => {
         const getProductChildrenArray = () => {
@@ -200,6 +195,8 @@ const Products = () => {
                 selectedSubSubCategory={selectedSubSubCategory}
                 loadingTextStyle={loadingTextStyle}
                 allowNewCats={allowNewCats}
+                existingData={existingData}
+                userID={userID}
             />
             <h2>Products: {productArray.length}</h2>
             <p style={{ textAlign: 'center', display: productArray.length === 0 ? 'none' : 'block' }}>Show <select value={productsDisplayed} onChange={setNumOfProducts}>
@@ -223,4 +220,9 @@ const Products = () => {
         </div>
     );
 };
+Products.propTypes = {
+    userID: PropTypes.string,
+    existingData: PropTypes.object
+  };
+
 export default Products;

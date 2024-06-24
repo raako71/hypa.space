@@ -7,7 +7,6 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING: 
-spend limit
 * Store name as url.
 * Show stores on front page.
 
@@ -18,7 +17,7 @@ spend limit
 * ensure blank image loads for no image in ProdBox (isolated components)
 
 24 June:
-Rate limiting work (firebase rules).
+Pass auth data from app root, reduce reads
 
 23 June:
 Load sub cats in product page.

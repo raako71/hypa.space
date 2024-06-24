@@ -6,7 +6,7 @@ import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { domain } from "../App"
 
-const ProdBox = ({ productNameUserID, currentUserID }) => {
+const ProdBox = ({ productNameUserID, userID }) => {
     const [imageUrl, setImageUrl] = useState(null);
     const [imageUrlL, setImageUrlL] = useState(null);
     const [productInfo, setProductInfo] = useState(null);
@@ -50,7 +50,7 @@ const ProdBox = ({ productNameUserID, currentUserID }) => {
 
 
 
-    const getProductInfo = async (productNameUserID) => {
+    const getProductInfo = async () => {
         try {
             const firestore = getFirestore();
             const productDocRef = doc(firestore, 'products', productNameUserID);
@@ -80,9 +80,9 @@ const ProdBox = ({ productNameUserID, currentUserID }) => {
     };
 
     useEffect(() => {
-        const [, userID] = productNameUserID.split('_');
-        setProductUserID(userID);
-        getProductInfo(productNameUserID);
+        const [, userIDVar] = productNameUserID.split('_');
+        setProductUserID(userIDVar);
+        getProductInfo();
     }, [productNameUserID]);
 
 
@@ -107,7 +107,7 @@ const ProdBox = ({ productNameUserID, currentUserID }) => {
                         <h2><a href={domain + "/product?productName=" + productNameUserID}>{productInfo.productName}</a></h2>
                         <p>Description: {trimDescription(productInfo.productDescription, 100)}</p>
                     </div>
-                    {productUserID == currentUserID && <div className="prEdit">
+                    {productUserID == userID && <div className="prEdit">
                         <a href={domain + "/newProduct?productName=" + productNameUserID}>edit</a></div>}
                 </>
             )}
@@ -118,7 +118,7 @@ const ProdBox = ({ productNameUserID, currentUserID }) => {
 
 ProdBox.propTypes = {
     productNameUserID: PropTypes.string.isRequired,
-    currentUserID: PropTypes.string.isRequired,
+    userID: PropTypes.string
 };
 
 export default ProdBox;

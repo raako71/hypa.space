@@ -7,7 +7,7 @@ import Inline from "yet-another-react-lightbox/plugins/inline";
 import "yet-another-react-lightbox/styles.css";
 import { domain } from "../App"
 
-const ProdBox = ({ productNameUserID, currentUserID }) => {
+const ProdBox = ({ productNameUserID, userID }) => {
     const [productInfo, setProductInfo] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [images, setImages] = useState([{ key: 'S0', src: '/placeHolder.jpg', alt: 'Default Img' }]);
@@ -136,7 +136,7 @@ const ProdBox = ({ productNameUserID, currentUserID }) => {
                             ))}
                         </div>
                     )}
-                    {productUserID == currentUserID &&
+                    {productUserID == userID &&
                         <div>
                             <a href={domain + "/newProduct?productName=" + productNameUserID}>edit</a>
                         </div>
@@ -190,7 +190,7 @@ const ProdBox = ({ productNameUserID, currentUserID }) => {
 
 ProdBox.propTypes = {
     productNameUserID: PropTypes.string.isRequired,
-    currentUserID: PropTypes.string.isRequired,
+    userID: PropTypes.string.isRequired,
 };
 
 export default ProdBox;
