@@ -4,9 +4,8 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import { domain } from "../App"
 
-const ProdBox = ({ productNameUserID, userID }) => {
+const ProdBox = ({ productNameUserID, userID, domain }) => {
     const [imageUrl, setImageUrl] = useState(null);
     const [imageUrlL, setImageUrlL] = useState(null);
     const [productInfo, setProductInfo] = useState(null);
@@ -118,6 +117,7 @@ const ProdBox = ({ productNameUserID, userID }) => {
 
 ProdBox.propTypes = {
     productNameUserID: PropTypes.string.isRequired,
+    domain: PropTypes.string.isRequired,
     userID: PropTypes.string
 };
 

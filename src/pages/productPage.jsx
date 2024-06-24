@@ -5,9 +5,9 @@ import PropTypes from 'prop-types';
 import Lightbox from "yet-another-react-lightbox";
 import Inline from "yet-another-react-lightbox/plugins/inline";
 import "yet-another-react-lightbox/styles.css";
-import { domain } from "../App"
 
-const ProdBox = ({ productNameUserID, userID }) => {
+
+const ProdBox = ({ productNameUserID, userID, domain }) => {
     const [productInfo, setProductInfo] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [images, setImages] = useState([{ key: 'S0', src: '/placeHolder.jpg', alt: 'Default Img' }]);
@@ -189,6 +189,7 @@ const ProdBox = ({ productNameUserID, userID }) => {
 };
 
 ProdBox.propTypes = {
+    domain: PropTypes.string.isRequired,
     productNameUserID: PropTypes.string.isRequired,
     userID: PropTypes.string.isRequired,
 };

@@ -5,10 +5,9 @@ import {
     createUserWithEmailAndPassword, signInWithEmailAndPassword,
     sendPasswordResetEmail, sendSignInLinkToEmail
 } from "firebase/auth";
-import { domain } from "../App";
+import PropTypes from 'prop-types';
 
-
-export default function Login() {
+const Login = ({ domain }) => {
 
     const [email, setEmail] = useState("");
     const [password1, setPassword1] = useState("");
@@ -326,3 +325,9 @@ export default function Login() {
         </>
     )
 }
+
+Login.propTypes = {
+    domain: PropTypes.string,
+};
+
+export default Login

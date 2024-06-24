@@ -110,7 +110,7 @@ exports.getCategories = functions.https.onRequest((req, res) => {
       }
       // Fetch categories from Firestore
       const categoriesCollectionRef =
-       admin.firestore().collection("categories");
+        admin.firestore().collection("categories");
       const categoriesSnapshot = await categoriesCollectionRef.get();
 
       const categories = {};

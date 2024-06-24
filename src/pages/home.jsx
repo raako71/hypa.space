@@ -1,6 +1,8 @@
-import { domain } from "../App";
 import { auth } from "../firebase-config"
 import { isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
+import PropTypes from 'prop-types';
+
+const Home = ({ domain }) => {
 
 function handleSignInWithEmailLink() {
     // Confirm the link is a sign-in with email link.
@@ -32,9 +34,6 @@ window.onload = function () {
     handleSignInWithEmailLink();
 };
 
-
-
-export default function Home() {
     return (
         <>
             <div className="article">
@@ -43,3 +42,10 @@ export default function Home() {
         </>
     )
 }
+
+Home.propTypes = {
+    domain: PropTypes.string,
+};
+
+
+export default Home

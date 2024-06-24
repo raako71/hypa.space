@@ -1,4 +1,4 @@
-import Header from "./Header"
+import Header from "./components/Header"
 import Footer from "./Footer"
 import Home from "./pages/home"
 import Login from "./pages/login"
@@ -16,10 +16,10 @@ import Products from "./pages/products"
 import ProductPage from "./pages/productPage"
 import { doc, getDoc } from 'firebase/firestore/lite';
 
-export const domain = window.location.origin;
 
 
 function App() {
+  const domain = window.location.origin;
   const [existingData, setExistingData] = useState(null);
   const [userID, setUserID] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -56,9 +56,12 @@ function App() {
   return (
     <Router>
       <div id='site'>
-        <Header isLoggedIn={isLoggedIn} />
+        <Header 
+        isLoggedIn={isLoggedIn}
+        domain={domain}
+         />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home domain={domain} />} />
           <Route path="/search" element={<Search />} />
           <Route path="/login"
             element={isLoggedIn ? <Navigate to="/" /> : <Login />}
@@ -77,12 +80,14 @@ function App() {
             element={<Products
               existingData={existingData}
               userID={userID}
+              domain={domain}
             />}
           />
           <Route path="/terms" element={<Terms />} />
           <Route path="/product" element={<ProductPage 
           productNameUserID={productName || ''} 
           userID={userID || ''} 
+          domain={domain}
           />} />
           <Route path="/store" element={<publicStore publicStore={publicStore || ''} />} />
           <Route path="*" element={<Navigate to="/" />} />
