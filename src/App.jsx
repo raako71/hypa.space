@@ -7,6 +7,7 @@ import Account from "./pages/account"
 import NewProd from "./pages/newProduct"
 import Search from "./pages/search"
 import './index.css'
+import publicStore from "./pages/store"
 import { auth } from "./firebase-config"
 import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
@@ -50,7 +51,6 @@ function App() {
         <Header isLoggedIn={isLoggedIn} />
         <Routes>
           <Route path="/" element={<Home />} />
-
           <Route path="/search" element={<Search />} />
           <Route path="/login"
             element={isLoggedIn ? <Navigate to="/" /> : <Login />}
@@ -66,6 +66,7 @@ function App() {
           />
           <Route path="/terms" element={<Terms />} />
           <Route path="/product" element={<ProductPage productNameUserID={productName || ''} currentUserID={currentUserID || ''}/>} />
+          <Route path="/store" element={<publicStore publicStore={publicStore || ''}/>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />
