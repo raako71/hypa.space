@@ -1,32 +1,27 @@
 rules_version = '2';
+
 service cloud.firestore {
-  match /databases/{database
-  }/documents {
+  match /databases/{database}/documents {
     // Deny all read and write access by default
-    match /{document=**
-    }
+    match /{document=**}
     {
       allow read, write: if false;
     }
     // Allow read access to a user document if the document name matches the user's ID
-    match /users/{userID
-    }
+    match /users/{userID}
     {
       allow read, update: if request.auth != null && request.auth.uid == userID;
     }
-
-match /products/{productId
-    }
-  {
-  allow read: if isCalm();
-  allow create: if request.auth.uid != null;
-  allow update, delete: if resource.data.userId == request.auth.uid;
+    match /products/{productId}
+    {
+      allow read: if isCalm();
+      allow create: if request.auth.uid != null;
+      allow update, delete: if resource.data.userId == request.auth.uid;
     }
     // Allow read access to the categories collection
-    match /categories/{categoryID
-    }
+    match /categories/{categoryID}
     {
-      allow read: if trackReadsPerIP(request.auth.token.claims.ip, resource);
+      allow read: if isCalm();
     }
   }
 
