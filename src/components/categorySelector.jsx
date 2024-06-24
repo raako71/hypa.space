@@ -74,7 +74,6 @@ const CategorySelector = ({
     if (userID) {
       fetchLocalCategories();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userID, existingData]);
 
   useEffect(() => {
