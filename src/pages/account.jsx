@@ -281,7 +281,7 @@ export default function Account() {
 
   const handleInputChange = (e) => {
     const inputValue = e.target.value;
-    const filteredValue = filterString(inputValue);
+    let filteredValue = filterString(inputValue);
     if (filteredValue.length > 20) {
       filteredValue = filteredValue.slice(0, 20);
     }

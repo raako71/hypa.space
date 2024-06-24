@@ -24,8 +24,4 @@ service cloud.firestore {
       allow read: if true;
     }
   }
-
-  function isCalm() {
-    return request.time > resource.data.timestamp + duration.value(5, 's');
-  }
 }
