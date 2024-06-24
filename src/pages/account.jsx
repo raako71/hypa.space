@@ -58,7 +58,7 @@ export default function Account() {
     }
   }
 
-  let userVerificationText = userVer ? "Yes." : "No.";
+  let userVerificationText = userVer ? "Yes" : "No";
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -311,7 +311,7 @@ export default function Account() {
           )}
         </p>
         {usernameDiv && (
-          <p>Username: {userName}. <a href="#" onClick={updateUsernamelink}>Update Username</a></p>
+          <p>Username: {userName} <a href="#" onClick={updateUsernamelink}>Update Username</a></p>
         )}
         {UpdateUsernameDiv && (
           <p>
