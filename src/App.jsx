@@ -7,7 +7,7 @@ import Account from "./pages/account"
 import NewProd from "./pages/newProduct"
 import Search from "./pages/search"
 import './index.css'
-import publicStore from "./pages/store"
+//import publicStore from "./pages/store"
 import { auth, db } from "./firebase-config"
 import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
@@ -89,7 +89,9 @@ function App() {
           userID={userID || ''} 
           domain={domain}
           />} />
+          {/*
           <Route path="/store" element={<publicStore publicStore={publicStore || ''} />} />
+          */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />

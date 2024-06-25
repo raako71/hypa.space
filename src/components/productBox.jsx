@@ -82,6 +82,7 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
         const [, userIDVar] = productNameUserID.split('_');
         setProductUserID(userIDVar);
         getProductInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productNameUserID]);
 
 

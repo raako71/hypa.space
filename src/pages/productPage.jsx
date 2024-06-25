@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getStorage, ref, getDownloadURL, getMetadata } from 'firebase/storage';
+import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 import Lightbox from "yet-another-react-lightbox";
@@ -96,6 +96,7 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
         const [, userID] = productNameUserID.split('_');
         setProductUserID(userID);
         getProductInfo(productNameUserID);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productNameUserID]);
 
     // Clear timeout on component unmount

@@ -22,7 +22,7 @@ const Variations = ({ variations: propVariations, setVariations }) => {
   const handleNumVariationTypesChange = (event) => {
     const numTypes = parseInt(event.target.value, 10);
     setNumVariationTypes(Math.max(2, numTypes));
-    setVariationTypes(Array.from({ length: filteredNumTypes }, () => ""));
+    setVariationTypes(Array.from({ length: numTypes }, () => ""));
   };
 
   const handleVariationTypeChange = (index, event) => {
