@@ -17,7 +17,7 @@ const actionCodeSettings = {
 };
 
 export default function Account() {
-
+  const domain = location.origin;
   const [userEmail, setUserEmail] = useState(null);
   const [userName, setUserName] = useState("not set");
   const [userVer, setUserVer] = useState(null);
@@ -72,47 +72,47 @@ export default function Account() {
           } else {
             showVerify(false); // Hide verification UI
           }
-  
+
           // Get the username from the Firestore /users/{userID} path
           const userID = user.uid;
           setUserID(userID);
-  
+
           // Assuming you have a reference to the user's document
           const userDocRef = doc(db, 'users', userID);
           const docSnapshot = await getDoc(userDocRef);
-  
+
           if (docSnapshot.exists()) {
             // Access the username field from the document data
             const userData = docSnapshot.data();
             const { username, sellerEnabled, phoneNumber, telegram, whatsApp, storeName } = userData;
-  
+
             sellerEnabledFunc(sellerEnabled);
             sellerEnabledDivFunc(sellerEnabled);
-  
+
             if (username != null) {
               setUserName(username);
               usernameValidFunc(true);
             }
-  
+
             if (phoneNumber != null) {
               setNewPhoneNumber(phoneNumber);
             }
-  
+
             if (telegram != null) {
               enableTelegram(telegram);
             }
-  
+
             if (whatsApp != null) {
               enableWSP(whatsApp);
             }
-  
+
             if (storeName != null) {
               setStoreName(storeName);
             }
           } else {
             console.log('No such document!');
           }
-  
+
           // Fetch and set user account image
           const storage = getStorage();
           const userAccountDirectoryRef = ref(storage, `users/${userID}/account/accountImageS`);
@@ -121,7 +121,7 @@ export default function Account() {
             scaled: downloadURL,
             unscaled: ''
           });
-  
+
         } catch (error) {
           console.error('Error fetching user data:', error);
         }
@@ -133,7 +133,7 @@ export default function Account() {
         navigate('/login');
       }
     });
-  
+
     return () => {
       unsubscribe(); // Cleanup the listener on component unmount
     };
@@ -324,7 +324,8 @@ export default function Account() {
         )}
         <p>email: {userEmail}</p>
         <div className='seller'>
-          <p>seller mode:&nbsp;
+          <h3>Public Account Data</h3>
+          <p>Store Listed:&nbsp;
             {!usernameValidated && (
               <>
                 {showValidateMessage}
@@ -338,20 +339,21 @@ export default function Account() {
               </label>
             )}
           </p>
+          <p><a href={`${domain}/store/${userName}`}>{`${domain}/store/${userName}`}</a></p>
           {sellerEnabledDiv && (
             <>
               <p>Store Name: {storeName}</p>
               {passedImages.scaled && (
-                  <div>
-                    {passedImages.scaled && (
-                      <img
-                        src={passedImages.scaled}
-                        alt="Scaled Image"
-                        style={{ margin: "10px", width: "350px" }}
-                      />
-                    )}
-                  </div>
-                )}
+                <div>
+                  {passedImages.scaled && (
+                    <img
+                      src={passedImages.scaled}
+                      alt="Scaled Image"
+                      style={{ margin: "10px", width: "350px" }}
+                    />
+                  )}
+                </div>
+              )}
               <p>Address:</p>
               <p>Seller Phone number: <a target='_blank' rel="noreferrer" href={`tel:${newPhoneNumber}`}>{newPhoneNumber}</a></p>
               {wspEnabled && (<p><a target='_blank' rel="noreferrer" href={`https://wa.me/${newPhoneNumber}`}>WhatsApp link</a></p>)}

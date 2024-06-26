@@ -7,10 +7,10 @@ service cloud.firestore {
     {
       allow read, write: if false;
     }
-    // Allow read access to a user document if the document name matches the user's ID
     match /users/{userID}
     {
-      allow read, update: if request.auth != null && request.auth.uid == userID;
+      allow read: if true;
+      allow update: if request.auth != null && request.auth.uid == userID;
     }
     match /products/{productId}
     {

@@ -7,7 +7,7 @@ import Account from "./pages/account"
 import NewProd from "./pages/newProduct"
 import Search from "./pages/search"
 import './index.css'
-//import publicStore from "./pages/store"
+import PublicStore from "./pages/store"
 import { auth, db } from "./firebase-config"
 import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
@@ -19,7 +19,7 @@ import { doc, getDoc } from 'firebase/firestore/lite';
 
 
 function App() {
-  const domain = window.location.origin;
+  const domain = location.origin;
   const [existingData, setExistingData] = useState(null);
   const [userID, setUserID] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -29,6 +29,7 @@ function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       const loggedIn = !!user;
+
       if (user) {
         const userID = user.uid;
         setUserID(userID);
@@ -89,9 +90,7 @@ function App() {
           userID={userID || ''} 
           domain={domain}
           />} />
-          {/*
-          <Route path="/store" element={<publicStore publicStore={publicStore || ''} />} />
-          */}
+          <Route path="/store/:userName" element={<PublicStore />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />
