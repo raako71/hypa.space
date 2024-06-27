@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import CategorySelector from "../components/categorySelector";
-import ProdBox from "../components/productBox"
+import Products from './products';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
@@ -13,9 +12,7 @@ const PublicStore = () => {
     const [telegramEnabled, enableTelegram] = useState(false);
     const [wspEnabled, enableWSP] = useState(false);
     const [storeAddress, setStoreAddress] = useState(false);
-    
-
-
+    const [userID, setUserID] = useState(null);
 
     const getStoreInfo = async () => {
         try {
@@ -26,6 +23,7 @@ const PublicStore = () => {
             if (usersDocSnapshot.exists()) {
                 const productData = usersDocSnapshot.data();
                 userID = productData[userName];
+                setUserID(userID);
                 getStoreImage(userID);
             } else {
                 console.error("failed to retrieve store name")
@@ -82,7 +80,7 @@ const PublicStore = () => {
                 {storeInfo && (
                     <div><h1>{storeInfo.storeName}</h1>
                         {storeAddress && (
-                        <p>Store Address: {storeAddress}</p>
+                            <p>Store Address: {storeAddress}</p>
                         )}
                         <p>Phone number: <a target='_blank' rel="noreferrer" href={`tel:${storeInfo.phoneNumber}`}>{storeInfo.phoneNumber}</a></p>
                         {wspEnabled && (<p><a target='_blank' rel="noreferrer" href={`https://wa.me/${storeInfo.phoneNumber}`}>WhatsApp</a></p>)}
@@ -90,6 +88,10 @@ const PublicStore = () => {
                     </div>
                 )}
             </div>
+            <Products
+                existingData={storeInfo}
+                userID={userID}
+            />
         </div>
     )
 

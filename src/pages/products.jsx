@@ -5,8 +5,7 @@ import PropTypes from 'prop-types';
 
 const Products = ({
     existingData,
-    userID,
-    domain
+    userID
 }) => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSubCategory, setSelectedSubCategory] = useState('');
@@ -21,6 +20,7 @@ const Products = ({
     const [textColor, setTextColor] = useState('initial');
     const loadingTextStyle = { display: 'none' };
     const allowNewCats = false;
+    const domain = location.origin;
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
@@ -224,8 +224,7 @@ const Products = ({
 };
 Products.propTypes = {
     userID: PropTypes.string,
-    existingData: PropTypes.object,
-    domain: PropTypes.string.isRequired,
+    existingData: PropTypes.object
   };
 
 export default Products;

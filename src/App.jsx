@@ -81,7 +81,6 @@ function App() {
             element={<Products
               existingData={existingData}
               userID={userID}
-              domain={domain}
             />}
           />
           <Route path="/terms" element={<Terms />} />

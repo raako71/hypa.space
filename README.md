@@ -19,6 +19,7 @@ REMAINING:
 
 27 June:
 Show Store info.
+Store loads products.
 
 26 June:
 Store name as url
