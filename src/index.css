@@ -130,7 +130,12 @@ footer {
 footer p {
   padding: 15px;
 }
-
+.storeHeader{
+  display: flex;
+}
+.storeHeader h1{
+  text-align: left;
+}
 .article {
   flex: 1;
   margin: auto;

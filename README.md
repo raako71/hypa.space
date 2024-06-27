@@ -7,14 +7,21 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING: 
-* Store name as url.
 * Show stores on front page.
+* CSS
+* move to VPS if required.
 
 * Delete Photos.
 * Select default image for Products.
 * Delete product, and update user category tree accordingly etc.
 * Update user category tree on edit product.
 * ensure blank image loads for no image in ProdBox (isolated components)
+
+27 June:
+Show Store info.
+
+26 June:
+Store name as url
 
 24 June:
 Pass auth data from app root, reduce reads

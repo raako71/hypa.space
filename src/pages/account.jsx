@@ -32,13 +32,14 @@ export default function Account() {
   const [sellerEnabledDiv, sellerEnabledDivFunc] = useState(false);
   const [userID, setUserID] = useState(null);
   const [sellerUpdate, sellerUpdateFunc] = useState(false);
-  const [newAddress, setNewAddress] = useState('');
   const [newPhoneNumber, setNewPhoneNumber] = useState('');
   const [showValidateMessage, sellerValidateMsg] = useState("add a username above to enable.");
   const [telegramEnabled, enableTelegram] = useState(false);
   const [wspEnabled, enableWSP] = useState(false);
   const [storeName, setStoreName] = useState("");
   const [passedImages, setPassedImages] = useState('');
+  const [storeAddress, setStoreAddress] = useState(null);
+
 
 
 
@@ -84,7 +85,7 @@ export default function Account() {
           if (docSnapshot.exists()) {
             // Access the username field from the document data
             const userData = docSnapshot.data();
-            const { username, sellerEnabled, phoneNumber, telegram, whatsApp, storeName } = userData;
+            const { username, sellerEnabled, phoneNumber, telegram, whatsApp, storeName, address } = userData;
 
             sellerEnabledFunc(sellerEnabled);
             sellerEnabledDivFunc(sellerEnabled);
@@ -108,6 +109,9 @@ export default function Account() {
 
             if (storeName != null) {
               setStoreName(storeName);
+            }
+            if(address){
+              setStoreAddress(address);
             }
           } else {
             console.log('No such document!');
@@ -137,7 +141,7 @@ export default function Account() {
     return () => {
       unsubscribe(); // Cleanup the listener on component unmount
     };
-  }, [userName, navigate, userID, sellerEnabled, newPhoneNumber]);
+  }, [userName, navigate, userID]);
 
   const updateUsernamelink = async () => {
     showusernameDiv(false);
@@ -234,7 +238,7 @@ export default function Account() {
     try {
       // Update the address and phone number fields in Firestore
       await updateDoc(userDocRef, {
-        address: newAddress,
+        address: storeAddress,
         phoneNumber: newPhoneNumber,
         telegram: telegramEnabled,
         whatsApp: wspEnabled,
@@ -279,7 +283,7 @@ export default function Account() {
     return filteredString;
   }
 
-  const handleInputChange = (e) => {
+  const handleStoreName = (e) => {
     const inputValue = e.target.value;
     let filteredValue = filterString(inputValue);
     if (filteredValue.length > 20) {
@@ -287,6 +291,15 @@ export default function Account() {
     }
     setStoreName(filteredValue);
   };
+  const handleStoreAddress = (e) => {
+    const inputValue = e.target.value;
+    let filteredValue = inputValue.match(/[a-zA-Z0-9\s\-_.\n,]+/g)?.join('') || '';
+    if (filteredValue.length > 100) {
+      filteredValue = filteredValue.slice(0, 100);
+    }
+    setStoreAddress(filteredValue);
+  };
+
 
   const handleProcessedImagesUpload = (images) => {
     const scaledDataURL = images.scaled.toDataURL('image/jpeg');
@@ -339,9 +352,9 @@ export default function Account() {
               </label>
             )}
           </p>
-          <p><a href={`${domain}/store/${userName}`}>{`${domain}/store/${userName}`}</a></p>
           {sellerEnabledDiv && (
             <>
+              <p><a href={`${domain}/store/${userName}`}>{`${domain}/store/${userName}`}</a></p>
               <p>Store Name: {storeName}</p>
               {passedImages.scaled && (
                 <div>
@@ -354,7 +367,9 @@ export default function Account() {
                   )}
                 </div>
               )}
-              <p>Address:</p>
+              {storeAddress && (
+                <p>Address: {storeAddress}</p>
+              )}
               <p>Seller Phone number: <a target='_blank' rel="noreferrer" href={`tel:${newPhoneNumber}`}>{newPhoneNumber}</a></p>
               {wspEnabled && (<p><a target='_blank' rel="noreferrer" href={`https://wa.me/${newPhoneNumber}`}>WhatsApp link</a></p>)}
               {telegramEnabled && (<p><a target='_blank' rel="noreferrer" href={`https://t.me/${newPhoneNumber}`}>Telegram Link</a></p>)}
@@ -369,7 +384,7 @@ export default function Account() {
                   <input
                     type="text"
                     value={storeName}
-                    onChange={handleInputChange} />
+                    onChange={handleStoreName} />
                 </p>
                 <ImageModification handleProcessedImagesUpload={handleProcessedImagesUpload} />
                 {passedImages.scaled && (
@@ -386,7 +401,13 @@ export default function Account() {
                 )}
               </div>
               <div>
-                <p>Address: //div function.</p>
+                <p>Address:</p>
+                <textarea
+                  value={storeAddress}
+                  onChange={handleStoreAddress}
+                  rows="4"
+                  cols="50"
+                />
               </div>
               <div>
                 <p>Seller Phone number:</p>
