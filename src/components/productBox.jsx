@@ -85,6 +85,14 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productNameUserID]);
 
+    //cache images after loading
+    useEffect(() => {
+        if (imageUrl) {
+          const img = new Image();
+          img.src = imageUrl;
+        }
+      }, [imageUrl]);
+
 
     return (
         <div className="prodBox">
