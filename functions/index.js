@@ -128,3 +128,46 @@ exports.getCategories = functions.https.onRequest((req, res) => {
     }
   });
 });
+
+exports.updateStore = functions.https.onRequest(async (req, res) => {
+  const {userID, userName, storeName} = req.body;
+
+  try {
+    // Ensure the userID matches the current authenticated user's ID
+    if (!req.headers.authorization ||
+      !req.headers.authorization.startsWith("Bearer ")) {
+      return res.status(403).send("Unauthorized");
+    }
+
+    const idToken = req.headers.authorization.split("Bearer ")[1];
+    const decodedIdToken = await admin.auth().verifyIdToken(idToken);
+
+    if (userID !== decodedIdToken.uid) {
+      return res.status(403).send("User ID does not match the current user");
+    }
+
+    // Reference to the 'stores' document in the 'users' collection
+    const storesDocRef = admin.firestore().collection("users").doc("stores");
+
+    if (userName === "delete") {
+      const storeData = (await storesDocRef.get()).data();
+      const keyToDelete =
+        Object.keys(storeData).find((key) => storeData[key][0] === userID);
+
+      if (keyToDelete) {
+        await storesDocRef.update({
+          [keyToDelete]: admin.firestore.FieldValue.delete(),
+        });
+      }
+    } else {
+      await storesDocRef.set({
+        [userName]: [userID, storeName],
+      }, {merge: true});
+    }
+
+    return res.status(200).send({message: "Store updated successfully"});
+  } catch (error) {
+    console.error("Error updating store:", error);
+    return res.status(500).send("Unable to update store");
+  }
+});

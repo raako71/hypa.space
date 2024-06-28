@@ -162,3 +162,16 @@ footer p {
 .text{
   padding: 20px;
 }
+
+.storeBox {
+  border-width: 1px;
+  border-style: solid;
+  width: 300px;
+  text-align: center;
+  margin: 15px;
+  padding: 15px;
+  border-radius: 5px;
+}
+.storeBox h1{
+  margin: auto;
+}

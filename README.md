@@ -7,7 +7,9 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING: 
-* Show stores on front page.
+* fix update username function.
+* fix updateStore function.
+* Show stores on front page from stores document.
 * CSS
 * move to VPS if required.
 
@@ -16,6 +18,10 @@ REMAINING:
 * Delete product, and update user category tree accordingly etc.
 * Update user category tree on edit product.
 * ensure blank image loads for no image in ProdBox (isolated components)
+
+28 June:
+Create updateStore function.
+StoreBox component.
 
 27 June:
 Show Store info.
