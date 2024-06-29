@@ -19,6 +19,9 @@ REMAINING:
 * Update user category tree on edit product.
 * ensure blank image loads for no image in ProdBox (isolated components)
 
+29 June:
+UpdateStore Function.
+
 28 June:
 Create updateStore function.
 StoreBox component.
@@ -131,3 +134,7 @@ Delete username when deleting user.
 Update Username fully working. 
 -Cloud functions to validate unique username and auth for API. 
 -Create userID document in database.
+
+
+Site Features:
+Each user can create a store with a unique username.
