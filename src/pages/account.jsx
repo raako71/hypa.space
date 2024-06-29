@@ -10,7 +10,6 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css'; // Styles for react-phone-number-input
 import ImageModification from "../components/imageUpload";
 import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
-
 const actionCodeSettings = {
   url: 'http://localhost:5173/account',
   handleCodeInApp: true,
@@ -39,6 +38,7 @@ export default function Account() {
   const [storeName, setStoreName] = useState("");
   const [passedImages, setPassedImages] = useState('');
   const [storeAddress, setStoreAddress] = useState(null);
+  const [newUsername, setNewUsername] = useState('');
 
 
 
@@ -110,7 +110,7 @@ export default function Account() {
             if (storeName != null) {
               setStoreName(storeName);
             }
-            if(address){
+            if (address) {
               setStoreAddress(address);
             }
           } else {
@@ -161,17 +161,29 @@ export default function Account() {
     usernameValidFunc(true);
   };
 
+  const runUpdateUsernameFunc = async () => {
+    try {
+      const response = await updateUsernameFunc(1);
+      if(response){
+        console.log("new name valid")
+        updateUsernameFunc();
+        callUpdateStoreFunction(userName,1);
+        callUpdateStoreFunction(newUsername,0);
+      }
+      // Further processing based on response if needed
+    } catch (error) {
+      console.error("Error in with new username: ", error);
+      // Handle errors if necessary
+    }
+  };
 
-  const updateUsernameFunc = async (e) => {
-    e.preventDefault(); // Prevent the default behavior of the link click
-    const newUsernameInput = document.getElementById('newUsername');
-    const newUsername = newUsernameInput.value;
 
+  const updateUsernameFunc = async (test) => {
     showusernameDiv(false);
     showUpdateUsernameDiv(false);
-
     UpdatingUsernameDivFunc(true);
     updatingTextFunc("Updating Username to: " + newUsername);
+  
     try {
       const user = auth.currentUser; // Retrieve the current authenticated user
       if (!user) {
@@ -179,6 +191,25 @@ export default function Account() {
         // Handle the case when no user is signed in
         return;
       }
+  
+      // Check if newUsername is defined and not empty before proceeding
+      if (!newUsername || newUsername.trim() === '') {
+        console.error('Invalid new username:', newUsername);
+        showusernameDiv(true);
+        UpdatingUsernameDivFunc(true);
+        updatingTextFunc("Invalid new username");
+        return;
+      }
+
+      if(!test) test = 0;
+  
+      let bodyData = {
+        username: newUsername,
+        userID: user.uid,
+        test: test // Use test directly as passed
+      };
+      //console.log(bodyData);
+  
       const idToken = await user.getIdToken(); // Get the ID token of the current user
       const response = await fetch('https://us-central1-hypa-space.cloudfunctions.net/writeUsernameToFirestore', {
         method: 'POST',
@@ -186,35 +217,34 @@ export default function Account() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}` // Include the ID token in the Authorization header
         },
-        body: JSON.stringify({ username: newUsername, userID: user.uid })
+        body: JSON.stringify(bodyData)
       });
+  
       let data;
       if (response.ok) {
         data = await response.text();
-        // Process the response data from your secured function
-        console.log('Response from secured function:', data);
-        // Perform other actions based on the response
+        //console.log('Response from secured function:', data);
         showusernameDiv(true);
         showUpdateUsernameDiv(false);
         UpdatingUsernameDivFunc(false);
         setUserName(newUsername);
+        return 1;
       } else {
         data = await response.text();
-        // Process the response data from your secured function
         console.error('Failed to call secured function:', data);
         showusernameDiv(true);
         UpdatingUsernameDivFunc(true);
         updatingTextFunc("error: " + data);
-        // Handle the case where the request to the secured function fails
       }
     } catch (error) {
+      console.error('Error:', error);
       showusernameDiv(true);
       UpdatingUsernameDivFunc(true);
-      updatingTextFunc(error);
-      console.error('Error:', error);
-      // Handle other potential errors
+      updatingTextFunc("error: " + error.message);
     }
   };
+  
+  
 
   const enableSeller = async (userID, sellerEnabled) => {
     const userDocRef = doc(db, 'users', userID);
@@ -224,6 +254,8 @@ export default function Account() {
         sellerEnabled: !sellerEnabled // Toggle the value
       });
       // Update the state with the new value
+      if (sellerEnabled) callUpdateStoreFunction(userName,1);
+      else callUpdateStoreFunction(userName,0);
       sellerEnabledDivFunc(!sellerEnabled);
       sellerEnabledFunc(!sellerEnabled);
     } catch (error) {
@@ -247,6 +279,7 @@ export default function Account() {
       sellerEnabledDivFunc(true);
       sellerUpdateFunc(false);
       usernameValidFunc(true);
+      callUpdateStoreFunction(userName,0);
     } catch (error) {
       console.error('Error updating user details: ', error);
     }
@@ -256,6 +289,9 @@ export default function Account() {
       const storage = getStorage();
       const userAccountDirectoryRef = ref(storage, `users/${userID}/account/accountImageS`);
       const userAccountDirectoryRefL = ref(storage, `users/${userID}/account/accountImageL`);
+      if (!isValidDataUrl(passedImages.scaled)) {
+        return;
+      }
       // Ensure passedImages is a string
       if (typeof passedImages.scaled !== 'string') {
         throw new Error('passedImages must be a data URL string');
@@ -268,6 +304,51 @@ export default function Account() {
       throw error; // Rethrow the error to handle it in the main function
     }
   };
+
+  const isValidDataUrl = (url) => {
+    // Regular expression to match a valid Data URL format
+    const dataUrlRegex = /^data:([A-Za-z-+/]+);base64,(.+)$/;
+
+    return dataUrlRegex.test(url);
+  };
+
+  const callUpdateStoreFunction = async (passedUserName, del) => {
+    try {
+      const requestData = {
+        userID: auth.currentUser.uid,
+        userName: passedUserName,
+        storeName: storeName,
+        delete: del
+      };
+      const user = auth.currentUser;
+      if (!user) {
+        console.error('No user is currently signed in');
+        return;
+      }
+      const idToken = await user.getIdToken();
+      const url = 'https://us-central1-hypa-space.cloudfunctions.net/updateStore';
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify(requestData)
+      });
+      if (!response.ok) {
+        const data = await response.text();
+        console.error('Failed to call Cloud Function:', data);
+        throw new Error('Dangit.');
+      }
+      const data = await response.json();
+      console.log('updateStore function:', data.message);
+    } catch (error) {
+      console.error('Error calling updateStore function:', error);
+    }
+  };
+
+
+
 
   const enableTelegramFunc = () => {
     enableTelegram(!telegramEnabled);
@@ -310,6 +391,9 @@ export default function Account() {
       unscaled: unscaledDataURL
     });
   };
+  const handleInputChange = (event) => {
+    setNewUsername(event.target.value);
+  };
 
   return (
     <>
@@ -328,14 +412,22 @@ export default function Account() {
         )}
         {UpdateUsernameDiv && (
           <p>
-            <input placeholder="New Username" id="newUsername" />
-            &nbsp;&nbsp;<a href='#' onClick={updateUsernameFunc}>Save Username</a>
+            <input
+              type="text"
+              id="newUsername"
+              placeholder="New Username"
+              value={newUsername}
+              onChange={handleInputChange}
+            />
+            &nbsp;&nbsp;
+            <a href="#" onClick={runUpdateUsernameFunc}>Save Username</a>
           </p>
         )}
         {UpdatingUsernameDiv && (
           <p style={{ color: 'red' }}>{updatingText}</p>
         )}
         <p>email: {userEmail}</p>
+
         <div className='seller'>
           <h3>Public Account Data</h3>
           <p>Store Listed:&nbsp;

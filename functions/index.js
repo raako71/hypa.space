@@ -5,6 +5,8 @@ const cors = require("cors")({origin: true});
 
 exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
+    const {username, userID, test} = req.body;
+
     try {
       // Verify user authentication
       const {authorization} = req.headers;
@@ -15,14 +17,16 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
       const idToken = authorization.split("Bearer ")[1];
       const decodedToken = await admin.auth().verifyIdToken(idToken);
       const email = decodedToken.email;
-      const {username, userID} = req.body;
-      const usernameL = username.toLowerCase(); // Convert to lowercase
+
+      const usernameL = username.toLowerCase(); // Convert username to lowercase
+
       // Validation: Check if the username matches the allowed pattern
       const validUsernameRegex = /^[a-z0-9_-]+$/;
       if (!validUsernameRegex.test(usernameL)) {
         res.status(400).send("Invalid username format");
         return;
       }
+
       // Check if the username already exists in Firestore
       const userDocRef = admin.firestore().collection("users").doc("allusers");
       const docSnapshot = await userDocRef.get();
@@ -30,9 +34,10 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
         res.status(409).send("Username already exists");
         return;
       }
+
       if (!userID) {
-        res.status(500).send("invalid userID");
-        console.error("No userID Sent");
+        res.status(500).send("Invalid userID");
+        console.error("No userID sent");
         return;
       }
 
@@ -40,23 +45,31 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
       const userDocRef2 = admin.firestore().collection("users").doc(userID);
       const docSnapshot2 = await userDocRef2.get();
       let existingUsername;
+
       if (docSnapshot2.exists) {
         if ("username" in docSnapshot2.data()) {
           existingUsername = docSnapshot2.data().username;
           if (userID !== docSnapshot.data()[existingUsername]) {
-            console.error("username mismatch in firestore. " +
-              existingUsername + "doesn't match up.");
-            res.status(500).send("Well thats weird.");
+            console.error(`Username mismatch in Firestore.
+              ${existingUsername} doesn't match up.`);
+            res.status(500).send("Well that's weird.");
             return;
           }
         } else {
-          console.error("username deleted from personal document.");
-          res.status(500).send("Well thats weird.");
+          console.error("Username deleted from personal document.");
+          res.status(500).send("Well that's weird.");
           return;
         }
+
+        if (test) { // Check if test is 'true' as a string
+          res.status(200).send("All good to go");
+          return;
+        }
+
         await userDocRef.update({
           [existingUsername]: admin.firestore.FieldValue.delete(),
         });
+
         await userDocRef2.update({
           username: usernameL,
         });
@@ -67,18 +80,23 @@ exports.writeUsernameToFirestore = functions.https.onRequest((req, res) => {
         });
         console.log("Had to create user document");
       }
+
       // Write the validated username to Firestore
       await userDocRef.update({
         [usernameL]: userID,
         // Add other fields if needed
       });
-      res.status(200).send("Username successfully added to Firestore");
+
+      res.status(200).send(`Username successfully added to Firestore. 
+Username: ${username}, UserID: ${userID}, Test: ${test}`);
     } catch (error) {
       console.error(error);
-      res.status(500).send("Error: " + error.message);
+      return res.status(500).send(`Error: ${error.message}. 
+Username: ${username}, UserID: ${userID}, Test: ${test}`);
     }
   });
 });
+
 
 exports.deleteUserDocument = functions.auth.user().onDelete(async (user) => {
   const {uid} = user;
@@ -131,32 +149,42 @@ exports.getCategories = functions.https.onRequest((req, res) => {
 
 exports.updateStore = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
-    const {userID, userName, storeName} = req.body;
+    const {userID, userName, storeName, delete: shouldDelete} = req.body;
+
     try {
+      // Verify user authentication
       if (!req.headers.authorization ||
         !req.headers.authorization.startsWith("Bearer ")) {
         return res.status(403).send("Unauthorized");
       }
       const idToken = req.headers.authorization.split("Bearer ")[1];
       const decodedIdToken = await admin.auth().verifyIdToken(idToken);
+
+      // Check if the userID in the request matches the authenticated user's UID
       if (userID !== decodedIdToken.uid) {
         return res.status(403).send("User ID does not match the current user");
       }
+
       const storesDocRef = admin.firestore().collection("users").doc("stores");
-      if (userName === "delete") {
+
+      if (shouldDelete) {
+        // Find the key to delete based on userID
         const storeData = (await storesDocRef.get()).data();
-        const keyToDelete = Object.keys(storeData).find((key) =>
-          storeData[key][0] === userID);
+        const keyToDelete = Object.keys(storeData).
+            find((key) => storeData[key][0] === userID);
+
         if (keyToDelete) {
           await storesDocRef.update({
             [keyToDelete]: admin.firestore.FieldValue.delete(),
           });
         }
       } else {
+        // Update or create a new store entry
         await storesDocRef.set({
           [userName]: [userID, storeName],
         }, {merge: true});
       }
+
       return res.status(200).send({message: "Store updated successfully"});
     } catch (error) {
       console.error("Error updating store:", error);
@@ -164,3 +192,4 @@ exports.updateStore = functions.https.onRequest((req, res) => {
     }
   });
 });
+
