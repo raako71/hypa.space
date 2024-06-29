@@ -168,6 +168,7 @@ export default function Account() {
         console.log("new name valid")
         updateUsernameFunc();
         callUpdateStoreFunction(userName,1);
+        setUserName(newUsername);
         callUpdateStoreFunction(newUsername,0);
       }
       // Further processing based on response if needed
@@ -227,7 +228,6 @@ export default function Account() {
         showusernameDiv(true);
         showUpdateUsernameDiv(false);
         UpdatingUsernameDivFunc(false);
-        setUserName(newUsername);
         return 1;
       } else {
         data = await response.text();

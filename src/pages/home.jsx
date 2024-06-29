@@ -1,51 +1,53 @@
-import { auth } from "../firebase-config"
-import { isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
-import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
+import StoreBox from '../components/StoreBox';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
-const Home = ({ domain }) => {
+const Home = () => {
+    const [userID, setUserID] = useState('cPPrTRqhv9Rjnle7rqF3wc3gpSb2');
+    const [userName, setUserName] = useState('harry');
+    const [storeName, setStoreName] = useState("Cool man And then I?");
+    const [stores, setStores] = useState(null);
 
-function handleSignInWithEmailLink() {
-    // Confirm the link is a sign-in with email link.
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-        // Additional state parameters can also be passed via URL.
-        // This can be used to continue the user's intended action before triggering
-        // the sign-in operation.
-        // Get the email if available. This should be available if the user completes
-        // the flow on the same device where they started it.
-        let email = window.localStorage.getItem('emailForSignIn');
-        if (!email) {
-            // User opened the link on a different device. To prevent session fixation
-            // attacks, ask the user to provide the associated email again. For example:
-            email = window.prompt('Please provide your email for confirmation');
+    const listStores = async () => {
+        try {
+            const firestore = getFirestore();
+            const usersDocRef = doc(firestore, 'users', 'allusers');
+            const usersDocSnapshot = await getDoc(usersDocRef);
+            if (usersDocSnapshot.exists()) {
+                const productData = usersDocSnapshot.data();
+                const result = {};
+                for (const [userName, userID] of Object.entries(productData)) {
+                    if (userID !== "reserved") {
+                      result[userName] = [userID, ''];
+                    }
+                  }
+            } else {
+                console.error("failed to retrieve store names")
+                return;
+            }
+            
+        } catch (error) {
+            console.error('Error fetching product info:', error);
         }
-        // The client SDK will parse the code from the link for you.
-        signInWithEmailLink(auth, email, window.location.href)
-            .then(() => {
-                window.localStorage.removeItem('emailForSignIn');
-                window.location.href = domain; // Change '/' to your home page URL
-            })
-            .catch((error) => {
-                console.error(error)
-            });
-    }
-}
+    };
 
-window.onload = function () {
-    handleSignInWithEmailLink();
-};
+    useEffect(() => {
+        listStores();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <>
             <div className="article">
-                <h1>Home</h1>
+                <h1>Store Index</h1>
             </div>
+            <StoreBox 
+          userName={userName} 
+          userID={userID} 
+          storeName={storeName} 
+          />
         </>
     )
 }
-
-Home.propTypes = {
-    domain: PropTypes.string,
-};
-
 
 export default Home
