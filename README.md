@@ -7,7 +7,8 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING:
-* CSS
+* delete images for product.
+* delete delete product.
 * move to VPS if required.
 
 * Delete Photos.

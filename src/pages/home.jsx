@@ -3,12 +3,10 @@ import StoreBox from '../components/StoreBox';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 const Home = () => {
-    const [userID, setUserID] = useState('cPPrTRqhv9Rjnle7rqF3wc3gpSb2');
-    const [userName, setUserName] = useState('harry');
-    const [storeName, setStoreName] = useState("Cool man And then I?");
-    const [sortedKeys, setSortedKeys] = useState([]);
+    const [sortedKeys, setSortedKeys] = useState(-1);
     const [stores, setStoreData] = useState([]);
     const [noOfPages, setNoOfPages] = useState(1);
+    const [loading, setLoading] = useState("");
 
     const [productsDisplayed, setProductsDisplayed] = useState(1);
     const displayOptions = [10, 25, 50];
@@ -85,6 +83,9 @@ const Home = () => {
     );
 
     const renderProducts = () => {
+        if (!Array.isArray(sortedKeys)) {
+            return;
+        }
         const startIndex = (currentPage - 1) * productsDisplayed + 1;
         const endIndex = Math.min(startIndex + productsDisplayed - 1, sortedKeys.length);
         return (
@@ -104,6 +105,15 @@ const Home = () => {
         );
     };
 
+    useEffect(() => {
+        if (sortedKeys === -1) {
+            setLoading("Loading...");
+        } else if (sortedKeys.length === 0) {
+            setLoading("No Stores found");
+        } else {
+            setLoading("");
+        }
+    }, [sortedKeys]);
 
     return (
         <>
@@ -118,17 +128,12 @@ const Home = () => {
                 ))}
             </select> stores</p>
             <Pagination />
+            <p style={{ textAlign: 'center' }}>{loading}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                {sortedKeys === -1 ? null : (
-                    sortedKeys === 0 ? (
-                        <div>No Stores found</div>
-                    ) : (
-                        renderProducts()
-                    )
-                )}
+                {loading === "" && renderProducts()}
             </div>
             <Pagination />
-            <br/>
+            <br />
         </>
     )
 }
