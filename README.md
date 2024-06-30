@@ -7,7 +7,6 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING:
-* Show stores on front page from stores document.
 * CSS
 * move to VPS if required.
 
@@ -18,7 +17,8 @@ REMAINING:
 * ensure blank image loads for no image in ProdBox (isolated components)
 
 30 June:
-Update store doc when updating user account.
+Update store doc when updating user account (validation etc).
+Show stores on front page from stores document.
 
 29 June:
 UpdateStore Function.
