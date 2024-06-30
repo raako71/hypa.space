@@ -89,7 +89,7 @@ const ImageModification = ({ handleProcessedImagesUpload }) => {
         }}
       >
         <input {...getInputProps()} />
-        <p>Drag &apos;n&apos; drop some images here, or click to select files (up to 10 images)</p>
+        <p style={{ textAlign: 'center' }}>Image Uploader<br/>Click to select, or drag &apos;n&apos; drop here.</p>
       </div>
       <div
         style={{

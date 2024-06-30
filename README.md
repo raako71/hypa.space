@@ -9,6 +9,7 @@ Cloud:
 REMAINING:
 * delete images for product.
 * delete delete product.
+* delete account.
 * move to VPS if required.
 
 * Delete Photos.
