@@ -1,18 +1,26 @@
 import { useState, useEffect } from 'react';
-import { getStorage, ref, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, getDownloadURL, listAll } from 'firebase/storage';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Lightbox from "yet-another-react-lightbox";
 import Inline from "yet-another-react-lightbox/plugins/inline";
 import "yet-another-react-lightbox/styles.css";
 
 
-const ProdBox = ({ productNameUserID, userID, domain }) => {
+const ProductPage = ({ productNameUserID, userID, domain }) => {
     const [productInfo, setProductInfo] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [images, setImages] = useState([{ key: 'S0', src: '/placeHolder.jpg', alt: 'Default Img' }]);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [productUserID, setProductUserID] = useState('');
+    const location = useLocation();
+
+    const getProductNameFromURL = () => {
+        const params = new URLSearchParams(location.search);
+        return params.get('productName');
+    };
+    const productName = getProductNameFromURL();
 
     const openLightbox = () => {
         setIsOpen(true);
@@ -33,14 +41,29 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
         if (hasImages) {
             const storage = getStorage();
             let totalImages = 0;
-            for (let i = 0; i < 10; i++) {
+            const directoryRef = ref(storage, basePath);
+            try {
+                const listResult = await listAll(directoryRef);
+                listResult.items.forEach((itemRef) => {
+                  const fileName = itemRef.name;
+                  if (fileName.startsWith('S')) {
+                    const numberPart = parseInt(fileName.substring(1)); // Extract number after 'S'
+                    const addOne = numberPart + 1;
+                    if (!isNaN(numberPart) && addOne > totalImages) {
+                      totalImages = addOne; // Increment to the next number
+                    } 
+                  }
+                });
+              } catch (error) {
+                console.error("Error listing files:", error);
+              }
+            for (let i = 0; i < totalImages; i++) {
                 const imagePathS = `${basePath}/S${i}`;
                 try {
                     const urlS = await getDownloadURL(ref(storage, imagePathS));
                     const imgKey = `S${i}`;
                     imageUrls.push({ key: imgKey, src: urlS, alt: `Small Image ${i}`, width: "350", height: "350" });
                     setImages([...imageUrls]);
-                    totalImages += 1;
                 } catch (error) {
                     break;
                 }
@@ -105,6 +128,16 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
             clearTimeout();
         };
     }, []);
+
+    useEffect(() => {
+        if (productNameUserID !== productName) {
+            console.log("productNameUserID = " + productNameUserID);
+            console.log("productName = " + productName);
+            setTimeout(() => handleReload(), 3000);
+        }
+      }, []);
+
+
 
 
     // Function to trim description to a certain length
@@ -201,10 +234,10 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
     );
 };
 
-ProdBox.propTypes = {
+ProductPage.propTypes = {
     domain: PropTypes.string.isRequired,
     productNameUserID: PropTypes.string.isRequired,
     userID: PropTypes.string.isRequired,
 };
 
-export default ProdBox;
+export default ProductPage;
