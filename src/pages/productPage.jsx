@@ -121,7 +121,7 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
             {productInfo && (
                 <div className='text'>
                     <h2>{productInfo.productName}</h2>
-                    <p>Description: {trimDescription(productInfo.productDescription, 100)}</p>
+                    <p style={{ whiteSpace: 'pre-wrap' }}>Description: {productInfo.productDescription}</p>
                     {productInfo.variations.length > 0 && (
                         <div>
                             {productInfo.variations.map((variation, index) => (
