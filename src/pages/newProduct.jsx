@@ -47,7 +47,6 @@ const NewProd = ({
           indexImages(userIDVar, productData.images);
         }
       } else {
-        setImageCheck(true);
         console.error('Product document not found.');
       }
     } catch (error) {
@@ -59,7 +58,7 @@ const NewProd = ({
   useEffect(() => {
     if (productNameUserID !== "") {
       getProductInfo(productNameUserID);
-    }
+    } else setImageCheck(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -70,16 +69,18 @@ const NewProd = ({
         const categoryName = categories[0];
         setSelectedCategory(categoryName);
         const subcategories = productInfo.category[categoryName];
+        //console.log('Subcategories:', subcategories);
         if (subcategories) {
-          const subcategoryKeys = Object.keys(subcategories);
+          const subcategoryKeys = Object.keys(subcategories).filter(key => key !== 'name');
           if (subcategoryKeys.length > 0) {
-            const subcategoryName = subcategoryKeys[1];
+            const subcategoryName = subcategoryKeys[0];
+            //console.log('Selected Subcat:', subcategoryName);
             setSelectedSubCategory(subcategoryName);
             const subSubcategories = subcategories[subcategoryName];
             if (subSubcategories) {
-              const subSubcategoryKeys = Object.keys(subSubcategories);
+              const subSubcategoryKeys = Object.keys(subSubcategories).filter(key => key !== 'name');
               if (subSubcategoryKeys.length > 0) {
-                const subSubcategoryName = subSubcategoryKeys[1];
+                const subSubcategoryName = subSubcategoryKeys[0];
                 setSelectedSubSubCategory(subSubcategoryName);
               }
             }
@@ -321,13 +322,14 @@ const NewProd = ({
   const uploadImages = async () => {
     try {
       // Upload images
-      const storage = getStorage();
-      const userDirectoryRef = ref(storage, `users/${userID}`);
-      await uploadString(userDirectoryRef, '');
+      // Strings not required?!?
+      //const storage = getStorage();
+      //const userDirectoryRef = ref(storage, `users/${userID}`);
+      //await uploadString(userDirectoryRef, '');
       const productNameWithoutSpaces = productName.replace(/\s+/g, '');
       const productDocumentName = `${productNameWithoutSpaces}_${userID}`;
-      const productDirectoryRef = ref(storage, `users/${userID}/${productDocumentName}`);
-      await uploadString(productDirectoryRef, '');
+      //const productDirectoryRef = ref(storage, `users/${userID}/${productDocumentName}`);
+      //await uploadString(productDirectoryRef, '');
       if (passedImages.scaled.length > 0 || passedImages.unscaled.length > 0) {
         try {
           await uploadImagesToStorage(passedImages, userID, productDocumentName);
