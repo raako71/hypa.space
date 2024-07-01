@@ -231,7 +231,7 @@ const NewProd = ({
   const handleProductNameChange = (event) => {
     const newName = event.target.value;
     try {
-      if (containsHarmfulContent(newName)) {
+      if (containsHarmfulContent(newName,1)) {
         throw new Error("Product name contains disallowed content.");
       }
       if (newName.length > 30) {
@@ -244,8 +244,9 @@ const NewProd = ({
     }
   };
 
-  const containsHarmfulContent = (description) => {
-    const harmfulPatterns = /[^0-9a-zA-Z\s_-]/;
+  const containsHarmfulContent = (description, name) => {
+    let harmfulPatterns = /[^0-9a-zA-Z\s._-]/;
+    if(name) harmfulPatterns = /[^0-9a-zA-Z\s_-]/;
     return harmfulPatterns.test(description);
   };
 
