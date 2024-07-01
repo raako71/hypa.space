@@ -97,7 +97,6 @@ Username: ${username}, UserID: ${userID}, Test: ${test}`);
   });
 });
 
-
 exports.deleteUserDocument = functions.auth.user().onDelete(async (user) => {
   const {uid} = user;
 
@@ -115,7 +114,6 @@ exports.deleteUserDocument = functions.auth.user().onDelete(async (user) => {
     console.error("Error deleting user data:", error);
   }
 });
-
 
 exports.getCategories = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
@@ -188,8 +186,53 @@ exports.updateStore = functions.https.onRequest((req, res) => {
       return res.status(200).send({message: "Store updated successfully"});
     } catch (error) {
       console.error("Error updating store:", error);
-      return res.status(500).send("Unable to update store");
+      return res.status(500).send({issue: "Unable to update store"});
     }
   });
 });
 
+/**
+ * Deletes all files in a Firebase Storage directory.
+ * @param {string} directoryPath - Path to the Firebase Storage directory.
+ * @return {Promise<void>} Resolves if successful, or throws an error.
+ */
+async function deleteFiles(directoryPath) {
+  try {
+    const bucket = admin.storage().bucket();
+    const [files] = await bucket.getFiles({prefix: directoryPath});
+
+    await Promise.all(files.map(async (file) => {
+      await file.delete();
+    }));
+
+    console.log(`Files in directory ${directoryPath} successfully deleted.`);
+  } catch (error) {
+    console.error(`Error deleting files in directory ${directoryPath}:`, error);
+    throw new Error(`Failed to delete files: ${error.message}`);
+  }
+}
+
+
+exports.deleteFiles = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    const path = req.body.path;
+    const parts = path.split("/");
+    const userID = parts[1];
+
+    const currentUserIdToken = req.headers.authorization.split("Bearer ")[1];
+    const currentUser = await admin.auth().verifyIdToken(currentUserIdToken);
+
+    if (userID !== currentUser.uid) {
+      res.status(403).send("Unauthorized access.");
+      return;
+    }
+    try {
+      await deleteFiles(path);
+      res.status(200).
+          json({message: `Files successfully deleted.`});
+    } catch (error) {
+      res.status(500).
+          json({error: `Failed to process request: ${error.message}`});
+    }
+  });
+});
