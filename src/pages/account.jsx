@@ -266,9 +266,7 @@ export default function Account() {
 
   const handleSaveDetails = async (userID) => {
     const userDocRef = doc(db, 'users', userID);
-
     try {
-      // Update the address and phone number fields in Firestore
       await updateDoc(userDocRef, {
         address: storeAddress,
         phoneNumber: newPhoneNumber,
@@ -285,14 +283,12 @@ export default function Account() {
     }
 
     try {
-      // Upload images
       const storage = getStorage();
       const userAccountDirectoryRef = ref(storage, `users/${userID}/account/accountImageS`);
       const userAccountDirectoryRefL = ref(storage, `users/${userID}/account/accountImageL`);
       if (!isValidDataUrl(passedImages.scaled)) {
         return;
       }
-      // Ensure passedImages is a string
       if (typeof passedImages.scaled !== 'string') {
         throw new Error('passedImages must be a data URL string');
       }
@@ -301,14 +297,12 @@ export default function Account() {
       console.log('Image uploaded successfully');
     } catch (error) {
       console.error('Error uploading image:', error);
-      throw error; // Rethrow the error to handle it in the main function
+      throw error;
     }
   };
 
   const isValidDataUrl = (url) => {
-    // Regular expression to match a valid Data URL format
     const dataUrlRegex = /^data:([A-Za-z-+/]+);base64,(.+)$/;
-
     return dataUrlRegex.test(url);
   };
 
@@ -347,9 +341,6 @@ export default function Account() {
     }
   };
 
-
-
-
   const enableTelegramFunc = () => {
     enableTelegram(!telegramEnabled);
   };
@@ -372,6 +363,7 @@ export default function Account() {
     }
     setStoreName(filteredValue);
   };
+  
   const handleStoreAddress = (e) => {
     const inputValue = e.target.value;
     let filteredValue = inputValue.match(/[a-zA-Z0-9\s\-_.\n,]+/g)?.join('') || '';
@@ -380,7 +372,6 @@ export default function Account() {
     }
     setStoreAddress(filteredValue);
   };
-
 
   const handleProcessedImagesUpload = (images) => {
     const scaledDataURL = images.scaled.toDataURL('image/jpeg');
@@ -391,7 +382,7 @@ export default function Account() {
       unscaled: unscaledDataURL
     });
   };
-  const handleInputChange = (event) => {
+  const undateUsernameFunc = (event) => {
     setNewUsername(event.target.value);
   };
 
@@ -417,7 +408,7 @@ export default function Account() {
               id="newUsername"
               placeholder="New Username"
               value={newUsername}
-              onChange={handleInputChange}
+              onChange={undateUsernameFunc}
             />
             &nbsp;&nbsp;
             <a href="#" onClick={runUpdateUsernameFunc}>Save Username</a>
