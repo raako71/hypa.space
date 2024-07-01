@@ -1,7 +1,7 @@
 import CategorySelector from "../components/categorySelector";
 import Variations from "../components/variations";
 import { useEffect, useState } from 'react';
-import { db } from "../firebase-config"
+import { auth, db } from "../firebase-config"
 import { getFirestore, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
 import ImageModification from "../components/imageUpload";
 import { getStorage, ref, uploadString, getDownloadURL, listAll } from 'firebase/storage';
@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import merge from 'lodash/merge';
 import PropTypes from 'prop-types';
 
-const NewProd = ({ 
+const NewProd = ({
   userID,
   existingData,
   productNameUserID }) => {
@@ -29,6 +29,7 @@ const NewProd = ({
   const [productInfoLoaded, setProductInfoLoaded] = useState(false);
   const [imageCheck, setImageCheck] = useState(false);
   const [loadingImages, setloadingImages] = useState(false);
+  const [deletingImages, setDeletingImages] = useState(false);
 
   const getProductInfo = async (productNameUserID) => {
     try {
@@ -45,7 +46,9 @@ const NewProd = ({
         if (productData) {
           const [, userIDVar] = productNameUserID.split('_');
           indexImages(userIDVar, productData.images);
+          setImageCheck(true);
         }
+        
       } else {
         console.error('Product document not found.');
       }
@@ -59,7 +62,7 @@ const NewProd = ({
     if (productNameUserID !== "") {
       getProductInfo(productNameUserID);
     } else setImageCheck(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCategoriesLoaded = (productInfo) => {
@@ -112,7 +115,7 @@ const NewProd = ({
       const directoryRef = ref(storage, basePath);
       try {
         const listResult = await listAll(directoryRef);
-        listResult.items.forEach((itemRef) => {   
+        listResult.items.forEach((itemRef) => {
           const fileName = itemRef.name;
           if (fileName.startsWith('S')) {
             const numberPart = parseInt(fileName.substring(1)); // Extract number after 'S'
@@ -183,24 +186,24 @@ const NewProd = ({
   const handleProcessedImagesUpload = (images) => {
     const scaledDataURL = images.scaled.toDataURL('image/jpeg');
     const unscaledDataURL = images.unscaled.toDataURL('image/jpeg');
-    
+
     const currentScaledImages = [...passedImages.scaled];
     const currentUnscaledImages = [...passedImages.unscaled];
-    
+
     if (currentScaledImages.length < 10) {
       currentScaledImages.push(scaledDataURL);
     }
-    
+
     if (currentUnscaledImages.length < 10) {
       currentUnscaledImages.push(unscaledDataURL);
     }
-    
+
     setPassedImages({
       scaled: currentScaledImages,
       unscaled: currentUnscaledImages
     });
   };
-  
+
 
   useEffect(() => {
     // Check if both category and subcategory are selected
@@ -231,7 +234,7 @@ const NewProd = ({
   const handleProductNameChange = (event) => {
     const newName = event.target.value;
     try {
-      if (containsHarmfulContent(newName,1)) {
+      if (containsHarmfulContent(newName, 1)) {
         throw new Error("Product name contains disallowed content.");
       }
       if (newName.length > 30) {
@@ -246,17 +249,16 @@ const NewProd = ({
 
   const containsHarmfulContent = (description, name) => {
     let harmfulPatterns = /[^0-9a-zA-Z\s._-]/;
-    if(name) harmfulPatterns = /[^0-9a-zA-Z\s_-]/;
+    if (name) harmfulPatterns = /[^0-9a-zA-Z\s_-]/;
     return harmfulPatterns.test(description);
   };
 
   const isValidDataUrl = (url) => {
     // Regular expression to match a valid Data URL format
     const dataUrlRegex = /^data:([A-Za-z-+/]+);base64,(.+)$/;
-  
+
     return dataUrlRegex.test(url);
   };
-
 
   const uploadImagesToStorage = async (images, userID, productDocumentName) => {
     const storage = getStorage();
@@ -376,7 +378,6 @@ const NewProd = ({
     }
   };
 
-
   const handleSaveProduct = async () => {
     setSaving(true);
     try {
@@ -445,6 +446,68 @@ const NewProd = ({
     setSaving(false);
   };
 
+  const removeLocalImages = () => {
+    const invalidScaled = passedImages.scaled.filter(imageURL => !isValidDataUrl(imageURL));
+    const invalidUnscaled = passedImages.unscaled.filter(imageURL => !isValidDataUrl(imageURL));
+    setPassedImages({
+      scaled: invalidScaled,
+      unscaled: invalidUnscaled
+    });
+  };
+
+  const deleteImagesFunc = async () => {
+    const confirmAction = window.confirm("Confirm action?");
+    removeLocalImages();
+    if (confirmAction && passedImages.scaled.length > 0) {
+      setDeletingImages(true);
+      const basePath = `users/${userID}/${productNameUserID}`;
+      try {
+        await deleteFiles(basePath); // Wait for deletion to complete
+        setPassedImages({ scaled: [], unscaled: [] });
+        const userProductRef = doc(db, 'products', productNameUserID);
+        await updateDoc(userProductRef, { images: false });
+        setDeletingImages(false); // Set button to "running" state
+      } catch (error) {
+        console.error("Failed to delete images:", error);
+        // Handle error, e.g., show error message to user
+      }
+    }
+  };
+
+
+  const deleteFiles = async (path) => {
+    try {
+      const user = auth.currentUser;
+      const idToken = await user.getIdToken();
+      const url = 'https://us-central1-hypa-space.cloudfunctions.net/deleteFiles';
+      const bodyData = {
+        path: path,
+      };
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify(bodyData)
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return true;
+        })
+        .then(data => {
+          console.log('Response from Cloud Delete Function:', data);
+        })
+        .catch(error => {
+          console.error('Error calling Cloud Function:', error);
+        });
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
 
   return (
     <div style={{ display: "flex", flexDirection: "column", padding: '25px' }}>
@@ -469,7 +532,7 @@ const NewProd = ({
           />
         </div>
         {imageCheck && (
-        <ImageModification handleProcessedImagesUpload={handleProcessedImagesUpload} />
+          <ImageModification handleProcessedImagesUpload={handleProcessedImagesUpload} />
         )}
         {loadingImages && (
           <h3>Loading Images</h3>
@@ -488,6 +551,11 @@ const NewProd = ({
           </div>
         )}
       </div>
+      {!saving && passedImages.scaled.length > 0 && productNameUserID && (
+        <button style={{ margin: "10px", width: "200px" }} onClick={deleteImagesFunc} disabled={deletingImages}>
+          {deletingImages ? "Deleting..." : "Delete Images"}
+        </button>
+      )}
 
       <Variations variations={variations} setVariations={setVariations} />
 

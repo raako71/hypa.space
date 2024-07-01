@@ -85,8 +85,8 @@ function App() {
           />
           <Route path="/terms" element={<Terms />} />
           <Route path="/product" element={<ProductPage 
-          productNameUserID={productName || ''} 
           userID={userID || ''} 
+          productNameUserID={productName} 
           domain={domain}
           />} />
           <Route path="/store/:userName" element={<PublicStore />} />

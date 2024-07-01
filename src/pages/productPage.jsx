@@ -135,7 +135,7 @@ const ProductPage = ({ productNameUserID, userID, domain }) => {
             console.log("productName = " + productName);
             setTimeout(() => handleReload(), 3000);
         }
-      }, []);
+      }, [productName, productNameUserID]);
 
 
 
