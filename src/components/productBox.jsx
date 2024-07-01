@@ -82,16 +82,16 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
         const [, userIDVar] = productNameUserID.split('_');
         setProductUserID(userIDVar);
         getProductInfo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productNameUserID]);
 
     //cache images after loading
     useEffect(() => {
         if (imageUrl) {
-          const img = new Image();
-          img.src = imageUrl;
+            const img = new Image();
+            img.src = imageUrl;
         }
-      }, [imageUrl]);
+    }, [imageUrl]);
 
 
     return (
@@ -108,6 +108,10 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
                 slides={[
                     { src: imageUrlL }
                 ]}
+                render={{
+                    buttonPrev: () => null,
+                    buttonNext: () => null
+                }}
             />
             {productInfo && (
                 <>

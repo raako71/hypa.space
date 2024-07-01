@@ -96,7 +96,7 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
         const [, userID] = productNameUserID.split('_');
         setProductUserID(userID);
         getProductInfo(productNameUserID);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productNameUserID]);
 
     // Clear timeout on component unmount
@@ -167,6 +167,12 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
                                 cursor: 'pointer'
                             },
                         }}
+                        {...(images.length === 1 && {
+                            render: {
+                                buttonPrev: () => null,
+                                buttonNext: () => null
+                            }
+                        })}
                     />
                 ) : (
                     <div className="image-container">
@@ -182,6 +188,12 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
                     close={closeLightbox}
                     slides={images}
                     index={selectedImageIndex}
+                    {...(images.length === 1 && {
+                        render: {
+                            buttonPrev: () => null,
+                            buttonNext: () => null
+                        }
+                    })}
                 />
 
             </>

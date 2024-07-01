@@ -7,9 +7,9 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING:
-* delete images for product.
-* delete delete product.
-* delete account.
+* delete images for product (function).
+* delete product (function).
+* delete account (function).
 * move to VPS if required.
 
 * Delete Photos.
@@ -17,6 +17,9 @@ REMAINING:
 * Delete product, and update user category tree accordingly etc.
 * Update user category tree on edit product.
 * ensure blank image loads for no image in ProdBox (isolated components)
+
+1 July:
+Disable LightBox slider arrows for single image.
 
 30 June:
 Update store doc when updating user account (validation etc).
