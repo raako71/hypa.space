@@ -296,13 +296,13 @@ const NewProd = ({
     }
   };
 
-  const pruneTrees = async (mergedProductTree, returnedCategoryTree) => {
+  const pruneTrees = async (mergedProductTree, returnedCategoryTree,test) => {
     const updatedProductTree = removeProductAndCleanup(mergedProductTree);
     console.log("updatedProductTree: " + JSON.stringify(updatedProductTree, null, 2));
     const categoryTree = pruneCategoryTree(returnedCategoryTree, updatedProductTree)
     console.log("returnedCategoryTree: " + JSON.stringify(categoryTree, null, 2));
     const userDocRef = doc(db, 'users', userID);
-    await updateDoc(userDocRef, { productTree: mergedProductTree, categoryTree: returnedCategoryTree });
+    if (!test) await updateDoc(userDocRef, { productTree: mergedProductTree, categoryTree: returnedCategoryTree });
   };
 
   function removeProductAndCleanup(mergedProductTree) {
@@ -481,7 +481,7 @@ const NewProd = ({
       if (newProdTree === 1) {
         if (Object.keys(existingproductTree).length > 0) {
           console.log("Removing prevoius product category");
-          await pruneTrees(mergedProductTree, returnedCategoryTree);
+          await pruneTrees(mergedProductTree, returnedCategoryTree,test);
         }
         else {
           if (!test) await updateDoc(userDocRef, { productTree: mergedProductTree, categoryTree: returnedCategoryTree });
