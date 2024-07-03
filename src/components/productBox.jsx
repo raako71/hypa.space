@@ -96,6 +96,9 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
 
     return (
         <div className="prodBox">
+            <p>
+            {productNameUserID}
+            </p>
             {productInfo && (
                 <div className="image-container" onClick={productInfo.images ? openLightbox : undefined}>
                     {imageUrl && <img src={imageUrl} alt="Product Image" style={{ cursor: productInfo.images ? 'pointer' : 'default' }} />}

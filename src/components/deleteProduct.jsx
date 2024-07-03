@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { doc, deleteDoc, updateDoc } from 'firebase/firestore/lite';
+import { doc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
 import { useEffect } from 'react';
 import { auth, db } from '../firebase-config';
 
@@ -14,10 +14,15 @@ const DeleteProducts = ({
     const existingCategoryTree = existingData?.categoryTree || {};
 
     const deleteProduct = async (productName, productTree, test) => {
+        const basePath = `users/${userID}/${productName}`;
         try {
             const userProductRef = doc(db, 'products', productName);
-            const basePath = `users/${userID}/${productName}`;
-            if (!test) {
+            const productSnapshot = await getDoc(userProductRef);
+            let exists = 0;
+            if (!productSnapshot.exists()) {
+                console.log(`Product "${productName}" does not exist.`);
+            } else exists = 1;
+            if (!test && exists) {
                 await deleteDoc(userProductRef);
                 console.log(`Product "${productName}" successfully deleted.`);
                 await deleteFiles(basePath); // Wait for deletion to complete
@@ -25,7 +30,6 @@ const DeleteProducts = ({
         } catch (error) {
             console.error('Error deleting product:', error.message);
         }
-
         const modifiedTree = deleteProductNameFromTree(productTree, productName);
         return modifiedTree;
         //console.log("modifiedProductTree:", JSON.stringify(modifiedTree, null, 2));
@@ -73,7 +77,7 @@ const DeleteProducts = ({
         //console.log("categoryTree:", JSON.stringify(categoryTree, null, 2));
         const userDocRef = doc(db, 'users', userID);
         if (!test) await updateDoc(userDocRef, { productTree: productTree, categoryTree: categoryTree });
-        window.location.assign(location.origin + "/products");
+        //window.location.assign(location.origin + "/products");
     };
 
     const deleteFiles = async (path) => {

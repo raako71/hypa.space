@@ -15,6 +15,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Products from "./pages/products"
 import ProductPage from "./pages/productPage"
 import { doc, getDoc } from 'firebase/firestore/lite';
+import DeletePage from "./pages/delete"
 
 
 
@@ -54,10 +55,10 @@ function App() {
   return (
     <Router>
       <div id='site'>
-        <Header 
-        isLoggedIn={isLoggedIn}
-        domain={domain}
-         />
+        <Header
+          isLoggedIn={isLoggedIn}
+          domain={domain}
+        />
         <Routes>
           <Route path="/" element={<Home domain={domain} />} />
           <Route path="/search" element={<Search />} />
@@ -65,10 +66,10 @@ function App() {
             element={isLoggedIn ? <Navigate to="/" /> : <Login />}
           />
           <Route path="/newProduct"
-            element={isLoggedIn ? <NewProd 
+            element={isLoggedIn ? <NewProd
               existingData={existingData}
               userID={userID}
-              /> : <Navigate to="/" />}
+            /> : <Navigate to="/" />}
           />
           <Route path="/account"
             element={<Account />}
@@ -80,9 +81,14 @@ function App() {
             />}
           />
           <Route path="/terms" element={<Terms />} />
-          <Route path="/product" element={<ProductPage 
-          userID={userID || ''}
-          domain={domain}
+          <Route path="/delete"
+            element={<DeletePage
+              existingData={existingData}
+              userID={userID}
+            />} />
+          <Route path="/product" element={<ProductPage
+            userID={userID || ''}
+            domain={domain}
           />} />
           <Route path="/store/:userName" element={<PublicStore />} />
           <Route path="*" element={<Navigate to="/" />} />
