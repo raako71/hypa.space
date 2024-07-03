@@ -8,6 +8,7 @@ import { getStorage, ref, uploadString, getDownloadURL, listAll } from 'firebase
 import { useNavigate } from 'react-router-dom';
 import merge from 'lodash/merge';
 import PropTypes from 'prop-types';
+import DeleteProducts from "../components/deleteProduct";
 
 const NewProd = ({
   userID,
@@ -32,6 +33,9 @@ const NewProd = ({
   const [deletingImages, setDeletingImages] = useState(false);
   const [loadedCats, setLoadedCats] = useState([]);
   const [productNameUserID, setProductNameUserID] = useState(null);
+  const [runDelete, setRunDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [buttonText, setButtonText] = useState('Delete Product (Test Mode)');
   //const [mergedCats, setMergedCats] = useState({});
 
   const getDataFromURL = (data) => {
@@ -49,7 +53,7 @@ const NewProd = ({
   useEffect(() => {
     if (productNameUserID != null) {
       getProductInfo(productNameUserID);
-    }else setImageCheck(true);
+    } else setImageCheck(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productNameUserID]);
 
@@ -612,7 +616,6 @@ const NewProd = ({
     }
   };
 
-
   const deleteFiles = async (path) => {
     try {
       const user = auth.currentUser;
@@ -646,6 +649,18 @@ const NewProd = ({
     }
   }
 
+  const handleDeleteButtonClick = async () => {
+    setIsDeleting(true);
+    setButtonText('Deleting...');
+    setRunDelete(true);
+
+    // Simulate a 1 second delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    setRunDelete(false);
+    setIsDeleting(false);
+    setButtonText('Delete Product (Test Mode)');
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", padding: '25px' }}>
@@ -727,6 +742,20 @@ const NewProd = ({
       {/*
       <button onClick={testPrune} style={{ width: 'fit-content', margin: "8px" }}>Prune</button>
       */}
+      <button
+        onClick={() => handleDeleteButtonClick()}
+        disabled={isDeleting}
+        style={{ backgroundColor: isDeleting ? 'grey' : '', width: '300px'}}
+      >
+        {buttonText}
+      </button>
+      <DeleteProducts
+        userID={userID}
+        existingData={existingData}
+        productNames={[productNameUserID]} // Pass the product name to delete
+        test={true} // Set test mode to true
+        run={runDelete} // Ensure run is initially false, set to true when you want to trigger deletion
+      />
     </div>
   );
 };

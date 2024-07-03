@@ -1,19 +1,21 @@
 import PropTypes from 'prop-types';
-import { doc, deleteDoc  } from 'firebase/firestore/lite';
-import { useState } from 'react';
+import { doc, deleteDoc } from 'firebase/firestore/lite';
+import { useState, useEffect } from 'react';
 import { db } from '../firebase-config';
-
 
 const DeleteProducts = ({
     userID,
     existingData,
-    productNames
+    productNames,
+    test, 
+    run
 }) => {
     const [modifiedProductTree, setModifiedProductTree] = useState("");
+
     const deleteProduct = async (productName, test) => {
         try {
             const userProductRef = doc(db, 'products', productName);
-            if(!test){
+            if (!test) {
                 await deleteDoc(userProductRef);
                 console.log(`Product "${productName}" successfully deleted.`);
             }
@@ -23,8 +25,8 @@ const DeleteProducts = ({
         const existingproductTree = existingData?.productTree || {};
         const modifiedTree = deleteProductNameFromTree(existingproductTree, productName);
         setModifiedProductTree(modifiedTree);
-        console.log("modifiedProductTree:", JSON.stringify(modifiedTree, null, 2));
-    }
+        //console.log("modifiedProductTree:", JSON.stringify(modifiedTree, null, 2));
+    };
 
     const deleteProductNameFromTree = (existingproductTree, productName) => {
         const traverseAndDelete = (node, parent, parentKey) => {
@@ -53,22 +55,36 @@ const DeleteProducts = ({
                 }
             }
         };
-    
+
         traverseAndDelete(existingproductTree, null, null);
         return existingproductTree; // Return the modified tree after completing traversal
     };
-    // For each productName in productNames array.
-        // delete product from database.
-        // update userProductTree.
-        // delete images.
-    // prune  categoryTree.
-    // Update UserDoc
+
+    const handleDeleteProducts = async () => {
+        for (const productName of productNames) {
+            await deleteProduct(productName, test);
+        }
+        // After deleting all products, perform pruning and update userDoc here if needed
+    };
+
+    useEffect(() => {
+        if(run)handleDeleteProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [run]);
+
+    return (
+        <div>
+            {/* Component JSX */}
+        </div>
+    );
 };
 
 DeleteProducts.propTypes = {
     userID: PropTypes.string,
     existingData: PropTypes.object,
     productNames: PropTypes.array,
+    test: PropTypes.bool,
+    run: PropTypes.bool
 };
 
 export default DeleteProducts;
