@@ -127,7 +127,7 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
                 <>
                     <div className='text'>
                         <h2><a href={domain + "/product?productName=" + productNameUserID}>{productInfo.productName}</a></h2>
-                        <p>Description: {trimDescription(productInfo.productDescription, 100)}</p>
+                        <p style={{ whiteSpace: 'pre-wrap' }}>Description: {trimDescription(productInfo.productDescription, 100)}</p>
                     </div>
                     {productUserID == userID && <div className="prEdit">
                         <a href={domain + "/newProduct?productName=" + productNameUserID}>edit</a></div>}
