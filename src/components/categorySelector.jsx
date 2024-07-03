@@ -30,7 +30,7 @@ const CategorySelector = ({
 
   useEffect(() => {
     // Function to fetch local categories data
-    const fetchLocalCategories = async () => {
+    const fetchCategories = async () => {
       let categoriesData = {};
       let mergedCategories = {}; // Initialize mergedCategories here
       let loadedCatsVar = 0;
@@ -43,7 +43,7 @@ const CategorySelector = ({
           const categoryData = doc.data();
           categoriesData[categoryName] = categoryData;
         });
-        setCategories(categoriesData);
+        //setCategories(categoriesData);
         setLoadingCategories("Loaded Global Categories");
         loadedCatsVar = loadedCatsVar + 1;
       } catch (error) {
@@ -55,6 +55,7 @@ const CategorySelector = ({
         setLoadingUserCategories("Loading User Categories.");
         const existingCategoryTree = existingData?.categoryTree || {};
         mergedCategories = merge({}, categoriesData, existingCategoryTree); 
+        //console.log("mergedCategories:", JSON.stringify(mergedCategories, null, 2));
         setCategories(mergedCategories);
         setLoadingUserCategories("Loaded User Categories");
         loadedCatsVar = loadedCatsVar + 1;
@@ -72,10 +73,10 @@ const CategorySelector = ({
     };
 
     if (userID) {
-      fetchLocalCategories();
+      fetchCategories();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userID, existingData]);
+  }, [existingData]);
 
   useEffect(() => {
     if (sendCategories) {
