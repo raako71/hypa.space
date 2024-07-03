@@ -298,7 +298,7 @@ const NewProd = ({
 
   const pruneTrees = async (mergedProductTree, returnedCategoryTree,test) => {
     const updatedProductTree = removeProductAndCleanup(mergedProductTree);
-    console.log("updatedProductTree: " + JSON.stringify(updatedProductTree, null, 2));
+    //console.log("updatedProductTree: " + JSON.stringify(updatedProductTree, null, 2));
     const categoryTree = pruneCategoryTree(returnedCategoryTree, updatedProductTree)
     console.log("returnedCategoryTree: " + JSON.stringify(categoryTree, null, 2));
     const userDocRef = doc(db, 'users', userID);
@@ -468,7 +468,13 @@ const NewProd = ({
         }
       }
       else if (loadedCats[1]) {
-        console.log("Prev Subcategory Exists");
+        if(selectedSubSubCategory){
+          newProdTree = 1;
+          console.log("new SubSubcategory");
+        }
+        else {
+          console.log("Prev Subcategory Exists");
+        }
         if (selectedSubCategory !== loadedCats[1]) {
           newProdTree = 1;
           console.log("Subcategory modified")
@@ -689,7 +695,7 @@ const NewProd = ({
       />
       <div style={{ display: "flex", alignItems: "center", margin: "8px" }}>
         {!saving && (
-          <button onClick={handleSaveProduct} style={{ width: 'fit-content', margin: "8px" }}>Save</button>
+          <button onClick={handleSaveProduct} style={{ width: 'fit-content', margin: "8px" }}>Save Product</button>
         )}
         {saving && (
           <button style={{ width: 'fit-content', margin: "8px" }} disabled>Saving...</button>
