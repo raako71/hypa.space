@@ -30,6 +30,9 @@ const NewProd = ({
   const [imageCheck, setImageCheck] = useState(false);
   const [loadingImages, setloadingImages] = useState(false);
   const [deletingImages, setDeletingImages] = useState(false);
+  const [loadedCats, setLoadedCats] = useState([]);
+  //const [mergedCats, setMergedCats] = useState({});
+
 
   const getProductInfo = async (productNameUserID) => {
     try {
@@ -48,7 +51,7 @@ const NewProd = ({
           indexImages(userIDVar, productData.images);
           setImageCheck(true);
         }
-        
+
       } else {
         console.error('Product document not found.');
       }
@@ -72,11 +75,13 @@ const NewProd = ({
         const categoryName = categories[0];
         setSelectedCategory(categoryName);
         const subcategories = productInfo.category[categoryName];
+        let loadedCats = [categoryName];
         //console.log('Subcategories:', subcategories);
         if (subcategories) {
           const subcategoryKeys = Object.keys(subcategories).filter(key => key !== 'name');
           if (subcategoryKeys.length > 0) {
             const subcategoryName = subcategoryKeys[0];
+            loadedCats.push(subcategoryName);
             //console.log('Selected Subcat:', subcategoryName);
             setSelectedSubCategory(subcategoryName);
             const subSubcategories = subcategories[subcategoryName];
@@ -84,9 +89,12 @@ const NewProd = ({
               const subSubcategoryKeys = Object.keys(subSubcategories).filter(key => key !== 'name');
               if (subSubcategoryKeys.length > 0) {
                 const subSubcategoryName = subSubcategoryKeys[0];
+                loadedCats.push(subSubcategoryName);
                 setSelectedSubSubCategory(subSubcategoryName);
               }
+
             }
+            setLoadedCats(loadedCats);
           }
         }
       } else {
@@ -204,7 +212,6 @@ const NewProd = ({
     });
   };
 
-
   useEffect(() => {
     // Check if both category and subcategory are selected
     if (selectedCategory !== null && selectedSubCategory !== null) {
@@ -289,7 +296,90 @@ const NewProd = ({
     }
   };
 
-  const updateCategoriesInUserFile = async () => {
+  const pruneTrees = async (mergedProductTree, returnedCategoryTree) => {
+    const updatedProductTree = removeProductAndCleanup(mergedProductTree);
+    console.log("updatedProductTree: " + JSON.stringify(updatedProductTree, null, 2));
+    const categoryTree = pruneCategoryTree(returnedCategoryTree, updatedProductTree)
+    console.log("returnedCategoryTree: " + JSON.stringify(categoryTree, null, 2));
+    const userDocRef = doc(db, 'users', userID);
+    await updateDoc(userDocRef, { productTree: mergedProductTree, categoryTree: returnedCategoryTree });
+  };
+
+  function removeProductAndCleanup(mergedProductTree) {
+    let currentLevel = mergedProductTree;
+
+    // Traverse to the specified location
+    for (let i = 0; i < loadedCats.length; i++) {
+      if (!currentLevel[loadedCats[i]]) {
+        // If the path does not exist, nothing to remove
+        return mergedProductTree;
+      }
+      currentLevel = currentLevel[loadedCats[i]];
+    }
+
+    // Remove the product
+    if (currentLevel.products && currentLevel.products[productNameUserID]) {
+      delete currentLevel.products[productNameUserID];
+    }
+
+    // Function to clean up empty objects
+    function cleanUpEmptyObjects(currentLevel, loadedCats, index) {
+      if (index < 0) {
+        return;
+      }
+
+      let key = loadedCats[index];
+      let parentLevel = mergedProductTree;
+
+      // Traverse to the parent level
+      for (let i = 0; i < index; i++) {
+        parentLevel = parentLevel[loadedCats[i]];
+      }
+
+      // Remove empty products object
+      if (currentLevel.products && Object.keys(currentLevel.products).length === 0) {
+        delete currentLevel.products;
+      }
+
+      // Remove empty category/subcategory/subsubcategory
+      if (Object.keys(currentLevel).length === 0) {
+        delete parentLevel[key];
+        cleanUpEmptyObjects(parentLevel, loadedCats, index - 1);
+      }
+    }
+
+    cleanUpEmptyObjects(currentLevel, loadedCats, loadedCats.length - 1);
+    return mergedProductTree;
+  }
+
+  function pruneCategoryTree(categoryTree, updatedProductTree) {
+    function traverseAndUpdate(categoryNode, productNode) {
+      for (let key in productNode) {
+        if (!categoryNode[key]) {
+          // If the category or subcategory does not exist in the category tree, create it
+          categoryNode[key] = { name: key };
+        }
+
+        if (!productNode[key].products) {
+          // If there are subcategories, traverse recursively
+          traverseAndUpdate(categoryNode[key], productNode[key]);
+        }
+      }
+
+      // Clean up any empty categories
+      for (let key in categoryNode) {
+        if (!productNode[key]) {
+          delete categoryNode[key];
+        }
+      }
+    }
+
+    traverseAndUpdate(categoryTree, updatedProductTree);
+    return categoryTree;
+  }
+
+  const updateCategoryTree = async () => {
+    // Merge current with existing
     try {
       const existingCategoryTree = existingData?.categoryTree || {};
       const categoryTreeUpdate = {};
@@ -312,12 +402,9 @@ const NewProd = ({
         }
       }
       const mergedCategoryTree = merge({}, existingCategoryTree, categoryTreeUpdate)
-      const userDocRef = doc(db, 'users', userID);
-      if (Object.keys(mergedCategoryTree).length > 0) {
-        await updateDoc(userDocRef, { categoryTree: mergedCategoryTree });
-      }
+      return mergedCategoryTree;
     } catch (error) {
-      console.error('Error updating categories in user file:', error);
+      console.error('Error updating categoryTree in user file:', error);
       throw error; // Rethrow the error to handle it in the main function
     }
   };
@@ -347,15 +434,19 @@ const NewProd = ({
     }
   };
 
-  const updateProductTreeInUserFile = async () => {
+  const testPrune = async () => {
+    const returnedCategoryTree = await updateCategoryTree();
+    await updateUserDoc(returnedCategoryTree, 1);
+  }
+
+  const updateUserDoc = async (returnedCategoryTree, test) => {
+    const existingproductTree = existingData?.productTree || {};
     const productNameWithoutSpaces = productName.replace(/\s+/g, '');
     const productDocumentName = `${productNameWithoutSpaces}_${userID}`;
     try {
-      //update categories in user file
       const userDocRef = doc(db, 'users', userID);
-      const userDocSnapshot = await getDoc(userDocRef);
-      const existingData = userDocSnapshot.data();
-      const existingproductTree = existingData?.productTree || {};
+      //const userDocSnapshot = await getDoc(userDocRef);
+      //const existingData = userDocSnapshot.data();
       //console.log("existingproductTree:", JSON.stringify(existingproductTree, null, 2));
       const productTreeUpdate = {};
       productTreeUpdate[selectedCategory] = {};
@@ -367,13 +458,37 @@ const NewProd = ({
       else {
         productTreeUpdate[selectedCategory][selectedSubCategory].products = { [productDocumentName]: true };
       }
-      const mergedProductTree = merge({}, existingproductTree, productTreeUpdate)
+      let mergedProductTree = merge({}, existingproductTree, productTreeUpdate)
+      let newProdTree = 0;
+      if (loadedCats[2]) {
+        console.log("Prev SubSubcategory Exists");
+        if (selectedSubSubCategory !== loadedCats[2]) {
+          newProdTree = 1;
+          console.log("SubSubcategory modified")
+        }
+      }
+      else if (loadedCats[1]) {
+        console.log("Prev Subcategory Exists");
+        if (selectedSubCategory !== loadedCats[1]) {
+          newProdTree = 1;
+          console.log("Subcategory modified")
+        }
+      } else {
+        newProdTree = 2;
+        console.log("New Product")
+      }
       //console.log("mergedProductTree:", JSON.stringify(mergedProductTree, null, 2));
-      if (Object.keys(mergedProductTree).length > 0) {
-        await updateDoc(userDocRef, { productTree: mergedProductTree });
+      if (newProdTree === 1) {
+        if (Object.keys(existingproductTree).length > 0) {
+          console.log("Removing prevoius product category");
+          await pruneTrees(mergedProductTree, returnedCategoryTree);
+        }
+        else {
+          if (!test) await updateDoc(userDocRef, { productTree: mergedProductTree, categoryTree: returnedCategoryTree });
+        }
       }
     } catch (error) {
-      console.error('Error updating productTree in user file:', error);
+      console.error('Error updating Categories in user file:', error);
       throw error; // Rethrow the error to handle it in the main function
     }
   };
@@ -406,15 +521,15 @@ const NewProd = ({
           }
         }
       }
+      const docSnapshot = await getDoc(userProductRef);
       const productData = {
         productName,
         productDescription,
         variations,
         category: categoryUpdate,
         userId: userID,
-        images: passedImages.scaled.length > 0 || passedImages.unscaled.length > 0
+        images: passedImages.scaled.length > 0
       };
-      const docSnapshot = await getDoc(userProductRef);
       if (docSnapshot.exists()) {
         console.log('Product exists!');
         // Ask for confirmation before updating
@@ -422,8 +537,8 @@ const NewProd = ({
         if (shouldUpdate) {
           // If the user confirms, update the document
           await updateDoc(userProductRef, productData);
-          await updateCategoriesInUserFile();
-          await updateProductTreeInUserFile();
+          const returnedCategoryTree = await updateCategoryTree();
+          await updateUserDoc(returnedCategoryTree);
           await uploadImages();
           console.log('Product updated successfully!');
           return navigate(`/product?productName=${productDocumentName}`);
@@ -433,8 +548,8 @@ const NewProd = ({
       } else {
         // If the document doesn't exist, create a new one
         await setDoc(userProductRef, productData);
-        await updateCategoriesInUserFile();
-        await updateProductTreeInUserFile();
+        const returnedCategoryTree = await updateCategoryTree();
+        await updateUserDoc(returnedCategoryTree);
         await uploadImages();
         console.log('Product saved successfully!');
         return navigate(`/product?productName=${productDocumentName}`);
@@ -583,6 +698,7 @@ const NewProd = ({
           <p style={{ color: 'red', marginLeft: '8px' }}>{errorMessage}</p>
         )}
       </div>
+      <button onClick={testPrune} style={{ width: 'fit-content', margin: "8px" }}>Prune</button>
     </div>
   );
 };
