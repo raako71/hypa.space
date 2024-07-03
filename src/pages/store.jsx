@@ -14,25 +14,25 @@ const PublicStore = ({SessionID}) => {
     const [telegramEnabled, enableTelegram] = useState(false);
     const [wspEnabled, enableWSP] = useState(false);
     const [storeAddress, setStoreAddress] = useState(false);
-    const [userID, setUserID] = useState(null);
+    const [StoreID, setUserID] = useState(null);
 
     const getStoreInfo = async () => {
         try {
             const firestore = getFirestore();
             const usersDocRef = doc(firestore, 'users', 'allusers');
             const usersDocSnapshot = await getDoc(usersDocRef);
-            let userID;
+            let StoreID;
             if (usersDocSnapshot.exists()) {
                 const productData = usersDocSnapshot.data();
-                userID = productData[userName];
-                setUserID(userID);
-                getStoreImage(userID);
+                StoreID = productData[userName];
+                setUserID(StoreID);
+                getStoreImage(StoreID);
             } else {
                 console.error("failed to retrieve store name")
                 return;
             }
             try {
-                const userDocRef = doc(firestore, 'users', userID);
+                const userDocRef = doc(firestore, 'users', StoreID);
                 const userDocSnapshot = await getDoc(userDocRef);
                 if (userDocSnapshot.exists()) {
                     const userData = userDocSnapshot.data();
@@ -53,10 +53,10 @@ const PublicStore = ({SessionID}) => {
         }
     };
 
-    const getStoreImage = async (userID) => {
+    const getStoreImage = async (StoreID) => {
         // Fetch and set user account image
         const storage = getStorage();
-        const userAccountDirectoryRef = ref(storage, `users/${userID}/account/accountImageS`);
+        const userAccountDirectoryRef = ref(storage, `users/${StoreID}/account/accountImageS`);
         const downloadURL = await getDownloadURL(userAccountDirectoryRef);
         setStoreImage({
             scaled: downloadURL,
@@ -93,7 +93,7 @@ const PublicStore = ({SessionID}) => {
             </div>
             <Products
                 existingData={storeInfo}
-                userID={userID}
+                StoreID={StoreID}
                 SessionID = {SessionID}
             />
         </div>

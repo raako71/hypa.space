@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { doc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { auth, db } from '../firebase-config';
 
 const DeleteProducts = ({
@@ -8,10 +8,13 @@ const DeleteProducts = ({
     existingData,
     productNames,
     test,
-    run
+    run,
+    onOperationComplete
 }) => {
     const existingproductTree = existingData?.productTree || {};
     const existingCategoryTree = existingData?.categoryTree || {};
+    const [operationComplete, setComplete] = useState(0);
+    
 
     const deleteProduct = async (productName, productTree, test) => {
         const basePath = `users/${userID}/${productName}`;
@@ -69,16 +72,33 @@ const DeleteProducts = ({
 
     const handleDeleteProducts = async (passedTree) => {
         let productTree = passedTree;
-        for (const productName of productNames) {
-            productTree = await deleteProduct(productName, productTree, test);
+
+        try {
+            for (const productName of productNames) {
+                productTree = await deleteProduct(productName, productTree, test);
+            }
+
+            // Prune category tree
+            const categoryTree = pruneCategoryTree(existingCategoryTree, productTree);
+
+            // Update Firestore document
+            const userDocRef = doc(db, 'users', userID);
+            if (!test) {
+                await updateDoc(userDocRef, { productTree: productTree, categoryTree: categoryTree });
+            }
+
+            // Redirect to products page
+            setComplete(1);
+            onOperationComplete(operationComplete);
+            // window.location.assign(location.origin + "/products");
+        } catch (error) {
+            // Handle any errors that occur during the async operations
+            console.error('Error in handleDeleteProducts:', error);
+            // Optionally, you can throw the error again to propagate it further
+            throw error;
         }
-        //console.log("modifiedProductTree:", JSON.stringify(productTree, null, 2));
-        const categoryTree = pruneCategoryTree(existingCategoryTree, productTree);
-        //console.log("categoryTree:", JSON.stringify(categoryTree, null, 2));
-        const userDocRef = doc(db, 'users', userID);
-        if (!test) await updateDoc(userDocRef, { productTree: productTree, categoryTree: categoryTree });
-        //window.location.assign(location.origin + "/products");
     };
+
 
     const deleteFiles = async (path) => {
         try {
@@ -158,7 +178,8 @@ DeleteProducts.propTypes = {
     existingData: PropTypes.object,
     productNames: PropTypes.array,
     test: PropTypes.bool,
-    run: PropTypes.bool
+    run: PropTypes.bool,
+    onOperationComplete: PropTypes.func
 };
 
 export default DeleteProducts;

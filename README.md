@@ -8,7 +8,6 @@ Cloud:
 
 REMAINING:
 * Delete account (email auth) (function) -> delete all products & images.
-* Handle delete product.
 * Delete Products page, verify with CSV.
 
 

@@ -32,9 +32,9 @@ function App() {
       const loggedIn = !!user;
 
       if (user) {
-        const userID = user.uid;
-        setUserID(userID);
-        const userDocRefVar = doc(db, 'users', userID);
+        const CurrentUID = user.uid;
+        setUserID(CurrentUID);
+        const userDocRefVar = doc(db, 'users', CurrentUID);
         const userDocSnapshotVar = await getDoc(userDocRefVar);
         const existingDataVar = userDocSnapshotVar.data();
         setExistingData(existingDataVar);
@@ -52,7 +52,7 @@ function App() {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [userID]);
 
 
   return (
@@ -80,7 +80,8 @@ function App() {
           <Route path="/products"
             element={<Products
               existingData={existingData}
-              userID={userID}
+              SessionID={userID}
+              StoreID={userID}
             />}
           />
           <Route path="/terms" element={<Terms />} />
@@ -90,8 +91,8 @@ function App() {
               userID={userID}
             />} />
           <Route path="/product" element={<ProductPage
-            userID={userID || ''}
             domain={domain}
+            SessionID={userID}
           />} />
           <Route path="/store/:userName" element={<PublicStore 
           SessionID={userID}

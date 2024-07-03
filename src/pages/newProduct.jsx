@@ -655,19 +655,27 @@ const NewProd = ({
     setRunDelete(true);
   };
 
+  const handleOperationComplete = (value) => {
+    console.log('Operation Complete:', value);
+    setButtonText('Product Deleted.');
+    setTimeout(() => {
+      window.location.assign(location.origin + "/products");
+  }, 1000);
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", padding: '25px' }}>
       <h1>Add New Product</h1>
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", marginBottom: "4px" }}>
         <label htmlFor="productName" style={{ margin: "8px" }}>Product Name:</label>
-        {!existingData && (<input
+        {!productNameUserID && (<input
           type="text"
           id="productName"
           value={productName}
           onChange={handleProductNameChange}
         />
         )}
-        {existingData && (<p>{productName}</p>
+        {productNameUserID && (<p>{productName}</p>
         )}
       </div>
 
@@ -735,7 +743,7 @@ const NewProd = ({
       {/*
       <button onClick={testPrune} style={{ width: 'fit-content', margin: "8px" }}>Prune</button>
       */}
-      {existingData && (
+      {productNameUserID && (
         <button
           onClick={() => handleDeleteButtonClick()}
           disabled={isDeleting}
@@ -749,7 +757,8 @@ const NewProd = ({
         existingData={existingData}
         productNames={[productNameUserID]} // Pass the product name to delete
         test={false} // Set test mode to true
-        run={runDelete} // Ensure run is initially false, set to true when you want to trigger deletion
+        run={runDelete}
+        onOperationComplete={handleOperationComplete}
       />
     </div>
   );

@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 
 const Products = ({
     existingData,
-    userID,
-    SessionID
+    SessionID,
+    StoreID
 }) => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSubCategory, setSelectedSubCategory] = useState('');
@@ -42,6 +42,7 @@ const Products = ({
     const renderProducts = () => {
         const startIndex = (currentPage - 1) * productsDisplayed + 1;
         const endIndex = Math.min(startIndex + productsDisplayed - 1, productArray.length);
+        //console.log("SessionID = " + SessionID)
         return (
             <>
                 {productArray.slice(startIndex - 1, endIndex).map((productName, index) => (
@@ -74,10 +75,10 @@ const Products = ({
                 console.error('Error fetching local categories:', error);
             }
         };
-        if (userID) {
-            fetchLocalCategories(userID);
+        if (StoreID) {
+            fetchLocalCategories(StoreID);
         }
-    }, [userID, existingData]);
+    }, [StoreID, existingData]);
 
 
 
@@ -149,6 +150,7 @@ const Products = ({
     useEffect(() => {
         // Set the default value for products displayed
         setProductsDisplayed(displayOptions[0]); // Set default to the first option
+        //console.log("userID = " + SessionID);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); 
 
@@ -199,7 +201,7 @@ const Products = ({
                 loadingTextStyle={loadingTextStyle}
                 allowNewCats={allowNewCats}
                 existingData={existingData}
-                userID={userID}
+                userID={StoreID}
             />
             <h2>Products: {productArray.length}</h2>
             <p style={{ textAlign: 'center', display: productArray.length === 0 ? 'none' : 'block' }}>Show <select value={productsDisplayed} onChange={setNumOfProducts}>
@@ -224,9 +226,9 @@ const Products = ({
     );
 };
 Products.propTypes = {
-    userID: PropTypes.string,
     existingData: PropTypes.object,
-    SessionID: PropTypes.string
+    SessionID: PropTypes.string,
+    StoreID: PropTypes.string
   };
 
 export default Products;
