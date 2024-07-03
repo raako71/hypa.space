@@ -3,8 +3,10 @@ import Products from './products';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
+import PropTypes from 'prop-types';
 
-const PublicStore = () => {
+
+const PublicStore = ({SessionID}) => {
     const { userName } = useParams();
     const [storeInfo, setStoreInfo] = useState(null);
     const navigate = useNavigate();
@@ -64,6 +66,7 @@ const PublicStore = () => {
 
     useEffect(() => {
         getStoreInfo();
+        //console.log("SessionID = " + SessionID);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -91,10 +94,15 @@ const PublicStore = () => {
             <Products
                 existingData={storeInfo}
                 userID={userID}
+                SessionID = {SessionID}
             />
         </div>
     )
 
+};
+
+PublicStore.propTypes = {
+    SessionID: PropTypes.string
 };
 
 export default PublicStore;

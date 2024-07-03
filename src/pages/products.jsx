@@ -5,7 +5,8 @@ import PropTypes from 'prop-types';
 
 const Products = ({
     existingData,
-    userID
+    userID,
+    SessionID
 }) => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSubCategory, setSelectedSubCategory] = useState('');
@@ -47,8 +48,8 @@ const Products = ({
                     <ProdBox 
                     key={index} 
                     productNameUserID={productName || ''} 
-                    userID={userID || ''} 
                     domain={domain}
+                    SessionID={SessionID}
                     />
                 ))}
             </>
@@ -224,7 +225,8 @@ const Products = ({
 };
 Products.propTypes = {
     userID: PropTypes.string,
-    existingData: PropTypes.object
+    existingData: PropTypes.object,
+    SessionID: PropTypes.string
   };
 
 export default Products;

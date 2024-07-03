@@ -5,12 +5,11 @@ import PropTypes from 'prop-types';
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
-const ProdBox = ({ productNameUserID, userID, domain }) => {
+const ProdBox = ({ productNameUserID, domain, SessionID }) => {
     const [imageUrl, setImageUrl] = useState(null);
     const [imageUrlL, setImageUrlL] = useState(null);
     const [productInfo, setProductInfo] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
-    const [productUserID, setProductUserID] = useState('');
 
     const openLightbox = () => {
         setIsOpen(true);
@@ -79,8 +78,6 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
     };
 
     useEffect(() => {
-        const [, userIDVar] = productNameUserID.split('_');
-        setProductUserID(userIDVar);
         getProductInfo();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productNameUserID]);
@@ -129,8 +126,12 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
                         <h2><a href={domain + "/product?productName=" + productNameUserID}>{productInfo.productName}</a></h2>
                         <p style={{ whiteSpace: 'pre-wrap' }}>Description: {trimDescription(productInfo.productDescription, 100)}</p>
                     </div>
-                    {productUserID == userID && <div className="prEdit">
-                        <a href={domain + "/newProduct?productName=" + productNameUserID}>edit</a></div>}
+                    {SessionID && (
+                        
+                        <div className="prEdit">
+                        <a href={domain + "/newProduct?productName=" + productNameUserID}>edit</a>
+                        </div>
+                        )}
                 </>
             )}
 
@@ -141,7 +142,8 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
 ProdBox.propTypes = {
     productNameUserID: PropTypes.string.isRequired,
     domain: PropTypes.string.isRequired,
-    userID: PropTypes.string
+    userID: PropTypes.string,
+    SessionID: PropTypes.string
 };
 
 export default ProdBox;

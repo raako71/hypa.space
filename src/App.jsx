@@ -39,9 +39,12 @@ function App() {
         const existingDataVar = userDocSnapshotVar.data();
         setExistingData(existingDataVar);
         setIsLoggedIn(loggedIn); // Update isLoggedIn based on user existence
+        //console.log("logged In. userID = " + userID);
         localStorage.setItem('isLoggedIn', loggedIn.toString()); // Store in localStorage
       } else {
         setIsLoggedIn(false); // Handle user not logged in
+        setUserID(null);
+        //console.log("logged out. userID = " + userID);
         localStorage.setItem('isLoggedIn', 'false'); // Store in localStorage
       }
     });
@@ -90,7 +93,9 @@ function App() {
             userID={userID || ''}
             domain={domain}
           />} />
-          <Route path="/store/:userName" element={<PublicStore />} />
+          <Route path="/store/:userName" element={<PublicStore 
+          SessionID={userID}
+          />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />
