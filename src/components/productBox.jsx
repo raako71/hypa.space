@@ -96,9 +96,16 @@ const ProdBox = ({ productNameUserID, userID, domain }) => {
 
     return (
         <div className="prodBox">
-            <p>
-            {productNameUserID}
-            </p>
+            {!productInfo && (
+                <div>
+                    <p style={{ width: '100px', margin: "0 auto", overflow: 'hidden', textAlign: 'center' }}>
+                        loading...<br />
+                    </p>
+                    <p style={{ visibility: "hidden"}}>
+                        {productNameUserID}
+                    </p>
+                </div>
+            )}
             {productInfo && (
                 <div className="image-container" onClick={productInfo.images ? openLightbox : undefined}>
                     {imageUrl && <img src={imageUrl} alt="Product Image" style={{ cursor: productInfo.images ? 'pointer' : 'default' }} />}
