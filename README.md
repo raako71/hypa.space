@@ -8,7 +8,10 @@ Cloud:
 
 REMAINING:
 * Delete account (email auth) (function) -> delete all products & images.
-* Delete Products page, verify with CSV.
+* Client side rate limiting
+* Delete root user category when empty.
+* Only load user cats for Product page.
+* Delete Products in bulk (delete page)
 
 
 3 July:
