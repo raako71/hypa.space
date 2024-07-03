@@ -6,20 +6,22 @@ const DeletePage = ({
     userID,
     existingData
 }) => {
-    const [productName, setProductName] = useState('');
+    const [productNamesInput, setProductNamesInput] = useState('');
     const [productNamesToDelete, setProductNamesToDelete] = useState([]);
     const [runDelete, setRunDelete] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [buttonText, setButtonText] = useState('Delete Products');
 
     const handleInputChange = (event) => {
-        setProductName(event.target.value);
+        setProductNamesInput(event.target.value);
     };
 
     const handleDeleteButtonClick = async () => {
-        if (!productName.trim()) return;
+        const productNamesArray = productNamesInput.split(',').map(name => name.trim()).filter(name => name);
 
-        setProductNamesToDelete([productName]);
+        if (productNamesArray.length === 0) return;
+
+        setProductNamesToDelete(productNamesArray);
         setIsDeleting(true);
         setButtonText('Deleting...');
         setRunDelete(true);
@@ -29,16 +31,16 @@ const DeletePage = ({
 
         setRunDelete(false);
         setIsDeleting(false);
-        setButtonText('Delete Product');
+        setButtonText('Delete Products');
     };
 
     return (
         <div className='article'>
             <h2>Delete Products</h2>
             <textarea
-                value={productName}
+                value={productNamesInput}
                 onChange={handleInputChange}
-                placeholder="Enter product name to delete"
+                placeholder="Enter product names to delete, separated by commas"
                 rows="4"
                 cols="50"
             />
@@ -55,7 +57,7 @@ const DeletePage = ({
                     userID={userID} // Example userID, replace with actual user ID
                     existingData={existingData} // Example existingData, adjust as per your structure
                     productNames={productNamesToDelete} // Pass the product names to delete
-                    test={false} // Set test mode to true
+                    test={false} // Set test mode to false
                     run={runDelete} // Pass the run state
                     onComplete={() => {}} // No need to handle completion in this case
                 />
@@ -67,6 +69,6 @@ const DeletePage = ({
 DeletePage.propTypes = {
     userID: PropTypes.string,
     existingData: PropTypes.object
-  };
+};
 
 export default DeletePage;
