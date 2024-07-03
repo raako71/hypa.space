@@ -8,19 +8,35 @@ import Inline from "yet-another-react-lightbox/plugins/inline";
 import "yet-another-react-lightbox/styles.css";
 
 
-const ProductPage = ({ productNameUserID, userID, domain }) => {
+const ProductPage = ({ userID, domain }) => {
     const [productInfo, setProductInfo] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [images, setImages] = useState([{ key: 'S0', src: '/placeHolder.jpg', alt: 'Default Img' }]);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [productUserID, setProductUserID] = useState('');
+    const [productNameUserID, setProductNameUserID] = useState(null);
     const location = useLocation();
 
-    const getProductNameFromURL = () => {
+    const getDataFromURL = (data) => {
         const params = new URLSearchParams(location.search);
-        return params.get('productName');
+        const productName = params.get(data);
+        console.log(productName);
+        return productName;
     };
-    const productName = getProductNameFromURL();
+
+    useEffect(() => {
+        setProductNameUserID(getDataFromURL('productName'))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if (productNameUserID != null) {
+            const [, userID] = productNameUserID.split('_');
+            setProductUserID(userID);
+            getProductInfo(productNameUserID);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [productNameUserID]);
 
     const openLightbox = () => {
         setIsOpen(true);
@@ -45,18 +61,18 @@ const ProductPage = ({ productNameUserID, userID, domain }) => {
             try {
                 const listResult = await listAll(directoryRef);
                 listResult.items.forEach((itemRef) => {
-                  const fileName = itemRef.name;
-                  if (fileName.startsWith('S')) {
-                    const numberPart = parseInt(fileName.substring(1)); // Extract number after 'S'
-                    const addOne = numberPart + 1;
-                    if (!isNaN(numberPart) && addOne > totalImages) {
-                      totalImages = addOne; // Increment to the next number
-                    } 
-                  }
+                    const fileName = itemRef.name;
+                    if (fileName.startsWith('S')) {
+                        const numberPart = parseInt(fileName.substring(1)); // Extract number after 'S'
+                        const addOne = numberPart + 1;
+                        if (!isNaN(numberPart) && addOne > totalImages) {
+                            totalImages = addOne; // Increment to the next number
+                        }
+                    }
                 });
-              } catch (error) {
+            } catch (error) {
                 console.error("Error listing files:", error);
-              }
+            }
             for (let i = 0; i < totalImages; i++) {
                 const imagePathS = `${basePath}/S${i}`;
                 try {
@@ -108,6 +124,7 @@ const ProductPage = ({ productNameUserID, userID, domain }) => {
                 }
             } else {
                 console.error('Product document not found.');
+                window.location.assign(location.origin);
             }
         } catch (error) {
             console.error('Error fetching product info:', error);
@@ -115,30 +132,12 @@ const ProductPage = ({ productNameUserID, userID, domain }) => {
         }
     };
 
-    useEffect(() => {
-        const [, userID] = productNameUserID.split('_');
-        setProductUserID(userID);
-        getProductInfo(productNameUserID);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [productNameUserID]);
-
     // Clear timeout on component unmount
     useEffect(() => {
         return () => {
             clearTimeout();
         };
     }, []);
-
-    useEffect(() => {
-        if (productNameUserID !== productName) {
-            console.log("productNameUserID = " + productNameUserID);
-            console.log("productName = " + productName);
-            setTimeout(() => handleReload(), 3000);
-        }
-      }, [productName, productNameUserID]);
-
-
-
 
     // Function to trim description to a certain length
     const trimDescription = (description, maxLength) => {
@@ -236,7 +235,6 @@ const ProductPage = ({ productNameUserID, userID, domain }) => {
 
 ProductPage.propTypes = {
     domain: PropTypes.string.isRequired,
-    productNameUserID: PropTypes.string.isRequired,
     userID: PropTypes.string.isRequired,
 };
 

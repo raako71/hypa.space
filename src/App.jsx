@@ -50,9 +50,6 @@ function App() {
     };
   }, []);
 
-  const queryParameters = new URLSearchParams(window.location.search)
-  const productName = queryParameters.get("productName")
-
 
   return (
     <Router>
@@ -71,7 +68,6 @@ function App() {
             element={isLoggedIn ? <NewProd 
               existingData={existingData}
               userID={userID}
-              productNameUserID={productName || ''} 
               /> : <Navigate to="/" />}
           />
           <Route path="/account"
@@ -85,8 +81,7 @@ function App() {
           />
           <Route path="/terms" element={<Terms />} />
           <Route path="/product" element={<ProductPage 
-          userID={userID || ''} 
-          productNameUserID={productName} 
+          userID={userID || ''}
           domain={domain}
           />} />
           <Route path="/store/:userName" element={<PublicStore />} />

@@ -11,8 +11,8 @@ import PropTypes from 'prop-types';
 
 const NewProd = ({
   userID,
-  existingData,
-  productNameUserID }) => {
+  existingData
+}) => {
   const [productName, setProductName] = useState("");
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -31,7 +31,27 @@ const NewProd = ({
   const [loadingImages, setloadingImages] = useState(false);
   const [deletingImages, setDeletingImages] = useState(false);
   const [loadedCats, setLoadedCats] = useState([]);
+  const [productNameUserID, setProductNameUserID] = useState(null);
   //const [mergedCats, setMergedCats] = useState({});
+
+  const getDataFromURL = (data) => {
+    const params = new URLSearchParams(location.search);
+    const productName = params.get(data);
+    //console.log(productName);
+    return productName;
+  };
+
+  useEffect(() => {
+    setProductNameUserID(getDataFromURL('productName'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (productNameUserID != null) {
+      getProductInfo(productNameUserID);
+    }else setImageCheck(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productNameUserID]);
 
 
   const getProductInfo = async (productNameUserID) => {
@@ -54,19 +74,13 @@ const NewProd = ({
 
       } else {
         console.error('Product document not found.');
+        window.location.assign(location.origin + "/newProduct");
       }
     } catch (error) {
       console.error('Error fetching product info:', error);
       //setTimeout(() => handleReload(), 3000);
     }
   };
-
-  useEffect(() => {
-    if (productNameUserID !== "") {
-      getProductInfo(productNameUserID);
-    } else setImageCheck(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleCategoriesLoaded = (productInfo) => {
     if (productInfo != null) {
@@ -296,13 +310,13 @@ const NewProd = ({
     }
   };
 
-  const pruneTrees = async (mergedProductTree, returnedCategoryTree,test) => {
+  const pruneTrees = async (mergedProductTree, returnedCategoryTree, test) => {
     const updatedProductTree = removeProductAndCleanup(mergedProductTree);
     //console.log("updatedProductTree: " + JSON.stringify(updatedProductTree, null, 2));
     const categoryTree = pruneCategoryTree(returnedCategoryTree, updatedProductTree)
-    console.log("returnedCategoryTree: " + JSON.stringify(categoryTree, null, 2));
+    //console.log("returnedCategoryTree: " + JSON.stringify(categoryTree, null, 2));
     const userDocRef = doc(db, 'users', userID);
-    if (!test) await updateDoc(userDocRef, { productTree: mergedProductTree, categoryTree: returnedCategoryTree });
+    if (!test) await updateDoc(userDocRef, { productTree: mergedProductTree, categoryTree: categoryTree });
   };
 
   function removeProductAndCleanup(mergedProductTree) {
@@ -369,7 +383,9 @@ const NewProd = ({
       // Clean up any empty categories
       for (let key in categoryNode) {
         if (!productNode[key]) {
-          delete categoryNode[key];
+          if (key != "name") {
+            delete categoryNode[key];
+          }
         }
       }
     }
@@ -434,6 +450,7 @@ const NewProd = ({
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const testPrune = async () => {
     const returnedCategoryTree = await updateCategoryTree();
     await updateUserDoc(returnedCategoryTree, 1);
@@ -468,7 +485,7 @@ const NewProd = ({
         }
       }
       else if (loadedCats[1]) {
-        if(selectedSubSubCategory){
+        if (selectedSubSubCategory) {
           newProdTree = 1;
           console.log("new SubSubcategory");
         }
@@ -480,14 +497,14 @@ const NewProd = ({
           console.log("Subcategory modified")
         }
       } else {
-        newProdTree = 2;
+        newProdTree = 1;
         console.log("New Product")
       }
       //console.log("mergedProductTree:", JSON.stringify(mergedProductTree, null, 2));
       if (newProdTree === 1) {
         if (Object.keys(existingproductTree).length > 0) {
           console.log("Removing prevoius product category");
-          await pruneTrees(mergedProductTree, returnedCategoryTree,test);
+          await pruneTrees(mergedProductTree, returnedCategoryTree, test);
         }
         else {
           if (!test) await updateDoc(userDocRef, { productTree: mergedProductTree, categoryTree: returnedCategoryTree });
@@ -635,12 +652,15 @@ const NewProd = ({
       <h1>Add New Product</h1>
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", marginBottom: "4px" }}>
         <label htmlFor="productName" style={{ margin: "8px" }}>Product Name:</label>
-        <input
+        {!existingData && (<input
           type="text"
           id="productName"
           value={productName}
           onChange={handleProductNameChange}
         />
+        )}
+        {existingData && (<p>{productName}</p>
+        )}
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", margin: "8px" }}>
@@ -704,13 +724,14 @@ const NewProd = ({
           <p style={{ color: 'red', marginLeft: '8px' }}>{errorMessage}</p>
         )}
       </div>
+      {/*
       <button onClick={testPrune} style={{ width: 'fit-content', margin: "8px" }}>Prune</button>
+      */}
     </div>
   );
 };
 NewProd.propTypes = {
   userID: PropTypes.string,
-  existingData: PropTypes.object,
-  productNameUserID: PropTypes.string.isRequired,
+  existingData: PropTypes.object
 };
 export default NewProd;
