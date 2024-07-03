@@ -1,30 +1,33 @@
 import PropTypes from 'prop-types';
-import { doc, deleteDoc } from 'firebase/firestore/lite';
-import { useState, useEffect } from 'react';
-import { db } from '../firebase-config';
+import { doc, deleteDoc, updateDoc } from 'firebase/firestore/lite';
+import { useEffect } from 'react';
+import { auth, db } from '../firebase-config';
 
 const DeleteProducts = ({
     userID,
     existingData,
     productNames,
-    test, 
+    test,
     run
 }) => {
-    const [modifiedProductTree, setModifiedProductTree] = useState("");
+    const existingproductTree = existingData?.productTree || {};
+    const existingCategoryTree = existingData?.categoryTree || {};
 
-    const deleteProduct = async (productName, test) => {
+    const deleteProduct = async (productName, productTree, test) => {
         try {
             const userProductRef = doc(db, 'products', productName);
+            const basePath = `users/${userID}/${productName}`;
             if (!test) {
                 await deleteDoc(userProductRef);
                 console.log(`Product "${productName}" successfully deleted.`);
+                await deleteFiles(basePath); // Wait for deletion to complete
             }
         } catch (error) {
             console.error('Error deleting product:', error.message);
         }
-        const existingproductTree = existingData?.productTree || {};
-        const modifiedTree = deleteProductNameFromTree(existingproductTree, productName);
-        setModifiedProductTree(modifiedTree);
+
+        const modifiedTree = deleteProductNameFromTree(productTree, productName);
+        return modifiedTree;
         //console.log("modifiedProductTree:", JSON.stringify(modifiedTree, null, 2));
     };
 
@@ -60,16 +63,83 @@ const DeleteProducts = ({
         return existingproductTree; // Return the modified tree after completing traversal
     };
 
-    const handleDeleteProducts = async () => {
+    const handleDeleteProducts = async (passedTree) => {
+        let productTree = passedTree;
         for (const productName of productNames) {
-            await deleteProduct(productName, test);
+            productTree = await deleteProduct(productName, productTree, test);
         }
-        // After deleting all products, perform pruning and update userDoc here if needed
+        //console.log("modifiedProductTree:", JSON.stringify(productTree, null, 2));
+        const categoryTree = pruneCategoryTree(existingCategoryTree, productTree);
+        //console.log("categoryTree:", JSON.stringify(categoryTree, null, 2));
+        const userDocRef = doc(db, 'users', userID);
+        if (!test) await updateDoc(userDocRef, { productTree: productTree, categoryTree: categoryTree });
+        window.location.assign(location.origin + "/products");
     };
 
+    const deleteFiles = async (path) => {
+        try {
+            const user = auth.currentUser;
+            const idToken = await user.getIdToken();
+            const url = 'https://us-central1-hypa-space.cloudfunctions.net/deleteFiles';
+            const bodyData = {
+                path: path,
+            };
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
+                body: JSON.stringify(bodyData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return true;
+                })
+                .then(data => {
+                    console.log('Response from Cloud Delete Function:', data);
+                })
+                .catch(error => {
+                    console.error('Error calling Cloud Function:', error);
+                });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function pruneCategoryTree(categoryTree, updatedProductTree) {
+        function traverseAndUpdate(categoryNode, productNode) {
+            for (let key in productNode) {
+                if (!categoryNode[key]) {
+                    // If the category or subcategory does not exist in the category tree, create it
+                    categoryNode[key] = { name: key };
+                }
+
+                if (!productNode[key].products) {
+                    // If there are subcategories, traverse recursively
+                    traverseAndUpdate(categoryNode[key], productNode[key]);
+                }
+            }
+
+            // Clean up any empty categories
+            for (let key in categoryNode) {
+                if (!productNode[key]) {
+                    if (key != "name") {
+                        delete categoryNode[key];
+                    }
+                }
+            }
+        }
+
+        traverseAndUpdate(categoryTree, updatedProductTree);
+        return categoryTree;
+    }
+
     useEffect(() => {
-        if(run)handleDeleteProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        if (run) handleDeleteProducts(existingproductTree);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [run]);
 
     return (

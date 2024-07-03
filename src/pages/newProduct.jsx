@@ -35,7 +35,7 @@ const NewProd = ({
   const [productNameUserID, setProductNameUserID] = useState(null);
   const [runDelete, setRunDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [buttonText, setButtonText] = useState('Delete Product (Test Mode)');
+  const [buttonText, setButtonText] = useState('Delete Product');
   //const [mergedCats, setMergedCats] = useState({});
 
   const getDataFromURL = (data) => {
@@ -653,13 +653,6 @@ const NewProd = ({
     setIsDeleting(true);
     setButtonText('Deleting...');
     setRunDelete(true);
-
-    // Simulate a 1 second delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    setRunDelete(false);
-    setIsDeleting(false);
-    setButtonText('Delete Product (Test Mode)');
   };
 
   return (
@@ -742,18 +735,20 @@ const NewProd = ({
       {/*
       <button onClick={testPrune} style={{ width: 'fit-content', margin: "8px" }}>Prune</button>
       */}
-      <button
-        onClick={() => handleDeleteButtonClick()}
-        disabled={isDeleting}
-        style={{ backgroundColor: isDeleting ? 'grey' : '', width: '300px'}}
-      >
-        {buttonText}
-      </button>
+      {existingData && (
+        <button
+          onClick={() => handleDeleteButtonClick()}
+          disabled={isDeleting}
+          style={{ backgroundColor: isDeleting ? 'grey' : '', width: '300px' }}
+        >
+          {buttonText}
+        </button>
+      )}
       <DeleteProducts
         userID={userID}
         existingData={existingData}
         productNames={[productNameUserID]} // Pass the product name to delete
-        test={true} // Set test mode to true
+        test={false} // Set test mode to true
         run={runDelete} // Ensure run is initially false, set to true when you want to trigger deletion
       />
     </div>

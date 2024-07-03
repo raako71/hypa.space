@@ -7,15 +7,17 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING:
-* delete product (function) -> delete all images.
-* delete account (function) -> delete all products.
+* delete account (email auth) (function) -> delete all products.
 * move to VPS if required.
 
-* Category selector bug for new cat (editing pink panther).
-* Select default image for Products.
-* Delete product, and update user category tree accordingly etc.
-* Update user category tree on edit product.
+Category bugs:
+* Update user category tree on edit product (editing pink panther).
+* Clean user category tree after deleting product.
 * ensure blank image loads for no image in ProdBox (isolated components)
+
+3 July:
+Delete product!
+Update Categories on product modified.
 
 1 July:
 Delete Photos from product.
