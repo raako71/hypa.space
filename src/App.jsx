@@ -16,6 +16,7 @@ import Products from "./pages/products"
 import ProductPage from "./pages/productPage"
 import { doc, getDoc } from 'firebase/firestore/lite';
 import DeletePage from "./pages/delete"
+import About from "./pages/about"
 
 
 
@@ -97,6 +98,7 @@ function App() {
           <Route path="/store/:userName" element={<PublicStore 
           SessionID={userID}
           />} />
+          <Route path="/about" element={<About/>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />
