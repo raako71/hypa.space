@@ -390,12 +390,12 @@ export default function Account() {
     <>
       <div className="article">
         <h1>account</h1>
-        <p>User verified: {userVerificationText}&nbsp;
+        <p>User verified: {userVerificationText}.&nbsp;
           {verifyLink && (
             <a href='#' onClick={sendEmail}>Send verification email</a>
           )}
           {emailSent && (
-            <>email sent</>
+            <>Email sent</>
           )}
         </p>
         {usernameDiv && (

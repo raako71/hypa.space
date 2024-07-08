@@ -7,10 +7,12 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING:
-* Delete account (email auth) (function) -> delete all products & images.
-* Client side rate limiting
 * Delete root user category when empty.
 * Only load user cats for Product page.
+* Email verification (required for store).
+* Delete account (email auth) (function) -> delete all products & images.
+* Client side rate limiting
+
 * Delete Products in bulk (delete page)
 
 

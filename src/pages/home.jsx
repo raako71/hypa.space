@@ -8,7 +8,7 @@ const Home = () => {
     const [noOfPages, setNoOfPages] = useState(1);
     const [loading, setLoading] = useState("");
 
-    const [productsDisplayed, setProductsDisplayed] = useState(1);
+    const [productsDisplayed, setProductsDisplayed] = useState(10);
     const displayOptions = [10, 25, 50];
 
     const listStores = async () => {
@@ -120,6 +120,12 @@ const Home = () => {
             <div className="article">
                 <h1>Store Index</h1>
             </div>
+            <Pagination />
+            <p style={{ textAlign: 'center' }}>{loading}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                {loading === "" && renderProducts()}
+            </div>
+            <Pagination />
             <p style={{ textAlign: 'center', display: sortedKeys.length === 0 ? 'none' : 'block' }}>Show <select value={productsDisplayed} onChange={setNumOfProducts}>
                 {displayOptions.map((option) => (
                     <option key={option} value={option}>
@@ -127,12 +133,6 @@ const Home = () => {
                     </option>
                 ))}
             </select> stores</p>
-            <Pagination />
-            <p style={{ textAlign: 'center' }}>{loading}</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                {loading === "" && renderProducts()}
-            </div>
-            <Pagination />
             <br />
         </>
     )
