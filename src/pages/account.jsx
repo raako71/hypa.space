@@ -420,7 +420,7 @@ export default function Account() {
         <p>email: {userEmail}</p>
 
         <div className='seller'>
-          <h3>Public Account Data</h3>
+          <h3>Public Store</h3>
           <p>Store Listed:&nbsp;
             {!usernameValidated && (
               <>
