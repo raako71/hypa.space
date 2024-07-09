@@ -13,19 +13,18 @@ const About = () => {
                 </p>
                 <p>Some of the more complex features of this site include global user categories, and customisable
                     user categories, with sub and sub-sub categories. Products are filterable by category, where
-                    the user category tree is dynamically updated when items are added or deleted. This Store
-                    is operational with open registration for testing.
+                    the user category tree is dynamically updated when items are added or deleted.
                 </p>
-                <p>The idea of a this web-store platform came about with the intention
+                <p>The idea of this web-store platform came about with the intention
                     to host specific features, including:
                 </p>
                 <ul><li>Allowing stores to list their contact details.</li>
                     <li>White Label oppertunity to allow custom domains for webstores through domain name
                         provider API integration (not completed).</li>
-                    <li>Integration of all available delivery methods, local and longer distance (not completed).</li></ul>
-                <p>In regard to React development, this app currently  allows users to:</p>
+                    <li>Integration of all available delivery methods, immediate local and longer distance (not completed).</li></ul>
+                <p>In regard to React development, this app is functional and allows users to:</p>
                 <ul>
-                    <li>Create a user account by email and validate their email.</li>
+                    <li>Create a user account by email.</li>
                     <li>Create a store with a unique username.</li>
                     <li>Create Products with images and variations.</li>
                     <li>List their store as part of the site url using their username.</li>

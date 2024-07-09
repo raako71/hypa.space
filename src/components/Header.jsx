@@ -21,7 +21,7 @@ const Header = ({ isLoggedIn, domain }) => {
 
     return (
         <header>
-            <h1><a href={domain} >hypa.space</a></h1>
+            <h1><a href={domain} >app.hypa.space</a></h1>
             <nav className="navbar">
                 <a href={domain}>Home</a>
                 {isLoggedIn ? (

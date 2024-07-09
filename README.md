@@ -10,11 +10,10 @@ REMAINING:
 * Delete root user category when empty.
 * Only load user cats for Product page.
 * Email verification (required for store).
+* Store breadcrums for product page.
 * Delete account (email auth) (function) -> delete all products & images.
-* Client side rate limiting
 
 * Delete Products in bulk (delete page)
-
 
 3 July:
 Delete product!
