@@ -7,7 +7,7 @@ import {
 } from "firebase/auth";
 import PropTypes from 'prop-types';
 
-const Login = ({ domain }) => {
+const Login = () => {
 
     const [email, setEmail] = useState("");
     const [password1, setPassword1] = useState("");
@@ -16,7 +16,6 @@ const Login = ({ domain }) => {
     const [isValidPassword, setIsValidPassword] = useState(true);
     const [isValidPassword2, setIsValidPassword2] = useState(true);
     const [errorText, setText] = useState(' ');
-
     const [newPassDiv, newPassFunc] = useState(false);
     const [emailDiv, emailDivFunc] = useState(true);
     const [passwordDiv, passwordDivFunc] = useState(true);
@@ -27,6 +26,7 @@ const Login = ({ domain }) => {
     const [emailSentDiv, emailSentDivFunc] = useState(false);
     const [emailLinkDiv, emailLinkDivFunc] = useState(false);
     const [isChecked, setIsChecked] = useState(false);
+    const domain = location.origin;
 
     const actionCodeSettings = {
         url: domain,
@@ -305,7 +305,7 @@ const Login = ({ domain }) => {
                             <>
                                 <p>
                                     <input type="checkbox" checked={isChecked} onChange={handleCheckboxChange} />
-                                    Agree with <a href={`${domain}/terms`} target="_blank" rel="noopener noreferrer">Terms and Conditions.</a>
+                                    Agree with <a href={domain + "/terms"} target="_blank" rel="noopener noreferrer">Terms and Conditions.</a>
                                 </p>
                                 <button onClick={createAccount}>Create account</button>
                             </>
