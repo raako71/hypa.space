@@ -4,30 +4,28 @@ const About = () => {
         <>
             <div className="article">
                 <h1>About</h1>
-                <p>This webstore has been built as an excercise in learning React,
-                    and to explore a new web-store platform concept, to create a webstore with
-                    features not currently offered by online market places such as Mercado Libre.
+                <p>This webstore is built on React and currently under development. 
+                    It explores a new web-store platform concept, offering features 
+                    not currently offered by online market places such as Mercado Libre.
                 </p>
-                <p>At present this store is purely an excercise in react development, and contains
-                    minimal stying.
+                <p>Some of the more complex features of this site include product category management,
+                    where a user can add their own sub and sub-sub categories for each product. 
+                    When a new product is created, or deleted, the user product tree is 
+                    updated accordingly. This will then allow relavant filtering on the product page.
                 </p>
-                <p>Some of the more complex features of this site include global user categories, and customisable
-                    user categories, with sub and sub-sub categories. Products are filterable by category, where
-                    the user category tree is dynamically updated when items are added or deleted.
-                </p>
-                <p>The idea of this web-store platform came about with the intention
-                    to host specific features, including:
+                <p>Some of the specific features which motivated the creation of such a platform include:
                 </p>
                 <ul><li>Allowing stores to list their contact details.</li>
-                    <li>White Label oppertunity to allow custom domains for webstores through domain name
-                        provider API integration (not completed).</li>
-                    <li>Integration of all available delivery methods, immediate local and longer distance (not completed).</li></ul>
-                <p>In regard to React development, this app is functional and allows users to:</p>
+                    <li>White Label oppertunity for custom store domains integrating domain name
+                        provider API (not completed).</li>
+                    <li>Integration of both immediate delivery methods for short range delivery with 
+                        traditional carriers for longer distance delivery (not completed).</li></ul>
+                <p>In regard to React development, this app allows users to:</p>
                 <ul>
                     <li>Create a user account by email.</li>
                     <li>Create a store with a unique username.</li>
                     <li>Create Products with images and variations.</li>
-                    <li>List their store as part of the site url using their username.</li>
+                    <li>List their store as an extension of the site URL.</li>
                     <li>Filter products by category and select number of products per page.</li>
                     <li>Show product images in a slider element, with fullscreen lightbox functionality.</li>
                 </ul>
