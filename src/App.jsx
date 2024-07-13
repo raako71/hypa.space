@@ -14,7 +14,7 @@ import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Products from "./pages/products"
 import ProductPage from "./pages/productPage"
-import { doc, getDoc } from 'firebase/firestore/lite';
+import { doc, getDoc } from 'firebase/firestore';
 import DeletePage from "./pages/delete"
 import About from "./pages/about"
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { getDocs, collection } from 'firebase/firestore/lite';
+import { getDocs, collection } from 'firebase/firestore';
 import { db } from '../firebase-config';
 import merge from 'lodash/merge';
 

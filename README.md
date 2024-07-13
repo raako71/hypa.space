@@ -7,8 +7,10 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING:
-* cleanUpEmptyObjects should actually do that.
-* Delete root user category when empty.
+* create a function to delete *a* product from user ProductTree.
+* create a function to clean userProduct Tree.
+* create a function to make user catTree from userProduct tree.
+
 * Only load user cats for Product page.
 
 * Email verification (required for store).
@@ -22,7 +24,8 @@ REMAINING:
 * What happens if you try edit someone elses product.
 
 13 July:
-confirm delete product
+Confirm delete product.
+Rebuild user category trees button (whoops).
 
 3 July:
 Delete product!

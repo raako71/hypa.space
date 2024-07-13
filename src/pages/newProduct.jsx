@@ -2,7 +2,7 @@ import CategorySelector from "../components/categorySelector";
 import Variations from "../components/variations";
 import { useEffect, useState } from 'react';
 import { auth, db } from "../firebase-config"
-import { getFirestore, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
+import { getFirestore, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import ImageModification from "../components/imageUpload";
 import { getStorage, ref, uploadString, getDownloadURL, listAll } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';

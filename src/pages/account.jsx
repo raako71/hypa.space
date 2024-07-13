@@ -4,12 +4,13 @@ import {
 } from 'firebase/auth';
 import { auth, db } from "../firebase-config"
 import "../checkbox.css"
-import { doc, getDoc, updateDoc } from 'firebase/firestore/lite';
+import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css'; // Styles for react-phone-number-input
 import ImageModification from "../components/imageUpload";
 import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
+import merge from 'lodash/merge';
 const actionCodeSettings = {
   url: 'http://localhost:5173/account',
   handleCodeInApp: true,
@@ -39,6 +40,10 @@ export default function Account() {
   const [passedImages, setPassedImages] = useState('');
   const [storeAddress, setStoreAddress] = useState(null);
   const [newUsername, setNewUsername] = useState('');
+  const [repairing, setRepairing] = useState(false);
+  const [repairText, setRepairText] = useState("Rebuild User Category Tree");
+
+
 
 
 
@@ -164,12 +169,12 @@ export default function Account() {
   const runUpdateUsernameFunc = async () => {
     try {
       const response = await updateUsernameFunc(1);
-      if(response){
+      if (response) {
         console.log("new name valid")
         updateUsernameFunc();
-        callUpdateStoreFunction(userName,1);
+        callUpdateStoreFunction(userName, 1);
         setUserName(newUsername);
-        callUpdateStoreFunction(newUsername,0);
+        callUpdateStoreFunction(newUsername, 0);
       }
       // Further processing based on response if needed
     } catch (error) {
@@ -184,7 +189,7 @@ export default function Account() {
     showUpdateUsernameDiv(false);
     UpdatingUsernameDivFunc(true);
     updatingTextFunc("Updating Username to: " + newUsername);
-  
+
     try {
       const user = auth.currentUser; // Retrieve the current authenticated user
       if (!user) {
@@ -192,7 +197,7 @@ export default function Account() {
         // Handle the case when no user is signed in
         return;
       }
-  
+
       // Check if newUsername is defined and not empty before proceeding
       if (!newUsername || newUsername.trim() === '') {
         console.error('Invalid new username:', newUsername);
@@ -202,15 +207,15 @@ export default function Account() {
         return;
       }
 
-      if(!test) test = 0;
-  
+      if (!test) test = 0;
+
       let bodyData = {
         username: newUsername,
         userID: user.uid,
         test: test // Use test directly as passed
       };
       //console.log(bodyData);
-  
+
       const idToken = await user.getIdToken(); // Get the ID token of the current user
       const response = await fetch('https://us-central1-hypa-space.cloudfunctions.net/writeUsernameToFirestore', {
         method: 'POST',
@@ -220,7 +225,7 @@ export default function Account() {
         },
         body: JSON.stringify(bodyData)
       });
-  
+
       let data;
       if (response.ok) {
         data = await response.text();
@@ -243,8 +248,8 @@ export default function Account() {
       updatingTextFunc("error: " + error.message);
     }
   };
-  
-  
+
+
 
   const enableSeller = async (userID, sellerEnabled) => {
     const userDocRef = doc(db, 'users', userID);
@@ -254,8 +259,8 @@ export default function Account() {
         sellerEnabled: !sellerEnabled // Toggle the value
       });
       // Update the state with the new value
-      if (sellerEnabled) callUpdateStoreFunction(userName,1);
-      else callUpdateStoreFunction(userName,0);
+      if (sellerEnabled) callUpdateStoreFunction(userName, 1);
+      else callUpdateStoreFunction(userName, 0);
       sellerEnabledDivFunc(!sellerEnabled);
       sellerEnabledFunc(!sellerEnabled);
     } catch (error) {
@@ -277,7 +282,7 @@ export default function Account() {
       sellerEnabledDivFunc(true);
       sellerUpdateFunc(false);
       usernameValidFunc(true);
-      callUpdateStoreFunction(userName,0);
+      callUpdateStoreFunction(userName, 0);
     } catch (error) {
       console.error('Error updating user details: ', error);
     }
@@ -363,7 +368,7 @@ export default function Account() {
     }
     setStoreName(filteredValue);
   };
-  
+
   const handleStoreAddress = (e) => {
     const inputValue = e.target.value;
     let filteredValue = inputValue.match(/[a-zA-Z0-9\s\-_.\n,]+/g)?.join('') || '';
@@ -385,6 +390,68 @@ export default function Account() {
   const undateUsernameFunc = (event) => {
     setNewUsername(event.target.value);
   };
+
+  const repairTree = async () => {
+    setRepairing(1);
+    setRepairText("Repairing");
+    const querySnapshot = await getDocs(collection(db, 'products'));
+    let cats = {};
+    let ProdTree = {};
+    querySnapshot.forEach(doc => {
+      const docName = doc.id;
+      //console.log("docName = " + docName);
+      const data = doc.data();
+      let productsKey = 0;
+      const modifyCatObject = (obj) => {
+        for (let key in obj) {
+          if (key === 'name') {
+            delete obj[key];
+          } else if (typeof obj[key] === 'object') {
+            modifyCatObject(obj[key]);
+          }
+        }
+
+        let deepestObject = obj;
+        let depth = 0;
+        const addProduct = (currentObj, currentDepth) => {
+          for (let key in currentObj) {
+            if (key === 'products') {
+              //console.log("Adding " + {docName})
+              currentObj[key][docName] = true;
+              productsKey = 1;
+              return;
+            }
+            if (typeof currentObj[key] === 'object') {
+              if (currentDepth > depth) {
+                depth = currentDepth;
+                deepestObject = currentObj[key];
+              }
+              addProduct(currentObj[key], currentDepth + 1);
+            }
+          }
+        };
+        addProduct(obj, 1);
+        if (!productsKey) {
+          deepestObject.products = {
+            [docName]: true
+          };
+        }
+      };
+      if (data.userId === userID && data.category) {
+        let obj = data.category;
+        cats = merge({}, cats, obj);
+        modifyCatObject(obj);
+        ProdTree = merge({}, ProdTree, obj);
+      }
+    });
+    console.log(ProdTree);
+    const userDocRef = doc(db, 'users', userID);
+    await updateDoc(userDocRef, { productTree: ProdTree, categoryTree: cats });
+    setRepairText("Done");
+    setRepairing(0);
+  };
+
+
 
   return (
     <>
@@ -522,6 +589,11 @@ export default function Account() {
             </>
           )}
         </div>
+        <button
+          onClick={() => repairTree()}
+          disabled={repairing}
+        >{repairText}
+        </button>
       </div >
     </>
   )
