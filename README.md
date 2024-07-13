@@ -7,13 +7,22 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING:
+* cleanUpEmptyObjects should actually do that.
 * Delete root user category when empty.
 * Only load user cats for Product page.
+
 * Email verification (required for store).
-* Store breadcrums for product page.
+
+* Store breadcrums for product page. -> links a queries in URL for products component
+
 * Delete account (email auth) (function) -> delete all products & images.
 
 * Delete Products in bulk (delete page)
+
+* What happens if you try edit someone elses product.
+
+13 July:
+confirm delete product
 
 3 July:
 Delete product!

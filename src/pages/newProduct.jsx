@@ -107,6 +107,7 @@ const NewProd = ({
               const subSubcategoryKeys = Object.keys(subSubcategories).filter(key => key !== 'name');
               if (subSubcategoryKeys.length > 0) {
                 const subSubcategoryName = subSubcategoryKeys[0];
+                //console.log('Selected Sub-Subcat:', subSubcategoryName);
                 loadedCats.push(subSubcategoryName);
                 setSelectedSubSubCategory(subSubcategoryName);
               }
@@ -315,7 +316,7 @@ const NewProd = ({
   };
 
   const pruneTrees = async (mergedProductTree, returnedCategoryTree, test) => {
-    const updatedProductTree = removeProductAndCleanup(mergedProductTree);
+    const updatedProductTree = removeProductAndCleanup(mergedProductTree, test);
     //console.log("updatedProductTree: " + JSON.stringify(updatedProductTree, null, 2));
     const categoryTree = pruneCategoryTree(returnedCategoryTree, updatedProductTree)
     //console.log("returnedCategoryTree: " + JSON.stringify(categoryTree, null, 2));
@@ -323,9 +324,8 @@ const NewProd = ({
     if (!test) await updateDoc(userDocRef, { productTree: mergedProductTree, categoryTree: categoryTree });
   };
 
-  function removeProductAndCleanup(mergedProductTree) {
+  function removeProductAndCleanup(mergedProductTree, test) {
     let currentLevel = mergedProductTree;
-
     // Traverse to the specified location
     for (let i = 0; i < loadedCats.length; i++) {
       if (!currentLevel[loadedCats[i]]) {
@@ -338,15 +338,18 @@ const NewProd = ({
     // Remove the product
     if (currentLevel.products && currentLevel.products[productNameUserID]) {
       delete currentLevel.products[productNameUserID];
+      if (test) console.log("delete " + currentLevel.products[productNameUserID])
     }
 
     // Function to clean up empty objects
     function cleanUpEmptyObjects(currentLevel, loadedCats, index) {
+      console.log("Running cleanup func")
       if (index < 0) {
         return;
       }
 
       let key = loadedCats[index];
+
       let parentLevel = mergedProductTree;
 
       // Traverse to the parent level
@@ -365,7 +368,6 @@ const NewProd = ({
         cleanUpEmptyObjects(parentLevel, loadedCats, index - 1);
       }
     }
-
     cleanUpEmptyObjects(currentLevel, loadedCats, loadedCats.length - 1);
     return mergedProductTree;
   }
@@ -482,32 +484,33 @@ const NewProd = ({
       let mergedProductTree = merge({}, existingproductTree, productTreeUpdate)
       let newProdTree = 0;
       if (loadedCats[2]) {
-        console.log("Prev SubSubcategory Exists");
+        console.log("Prev Sub-Subcategory Exists");
+        //console.log(loadedCats[2]);
         if (selectedSubSubCategory !== loadedCats[2]) {
           newProdTree = 1;
-          console.log("SubSubcategory modified")
+          //console.log("SubSubcategory modified")
         }
       }
       else if (loadedCats[1]) {
         if (selectedSubSubCategory) {
           newProdTree = 1;
-          console.log("new SubSubcategory");
+          //console.log("new SubSubcategory");
         }
         else {
           console.log("Prev Subcategory Exists");
         }
         if (selectedSubCategory !== loadedCats[1]) {
           newProdTree = 1;
-          console.log("Subcategory modified")
+          //console.log("Subcategory modified")
         }
       } else {
         newProdTree = 1;
-        console.log("New Product")
+        //console.log("New Product")
       }
       //console.log("mergedProductTree:", JSON.stringify(mergedProductTree, null, 2));
       if (newProdTree === 1) {
         if (Object.keys(existingproductTree).length > 0) {
-          console.log("Removing prevoius product category");
+          console.log("Running pruneTrees Function");
           await pruneTrees(mergedProductTree, returnedCategoryTree, test);
         }
         else {
@@ -650,9 +653,12 @@ const NewProd = ({
   }
 
   const handleDeleteButtonClick = async () => {
-    setIsDeleting(true);
-    setButtonText('Deleting...');
-    setRunDelete(true);
+    const shouldUpdate = window.confirm('Confirm Delete??');
+    if (shouldUpdate) {
+      setIsDeleting(true);
+      setButtonText('Deleting...');
+      setRunDelete(true);
+    }
   };
 
   const handleOperationComplete = (value) => {
@@ -660,7 +666,7 @@ const NewProd = ({
     setButtonText('Product Deleted.');
     setTimeout(() => {
       window.location.assign(location.origin + "/products");
-  }, 1000);
+    }, 1000);
   };
 
   return (
@@ -740,14 +746,12 @@ const NewProd = ({
           <p style={{ color: 'red', marginLeft: '8px' }}>{errorMessage}</p>
         )}
       </div>
-      {/*
       <button onClick={testPrune} style={{ width: 'fit-content', margin: "8px" }}>Prune</button>
-      */}
       {productNameUserID && (
         <button
           onClick={() => handleDeleteButtonClick()}
           disabled={isDeleting}
-          style={{ backgroundColor: isDeleting ? 'grey' : '', width: '300px' }}
+          style={{ backgroundColor: isDeleting ? 'grey' : '', width: '150px' }}
         >
           {buttonText}
         </button>
