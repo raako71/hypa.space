@@ -1,5 +1,5 @@
 import Header from "./components/Header"
-import Footer from "./Footer"
+import Footer from "./components/Footer"
 import Home from "./pages/home"
 import Login from "./pages/login"
 import Terms from "./pages/terms"
