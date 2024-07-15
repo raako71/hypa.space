@@ -62,6 +62,7 @@ const ProdBox = ({ productNameUserID, domain, SessionID }) => {
                 }
             } else {
                 console.log('Product document not found.');
+                console.log("productNameUserID: " + productNameUserID)
             }
         } catch (error) {
             console.error('Error fetching product info:', error);

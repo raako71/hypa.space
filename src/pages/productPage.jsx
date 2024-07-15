@@ -115,6 +115,7 @@ const ProductPage = ({ domain, SessionID}) => {
             const firestore = getFirestore();
             const productDocRef = doc(firestore, 'products', productNameUserID);
             const productSnapshot = await getDoc(productDocRef);
+            //console.log("Loading Product: "+ productNameUserID)
             if (productSnapshot.exists()) {
                 const productData = productSnapshot.data();
                 setProductInfo(productData);

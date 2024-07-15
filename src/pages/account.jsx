@@ -43,11 +43,6 @@ export default function Account() {
   const [repairing, setRepairing] = useState(false);
   const [repairText, setRepairText] = useState("Rebuild User Category Tree");
 
-
-
-
-
-
   const showEmailSentFunction = () => {
     showEmailSent(true);
   };
@@ -183,7 +178,6 @@ export default function Account() {
     }
   };
 
-
   const updateUsernameFunc = async (test) => {
     showusernameDiv(false);
     showUpdateUsernameDiv(false);
@@ -249,8 +243,6 @@ export default function Account() {
     }
   };
 
-
-
   const enableSeller = async (userID, sellerEnabled) => {
     const userDocRef = doc(db, 'users', userID);
     try {
@@ -267,7 +259,6 @@ export default function Account() {
       console.error('Error updating user: ', error);
     }
   };
-
 
   const handleSaveDetails = async (userID) => {
     const userDocRef = doc(db, 'users', userID);
@@ -448,10 +439,8 @@ export default function Account() {
     const userDocRef = doc(db, 'users', userID);
     await updateDoc(userDocRef, { productTree: ProdTree, categoryTree: cats });
     setRepairText("Done");
-    setRepairing(0);
+    //setRepairing(0);
   };
-
-
 
   return (
     <>

@@ -7,10 +7,6 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING:
-* create a function to delete *a* product from user ProductTree.
-* create a function to clean userProduct Tree.
-* create a function to make user catTree from userProduct tree.
-
 * Only load user cats for Product page.
 
 * Email verification (required for store).
@@ -19,9 +15,21 @@ REMAINING:
 
 * Delete account (email auth) (function) -> delete all products & images.
 
-* Delete Products in bulk (delete page)
+* Delete Products in bulk (advanced page), add repair button.
 
 * What happens if you try edit someone elses product.
+
+16 July:
+Save/update/delete debugged.
+
+15 July:
+New code for save/ update.
+
+14 July:
+Delete product is convoluted:
+deleteAProduct function.
+cleanProdTree function.
+pruneCategoryTree exists and works.
 
 13 July:
 Confirm delete product.

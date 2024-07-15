@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
-import { doc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore/lite';
-import { useEffect, useState } from 'react';
+import { doc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { useEffect } from 'react';
 import { auth, db } from '../firebase-config';
 
 const DeleteProducts = ({
@@ -9,14 +9,14 @@ const DeleteProducts = ({
     productNames,
     test,
     run,
-    onOperationComplete
+    onOperationComplete,
+    images
 }) => {
-    const existingproductTree = existingData?.productTree || {};
-    const existingCategoryTree = existingData?.categoryTree || {};
-    const [operationComplete, setComplete] = useState(0);
-    
+    let productTree = existingData?.productTree || {};
+    let catTree = existingData?.categoryTree || {};
+    //const [operationComplete, setComplete] = useState(0);
 
-    const deleteProduct = async (productName, productTree, test) => {
+    const deleteProductDoc = async (productName, test) => {
         const basePath = `users/${userID}/${productName}`;
         try {
             const userProductRef = doc(db, 'products', productName);
@@ -28,77 +28,67 @@ const DeleteProducts = ({
             if (!test && exists) {
                 await deleteDoc(userProductRef);
                 console.log(`Product "${productName}" successfully deleted.`);
-                await deleteFiles(basePath); // Wait for deletion to complete
+                if (images) await deleteFiles(basePath); // Wait for deletion to complete
             }
         } catch (error) {
             console.error('Error deleting product:', error.message);
         }
-        const modifiedTree = deleteProductNameFromTree(productTree, productName);
-        return modifiedTree;
-        //console.log("modifiedProductTree:", JSON.stringify(modifiedTree, null, 2));
     };
 
-    const deleteProductNameFromTree = (existingproductTree, productName) => {
-        const traverseAndDelete = (node, parent, parentKey) => {
-            for (const key in node) {
-                if (key === 'products' && node[key][productName]) {
-                    delete node[key][productName];
-                    console.log(`Deleted product "${productName}" from ${parentKey}`);
-                    // Check if products object is now empty
-                    if (Object.keys(node[key]).length === 0) {
-                        delete node[key];
-                        console.log(`Deleted empty products from ${parentKey}`);
-                        // Check if parent node (subcategory) is now empty
-                        if (Object.keys(node).length === 0) {
-                            delete parent[parentKey];
-                            console.log(`Deleted empty ${parentKey}`);
-                            // Check if parent of parent node (category) is now empty
-                            if (Object.keys(parent).length === 0) {
-                                console.log(`Deleted empty category`);
-                            }
-                        }
-                    }
-                    return existingproductTree; // Return the modified tree
+    const handleDeleteProducts = async (test) => {
+        if (test) console.log("testing");
+        for (const productName of productNames) {
+            console.log("deleting: " + productName)
+            try {
+                await deleteProductDoc(productName, test);
+                deleteAProduct(productName, productTree);
+                console.log(productName + " deleted successfully from Product Tree.");
+            } catch (error) {
+                console.error("Error deleting " + productName + ":", error);
+                // Handle error as needed
+            }
+        }
+        cleanProdTree(productTree);
+        if(test) console.log("productTree:", JSON.stringify(productTree, null, 2));
+        pruneCategoryTree(catTree, productTree);
+        if(test) console.log("catTree:", JSON.stringify(catTree, null, 2));
+        //setComplete(1);
+        // window.location.assign(location.origin + "/products");
+    };
+
+    const deleteAProduct = (productID, ProductTree) => {
+        let depth = 0;
+        const deleteProduct = (currentObj, currentDepth) => {
+            for (let key in currentObj) {
+                if (key === productID) {
+                    delete currentObj[key];
+                    return;
                 }
-                if (typeof node[key] === 'object') {
-                    traverseAndDelete(node[key], node, key);
+                if (typeof currentObj[key] === 'object') {
+                    if (currentDepth > depth) {
+                        depth = currentDepth;
+                    }
+                    deleteProduct(currentObj[key], currentDepth + 1);
                 }
             }
         };
+        deleteProduct(ProductTree, 1);
+    }
 
-        traverseAndDelete(existingproductTree, null, null);
-        return existingproductTree; // Return the modified tree after completing traversal
-    };
-
-    const handleDeleteProducts = async (passedTree) => {
-        let productTree = passedTree;
-
-        try {
-            for (const productName of productNames) {
-                productTree = await deleteProduct(productName, productTree, test);
+    const cleanProdTree = (ProductTree) => {
+        const pruneObject = (currentObj) => {
+            const keys = Object.keys(currentObj);
+            for (let key of keys) {
+                if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
+                    pruneObject(currentObj[key]);
+                    if (Object.keys(currentObj[key]).length === 0) {
+                        delete currentObj[key];
+                    }
+                }
             }
-
-            // Prune category tree
-            const categoryTree = pruneCategoryTree(existingCategoryTree, productTree);
-
-            // Update Firestore document
-            const userDocRef = doc(db, 'users', userID);
-            if (!test) {
-                await updateDoc(userDocRef, { productTree: productTree, categoryTree: categoryTree });
-            }
-
-            // Redirect to products page
-            setComplete(1);
-            onOperationComplete(operationComplete);
-            // window.location.assign(location.origin + "/products");
-        } catch (error) {
-            // Handle any errors that occur during the async operations
-            console.error('Error in handleDeleteProducts:', error);
-            // Optionally, you can throw the error again to propagate it further
-            throw error;
-        }
+        };
+        pruneObject(ProductTree);
     };
-
 
     const deleteFiles = async (path) => {
         try {
@@ -120,6 +110,7 @@ const DeleteProducts = ({
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
+                    console.log("image deletion complete");
                     return true;
                 })
                 .then(data => {
@@ -162,7 +153,24 @@ const DeleteProducts = ({
     }
 
     useEffect(() => {
-        if (run) handleDeleteProducts(existingproductTree);
+        const performDeletionAndUpdate = async () => {
+            if (run) {
+                try {
+                    await handleDeleteProducts(test);
+                    const userDocRef = doc(db, 'users', userID);
+                    if (!test) {
+                        await updateDoc(userDocRef, { productTree, categoryTree: catTree });
+                        onOperationComplete(1);
+                    } else {
+                        onOperationComplete(0);
+                    }
+                } catch (error) {
+                    console.error('Error handling deletion and update:', error);
+                    // Handle error as needed
+                }
+            }
+        };
+        performDeletionAndUpdate();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [run]);
 
@@ -179,7 +187,8 @@ DeleteProducts.propTypes = {
     productNames: PropTypes.array,
     test: PropTypes.bool,
     run: PropTypes.bool,
-    onOperationComplete: PropTypes.func
+    onOperationComplete: PropTypes.func,
+    images: PropTypes.bool,
 };
 
 export default DeleteProducts;
