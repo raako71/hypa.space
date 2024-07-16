@@ -15,7 +15,8 @@ const CategorySelector = ({
   allowNewCats,
   onCategoriesLoaded,
   existingData,
-  userID
+  userID,
+  userCats
 }) => {
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState("Waiting to load Categories");
@@ -34,27 +35,33 @@ const CategorySelector = ({
       let categoriesData = {};
       let mergedCategories = {}; // Initialize mergedCategories here
       let loadedCatsVar = 0;
-      try {
-        setLoadingCategories("Loading Global Categories.");
-        const categoriesCollectionRef = collection(db, 'categories');
-        const querySnapshot = await getDocs(categoriesCollectionRef);
-        querySnapshot.forEach((doc) => {
-          const categoryName = doc.id;
-          const categoryData = doc.data();
-          categoriesData[categoryName] = categoryData;
-        });
-        //setCategories(categoriesData);
-        setLoadingCategories("Loaded Global Categories");
-        loadedCatsVar = loadedCatsVar + 1;
-      } catch (error) {
-        setLoadingCategories("Failed to load Global Categories.");
-        console.error('Error fetching Global categories:', error);
+      if (!userCats) {
+        try {
+          setLoadingCategories("Loading Global Categories.");
+          const categoriesCollectionRef = collection(db, 'categories');
+          const querySnapshot = await getDocs(categoriesCollectionRef);
+          querySnapshot.forEach((doc) => {
+            const categoryName = doc.id;
+            const categoryData = doc.data();
+            categoriesData[categoryName] = categoryData;
+          });
+          //setCategories(categoriesData);
+          setLoadingCategories("Loaded Global Categories");
+          loadedCatsVar = loadedCatsVar + 1;
+        } catch (error) {
+          setLoadingCategories("Failed to load Global Categories.");
+          console.error('Error fetching Global categories:', error);
+        }
       }
 
       try {
         setLoadingUserCategories("Loading User Categories.");
         const existingCategoryTree = existingData?.categoryTree || {};
-        mergedCategories = merge({}, categoriesData, existingCategoryTree); 
+        if (!userCats) mergedCategories = merge({}, categoriesData, existingCategoryTree);
+        else {
+          mergedCategories = existingCategoryTree;
+          loadedCatsVar = loadedCatsVar + 1;
+        }
         //console.log("mergedCategories:", JSON.stringify(mergedCategories, null, 2));
         setCategories(mergedCategories);
         setLoadingUserCategories("Loaded User Categories");
@@ -75,7 +82,7 @@ const CategorySelector = ({
     if (userID) {
       fetchCategories();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingData]);
 
   useEffect(() => {
@@ -284,7 +291,8 @@ CategorySelector.propTypes = {
   setSelectedSubCategory: PropTypes.func,
   setSelectedSubSubCategory: PropTypes.func,
   allowNewCats: PropTypes.bool,
-  onCategoriesLoaded: PropTypes.func // Callback function to pass loadedCats to the parent component
+  onCategoriesLoaded: PropTypes.func,
+  userCats: PropTypes.bool
 };
 
 export default CategorySelector;

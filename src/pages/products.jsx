@@ -202,6 +202,7 @@ const Products = ({
                 allowNewCats={allowNewCats}
                 existingData={existingData}
                 userID={StoreID}
+                userCats={true}
             />
             <h2>Products: {productArray.length}</h2>
             <p style={{ textAlign: 'center', display: productArray.length === 0 ? 'none' : 'block' }}>Show <select value={productsDisplayed} onChange={setNumOfProducts}>

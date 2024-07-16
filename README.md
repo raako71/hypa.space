@@ -7,7 +7,7 @@ Cloud:
     push to cloud: firebase deploy
 
 REMAINING:
-* Only load user cats for Product page.
+* cannot delete images.
 
 * Email verification (required for store).
 
@@ -21,6 +21,8 @@ REMAINING:
 
 16 July:
 Save/update/delete debugged.
+Catch error for editing other users product.
+Only load user cats for Product page.
 
 15 July:
 New code for save/ update.

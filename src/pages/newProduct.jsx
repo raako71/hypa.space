@@ -50,11 +50,11 @@ const NewProd = ({
   }, []);
 
   useEffect(() => {
-    if (productNameUserID != null) {
+    if (productNameUserID != null && userID != null) {
       getProductInfo(productNameUserID);
     } else setImageCheck(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productNameUserID]);
+  }, [productNameUserID, userID]);
 
 
   const getProductInfo = async (productNameUserID) => {
@@ -70,6 +70,15 @@ const NewProd = ({
         setProductDescription(productData.productDescription);
         setVariations(productData.variations || []); // Set variations if available
         // Set category information if available
+        const thisUser = userID;
+        const productCreator = productData.userId;
+        if (thisUser != productCreator) {
+          console.error('Owner is ' + productCreator);
+          console.error('This user ' + thisUser);
+          setTimeout(() => {
+            window.location.assign(location.origin + "/newProduct");
+          }, 3000)
+        }
         if (productData) {
           const [, userIDVar] = productNameUserID.split('_');
           indexImages(userIDVar, productData.images);
@@ -369,7 +378,7 @@ const NewProd = ({
   const uploadImages = async (productDocumentName) => {
     try {
       // Upload images
-      console.log("uploading images");  
+      console.log("uploading images");
       // Strings not required?!?
       //const storage = getStorage();
       //const userDirectoryRef = ref(storage, `users/${userID}`);
@@ -574,7 +583,7 @@ const NewProd = ({
     if (value === 1) {
       setButtonText('Product Deleted.');
       setTimeout(() => {
-        window.location.assign(location.origin + "/products");
+        //window.location.assign(location.origin + "/products");
       }, 3000);
     }
   };
@@ -682,6 +691,7 @@ const NewProd = ({
         setSelectedSubSubCategory={setSelectedSubSubCategory}
         allowNewCats={allowNewCats}
         onCategoriesLoaded={() => setProductInfoLoaded(true)}
+        userCats={false}
       />
       <div style={{ display: "flex", alignItems: "center", margin: "8px" }}>
         {!saving && (
