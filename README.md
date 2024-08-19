@@ -1,5 +1,5 @@
 # PHIL Web App. Built in React + Vite
-(Project Harry In Lima). Build becuase online shopping is completly non functional in Peru, even domestically so many issues. Mercado libre doesnt allow stores to communicate with customers (at least easily). At time of inception lack of intergation between all possible delivery networks. Goal to add whitelabelling with domain integration.
+(Project Harry In Lima). Build becuase online shopping is completly non functional in Peru, even domestically so many issues. Mercado libre doesnt allow stores to communicate with customers (at least easily). At time of inception lack of intergation between all possible delivery networks. Goal to add whitelabelling with domain integration. At present very (very) barebones. No CSS or UX. Mainly backend conception. Using Firebase, need to migrate away for any continued dev.
 
 Commands:
 Local: 
